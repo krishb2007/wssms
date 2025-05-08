@@ -36,14 +36,28 @@ const Index = () => {
 
   const nextStep = () => {
     if (step < 8) {
-      setStep((prev) => prev + 1);
+      let nextStepValue = step + 1;
+      
+      // Skip "PeopleInfoForm" name entry if only 1 person
+      if (step === 2 && formData.numberOfPeople === 1) {
+        nextStepValue = 4; // Skip to purpose form
+      }
+      
+      setStep(nextStepValue);
       window.scrollTo(0, 0);
     }
   };
 
   const prevStep = () => {
     if (step > 1) {
-      setStep((prev) => prev - 1);
+      let prevStepValue = step - 1;
+      
+      // Skip back over "PeopleInfoForm" name entry if only 1 person
+      if (step === 4 && formData.numberOfPeople === 1) {
+        prevStepValue = 2; // Go back to name form
+      }
+      
+      setStep(prevStepValue);
       window.scrollTo(0, 0);
     }
   };

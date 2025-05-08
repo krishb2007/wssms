@@ -4,6 +4,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
+import { ChevronDown, ChevronUp } from "lucide-react";
 
 interface Person {
   name: string;
@@ -40,6 +41,20 @@ const PeopleInfoForm: React.FC<PeopleInfoFormProps> = ({
     updateFormData({ people: updatedPeople });
   };
 
+  const increaseNumberOfPeople = () => {
+    const newValue = formData.numberOfPeople + 1;
+    if (newValue <= 10) {
+      handleNumberOfPeopleChange(newValue);
+    }
+  };
+
+  const decreaseNumberOfPeople = () => {
+    const newValue = formData.numberOfPeople - 1;
+    if (newValue >= 1) {
+      handleNumberOfPeopleChange(newValue);
+    }
+  };
+
   const handleNumberOfPeopleChange = (value: number) => {
     if (value >= 1) {
       // Create or maintain existing people entries when changing number of people
@@ -63,22 +78,47 @@ const PeopleInfoForm: React.FC<PeopleInfoFormProps> = ({
         
         <div className="space-y-2">
           <Label htmlFor="numberOfPeople">Number of People</Label>
-          <Input
-            id="numberOfPeople"
-            type="number"
-            min="1"
-            max="10"
-            value={formData.numberOfPeople}
-            onChange={(e) => handleNumberOfPeopleChange(parseInt(e.target.value) || 1)}
-            placeholder="Enter number of people"
-            required
-          />
+          <div className="flex items-center">
+            <Input
+              id="numberOfPeople"
+              type="number"
+              min="1"
+              max="10"
+              value={formData.numberOfPeople}
+              onChange={(e) => handleNumberOfPeopleChange(parseInt(e.target.value) || 1)}
+              placeholder="Enter number of people"
+              required
+              className="flex-1"
+            />
+            <div className="flex flex-col ml-2">
+              <Button 
+                type="button" 
+                variant="outline" 
+                size="icon" 
+                onClick={increaseNumberOfPeople}
+                disabled={formData.numberOfPeople >= 10}
+                className="mb-1 h-7 w-7"
+              >
+                <ChevronDown className="h-5 w-5" />
+              </Button>
+              <Button 
+                type="button" 
+                variant="outline" 
+                size="icon" 
+                onClick={decreaseNumberOfPeople}
+                disabled={formData.numberOfPeople <= 1}
+                className="h-7 w-7"
+              >
+                <ChevronUp className="h-5 w-5" />
+              </Button>
+            </div>
+          </div>
           <p className="text-xs text-gray-500">
             Enter the number of people visiting (maximum 10)
           </p>
         </div>
 
-        {formData.numberOfPeople > 0 && (
+        {formData.numberOfPeople > 1 && (
           <div className="space-y-4">
             <h4 className="font-medium">Visitor Details</h4>
             
