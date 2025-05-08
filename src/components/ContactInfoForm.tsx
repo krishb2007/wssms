@@ -3,8 +3,8 @@ import React, { useState } from "react";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
-import { toast } from "@/components/ui/use-toast";
 import { InputOTP, InputOTPGroup, InputOTPSlot } from "@/components/ui/input-otp";
+import { toast } from "@/components/ui/use-toast";
 
 interface ContactInfoFormProps {
   formData: {
@@ -22,12 +22,27 @@ const ContactInfoForm: React.FC<ContactInfoFormProps> = ({
   nextStep,
   prevStep,
 }) => {
-  const [otpSent, setOtpSent] = useState(false);
   const [otp, setOtp] = useState("");
-  const [isVerifying, setIsVerifying] = useState(false);
-  
-  const handleSendOtp = () => {
-    if (!formData.phoneNumber || formData.phoneNumber.length < 10) {
+  const [otpSent, setOtpSent] = useState(false);
+
+  const handleSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    
+    if (!formData.verifiedOtp) {
+      toast({
+        title: "Phone number not verified",
+        description: "Please verify your phone number before proceeding",
+        variant: "destructive",
+      });
+      return;
+    }
+    
+    nextStep();
+  };
+
+  const sendOTP = () => {
+    // In a real application, an API call would be made here
+    if (formData.phoneNumber.length < 10) {
       toast({
         title: "Invalid Phone Number",
         description: "Please enter a valid phone number",
@@ -36,51 +51,30 @@ const ContactInfoForm: React.FC<ContactInfoFormProps> = ({
       return;
     }
     
-    // In a real app, you would send an API request to send OTP
-    const mockOtp = "123456"; // For demo purposes
-    console.log("Sending OTP to", formData.phoneNumber, "Mock OTP:", mockOtp);
-    
+    // Mock OTP sending
+    setOtpSent(true);
     toast({
       title: "OTP Sent",
-      description: `A verification code has been sent to ${formData.phoneNumber}`,
+      description: `An OTP has been sent to ${formData.phoneNumber}. Use code 123456 for testing.`,
     });
-    setOtpSent(true);
-  };
-  
-  const verifyOtp = () => {
-    setIsVerifying(true);
-    
-    // In a real app, you would verify this with your API
-    setTimeout(() => {
-      // For demo purposes, any 6-digit OTP is valid
-      if (otp.length === 6) {
-        toast({
-          title: "OTP Verified",
-          description: "Your phone number has been verified successfully",
-        });
-        updateFormData({ verifiedOtp: true });
-      } else {
-        toast({
-          title: "Invalid OTP",
-          description: "The verification code you entered is incorrect",
-          variant: "destructive",
-        });
-      }
-      setIsVerifying(false);
-    }, 1500);
   };
 
-  const handleSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!formData.verifiedOtp) {
+  const verifyOTP = () => {
+    // In a real application, an API call would be made to verify the OTP
+    // For this demo, we'll accept any 6-digit code
+    if (otp.length === 6) {
+      updateFormData({ verifiedOtp: true });
       toast({
-        title: "Verification Required",
-        description: "Please verify your phone number to continue",
+        title: "Phone Number Verified",
+        description: "Your phone number has been verified successfully!",
+      });
+    } else {
+      toast({
+        title: "Invalid OTP",
+        description: "Please enter the complete OTP",
         variant: "destructive",
       });
-      return;
     }
-    nextStep();
   };
 
   return (
@@ -96,23 +90,22 @@ const ContactInfoForm: React.FC<ContactInfoFormProps> = ({
               onChange={(e) => {
                 updateFormData({ 
                   phoneNumber: e.target.value,
-                  verifiedOtp: false // Reset verification when number changes
+                  verifiedOtp: false 
                 });
                 setOtpSent(false);
               }}
-              placeholder="Enter your phone number"
+              placeholder="Enter phone number"
               required
               disabled={formData.verifiedOtp}
-              className="flex-1"
             />
             {!formData.verifiedOtp && (
               <Button 
                 type="button" 
-                variant="secondary" 
-                onClick={handleSendOtp}
-                disabled={otpSent && !isVerifying}
+                variant="outline" 
+                onClick={sendOTP} 
+                disabled={formData.phoneNumber.length < 10}
               >
-                {otpSent ? "Resend OTP" : "Send OTP"}
+                Send OTP
               </Button>
             )}
           </div>
@@ -120,47 +113,33 @@ const ContactInfoForm: React.FC<ContactInfoFormProps> = ({
 
         {otpSent && !formData.verifiedOtp && (
           <div className="space-y-4">
-            <div className="space-y-2">
-              <Label htmlFor="otp">Verification Code</Label>
-              <div className="flex justify-center">
-                <InputOTP
-                  maxLength={6}
-                  value={otp}
-                  onChange={(value) => setOtp(value)}
-                  disabled={isVerifying}
-                >
-                  <InputOTPGroup>
-                    <InputOTPSlot index={0} />
-                    <InputOTPSlot index={1} />
-                    <InputOTPSlot index={2} />
-                    <InputOTPSlot index={3} />
-                    <InputOTPSlot index={4} />
-                    <InputOTPSlot index={5} />
-                  </InputOTPGroup>
-                </InputOTP>
-              </div>
+            <Label htmlFor="otp">Enter OTP</Label>
+            <div className="flex flex-col items-center space-y-4">
+              <InputOTP maxLength={6} value={otp} onChange={setOtp}>
+                <InputOTPGroup>
+                  <InputOTPSlot index={0} />
+                  <InputOTPSlot index={1} />
+                  <InputOTPSlot index={2} />
+                  <InputOTPSlot index={3} />
+                  <InputOTPSlot index={4} />
+                  <InputOTPSlot index={5} />
+                </InputOTPGroup>
+              </InputOTP>
+              
+              <Button 
+                type="button" 
+                onClick={verifyOTP}
+                disabled={otp.length !== 6}
+              >
+                Verify OTP
+              </Button>
             </div>
-            
-            <Button 
-              type="button" 
-              className="w-full"
-              onClick={verifyOtp}
-              disabled={otp.length !== 6 || isVerifying}
-            >
-              {isVerifying ? "Verifying..." : "Verify OTP"}
-            </Button>
           </div>
         )}
 
         {formData.verifiedOtp && (
-          <div className="rounded-md bg-green-50 p-4">
-            <div className="flex">
-              <div className="ml-3">
-                <p className="text-sm font-medium text-green-800">
-                  Phone number verified successfully
-                </p>
-              </div>
-            </div>
+          <div className="text-green-500 text-center">
+            ✓ Phone number verified
           </div>
         )}
 

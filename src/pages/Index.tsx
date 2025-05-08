@@ -1,8 +1,10 @@
 
 import React, { useState } from "react";
-import SchoolInfoForm from "@/components/SchoolInfoForm";
-import ContactInfoForm from "@/components/ContactInfoForm";
+import WelcomePage from "@/components/WelcomePage";
+import NameForm from "@/components/NameForm";
 import PeopleInfoForm from "@/components/PeopleInfoForm";
+import PurposeForm from "@/components/PurposeForm";
+import ContactInfoForm from "@/components/ContactInfoForm";
 import AddressForm from "@/components/AddressForm";
 import UploadForm from "@/components/UploadForm";
 import ConfirmationPage from "@/components/ConfirmationPage";
@@ -11,9 +13,11 @@ import { toast } from "@/components/ui/use-toast";
 const Index = () => {
   const [step, setStep] = useState(1);
   const [formData, setFormData] = useState({
-    schoolName: "",
+    visitorName: "",
     numberOfPeople: 1,
     people: [{ name: "", role: "" }],
+    purpose: "",
+    otherPurpose: "",
     phoneNumber: "",
     verifiedOtp: false,
     address: {
@@ -22,8 +26,8 @@ const Index = () => {
       state: "",
       zipCode: "",
     },
-    picture: null,
-    signature: null,
+    picture: null as File | null,
+    signature: null as File | null,
   });
 
   const updateFormData = (data: Partial<typeof formData>) => {
@@ -31,7 +35,7 @@ const Index = () => {
   };
 
   const nextStep = () => {
-    if (step < 6) {
+    if (step < 8) {
       setStep((prev) => prev + 1);
       window.scrollTo(0, 0);
     }
@@ -49,7 +53,7 @@ const Index = () => {
     console.log("Final form data:", formData);
     toast({
       title: "Registration Complete",
-      description: "Your school registration has been submitted successfully!",
+      description: "Your registration has been submitted successfully!",
     });
   };
 
@@ -57,16 +61,10 @@ const Index = () => {
   const renderForm = () => {
     switch (step) {
       case 1:
-        return (
-          <SchoolInfoForm
-            formData={formData}
-            updateFormData={updateFormData}
-            nextStep={nextStep}
-          />
-        );
+        return <WelcomePage nextStep={nextStep} />;
       case 2:
         return (
-          <PeopleInfoForm
+          <NameForm
             formData={formData}
             updateFormData={updateFormData}
             nextStep={nextStep}
@@ -75,7 +73,7 @@ const Index = () => {
         );
       case 3:
         return (
-          <ContactInfoForm
+          <PeopleInfoForm
             formData={formData}
             updateFormData={updateFormData}
             nextStep={nextStep}
@@ -84,7 +82,7 @@ const Index = () => {
         );
       case 4:
         return (
-          <AddressForm
+          <PurposeForm
             formData={formData}
             updateFormData={updateFormData}
             nextStep={nextStep}
@@ -93,7 +91,7 @@ const Index = () => {
         );
       case 5:
         return (
-          <UploadForm
+          <ContactInfoForm
             formData={formData}
             updateFormData={updateFormData}
             nextStep={nextStep}
@@ -101,6 +99,24 @@ const Index = () => {
           />
         );
       case 6:
+        return (
+          <AddressForm
+            formData={formData}
+            updateFormData={updateFormData}
+            nextStep={nextStep}
+            prevStep={prevStep}
+          />
+        );
+      case 7:
+        return (
+          <UploadForm
+            formData={formData}
+            updateFormData={updateFormData}
+            nextStep={nextStep}
+            prevStep={prevStep}
+          />
+        );
+      case 8:
         return (
           <ConfirmationPage
             formData={formData}
@@ -129,12 +145,12 @@ const Index = () => {
                 Campus Connect Capture
               </h2>
               <p className="mt-2 text-sm text-gray-600">
-                Step {step} of 6: {getStepName(step)}
+                Step {step} of 8: {getStepName(step)}
               </p>
               <div className="w-full bg-gray-200 h-2 mt-4 rounded-full">
                 <div 
                   className="bg-blue-600 h-2 rounded-full transition-all duration-300"
-                  style={{ width: `${(step / 6) * 100}%` }}
+                  style={{ width: `${(step / 8) * 100}%` }}
                 ></div>
               </div>
             </div>
@@ -150,16 +166,20 @@ const Index = () => {
 const getStepName = (step: number): string => {
   switch (step) {
     case 1:
-      return "School Information";
+      return "Welcome to Woodstock School";
     case 2:
-      return "People Information";
+      return "Your Name";
     case 3:
-      return "Contact Details";
+      return "People Information";
     case 4:
-      return "Address Information";
+      return "Purpose of Visit";
     case 5:
-      return "Documents Upload";
+      return "Contact Details";
     case 6:
+      return "Address Information";
+    case 7:
+      return "Upload Documents";
+    case 8:
       return "Review & Submit";
     default:
       return "";

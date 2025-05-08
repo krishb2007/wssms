@@ -60,16 +60,6 @@ const PeopleInfoForm: React.FC<PeopleInfoFormProps> = ({
                     required
                   />
                 </div>
-                <div className="space-y-2">
-                  <Label htmlFor={`role-${index}`}>Role</Label>
-                  <Input
-                    id={`role-${index}`}
-                    value={formData.people[index]?.role || ""}
-                    onChange={(e) => handlePersonChange(index, "role", e.target.value)}
-                    placeholder="Role (e.g., Principal, Teacher, Student)"
-                    required
-                  />
-                </div>
               </div>
             </CardContent>
           </Card>

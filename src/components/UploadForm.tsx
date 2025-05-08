@@ -86,7 +86,7 @@ const UploadForm: React.FC<UploadFormProps> = ({
     <form onSubmit={handleSubmit}>
       <div className="space-y-6">
         <div className="space-y-4">
-          <Label htmlFor="picture">Upload Picture</Label>
+          <Label htmlFor="picture">Upload Your Photograph</Label>
           <div className="flex flex-col items-center">
             {picturePreview ? (
               <div className="mb-4">
@@ -120,7 +120,7 @@ const UploadForm: React.FC<UploadFormProps> = ({
         </div>
 
         <div className="space-y-4">
-          <Label htmlFor="signature">Upload Signature</Label>
+          <Label htmlFor="signature">Upload Your Signature</Label>
           <div className="flex flex-col items-center">
             {signaturePreview ? (
               <div className="mb-4">

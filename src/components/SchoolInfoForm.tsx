@@ -8,6 +8,7 @@ interface SchoolInfoFormProps {
   formData: {
     schoolName: string;
     numberOfPeople: number;
+    people: Array<{ name: string; role: string }>;
   };
   updateFormData: (data: Partial<typeof formData>) => void;
   nextStep: () => void;
