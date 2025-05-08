@@ -142,7 +142,7 @@ const Index = () => {
           <div className="bg-white/95 backdrop-blur-sm p-8 rounded-lg shadow-xl">
             <div className="mb-6 text-center">
               <h2 className="text-3xl font-extrabold text-gray-900">
-                Campus Connect Capture
+                Campus Registration Form
               </h2>
               <p className="mt-2 text-sm text-gray-600">
                 Step {step} of 8: {getStepName(step)}
