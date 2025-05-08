@@ -14,6 +14,7 @@ const Index = () => {
   const [step, setStep] = useState(1);
   const [formData, setFormData] = useState({
     visitorName: "",
+    schoolName: "", // Added this field to match the ConfirmationPage props
     numberOfPeople: 1,
     people: [{ name: "", role: "" }],
     purpose: "",
@@ -25,6 +26,7 @@ const Index = () => {
       city: "",
       state: "",
       zipCode: "",
+      country: "India", // Default country selection
     },
     picture: null as File | null,
     signature: null as File | null,

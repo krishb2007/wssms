@@ -97,9 +97,9 @@ const PeopleInfoForm: React.FC<PeopleInfoFormProps> = ({
                 size="icon" 
                 onClick={increaseNumberOfPeople}
                 disabled={formData.numberOfPeople >= 10}
-                className="mb-1 h-7 w-7"
+                className="mb-1 h-8 w-8"
               >
-                <ChevronDown className="h-5 w-5" />
+                <ChevronUp className="h-6 w-6" />
               </Button>
               <Button 
                 type="button" 
@@ -107,9 +107,9 @@ const PeopleInfoForm: React.FC<PeopleInfoFormProps> = ({
                 size="icon" 
                 onClick={decreaseNumberOfPeople}
                 disabled={formData.numberOfPeople <= 1}
-                className="h-7 w-7"
+                className="h-8 w-8"
               >
-                <ChevronUp className="h-5 w-5" />
+                <ChevronDown className="h-6 w-6" />
               </Button>
             </div>
           </div>
