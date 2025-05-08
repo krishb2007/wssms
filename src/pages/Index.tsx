@@ -14,6 +14,7 @@ const Index = () => {
   const [step, setStep] = useState(1);
   const [formData, setFormData] = useState({
     visitorName: "",
+    schoolName: "", // Added this field to match the ConfirmationPage props
     numberOfPeople: 1,
     people: [{ name: "", role: "" }],
     purpose: "",
@@ -25,6 +26,7 @@ const Index = () => {
       city: "",
       state: "",
       zipCode: "",
+      country: "India", // Default country selection
     },
     picture: null as File | null,
     signature: null as File | null,
@@ -36,14 +38,28 @@ const Index = () => {
 
   const nextStep = () => {
     if (step < 8) {
-      setStep((prev) => prev + 1);
+      let nextStepValue = step + 1;
+      
+      // Skip "PeopleInfoForm" name entry if only 1 person
+      if (step === 2 && formData.numberOfPeople === 1) {
+        nextStepValue = 4; // Skip to purpose form
+      }
+      
+      setStep(nextStepValue);
       window.scrollTo(0, 0);
     }
   };
 
   const prevStep = () => {
     if (step > 1) {
-      setStep((prev) => prev - 1);
+      let prevStepValue = step - 1;
+      
+      // Skip back over "PeopleInfoForm" name entry if only 1 person
+      if (step === 4 && formData.numberOfPeople === 1) {
+        prevStepValue = 2; // Go back to name form
+      }
+      
+      setStep(prevStepValue);
       window.scrollTo(0, 0);
     }
   };
@@ -142,7 +158,7 @@ const Index = () => {
           <div className="bg-white/95 backdrop-blur-sm p-8 rounded-lg shadow-xl">
             <div className="mb-6 text-center">
               <h2 className="text-3xl font-extrabold text-gray-900">
-                Campus Connect Capture
+                Campus Registration Form
               </h2>
               <p className="mt-2 text-sm text-gray-600">
                 Step {step} of 8: {getStepName(step)}
