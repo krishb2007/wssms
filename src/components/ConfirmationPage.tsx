@@ -5,7 +5,6 @@ import { Card, CardContent } from "@/components/ui/card";
 
 interface ConfirmationPageProps {
   formData: {
-    visitorName: string;
     schoolName: string;
     numberOfPeople: number;
     people: Array<{ name: string; role: string }>;
@@ -15,7 +14,6 @@ interface ConfirmationPageProps {
       city: string;
       state: string;
       zipCode: string;
-      country: string;
     };
     picture: File | null;
     signature: File | null;
@@ -42,8 +40,8 @@ const ConfirmationPage: React.FC<ConfirmationPageProps> = ({
         <CardContent className="pt-6">
           <div className="space-y-4">
             <div>
-              <h4 className="font-semibold">Visitor Information</h4>
-              <p className="text-sm">{formData.visitorName}</p>
+              <h4 className="font-semibold">School Information</h4>
+              <p className="text-sm">{formData.schoolName}</p>
             </div>
 
             <div>
@@ -51,7 +49,7 @@ const ConfirmationPage: React.FC<ConfirmationPageProps> = ({
               <ul className="list-disc pl-5 text-sm">
                 {formData.people.map((person, idx) => (
                   <li key={idx}>
-                    {person.name || formData.visitorName} {person.role ? `- ${person.role}` : ''}
+                    {person.name} - {person.role}
                   </li>
                 ))}
               </ul>
@@ -66,16 +64,15 @@ const ConfirmationPage: React.FC<ConfirmationPageProps> = ({
               <h4 className="font-semibold">Address</h4>
               <p className="text-sm">
                 {formData.address.street}, {formData.address.city},{" "}
-                {formData.address.state}, {formData.address.country},{" "}
-                {formData.address.zipCode}
+                {formData.address.state}, {formData.address.zipCode}
               </p>
             </div>
 
             <div>
               <h4 className="font-semibold">Uploads</h4>
               <div className="text-sm">
-                <p>Picture: {formData.picture ? "✓ Uploaded" : "Not uploaded"}</p>
-                <p>Signature: {formData.signature ? "✓ Uploaded" : "Not uploaded"}</p>
+                <p>Picture: {formData.picture?.name}</p>
+                <p>Signature: {formData.signature?.name}</p>
               </div>
             </div>
           </div>

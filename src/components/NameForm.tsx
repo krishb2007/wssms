@@ -8,7 +8,7 @@ interface NameFormProps {
   formData: {
     visitorName: string;
   };
-  updateFormData: (data: Partial<{ visitorName: string }>) => void;
+  updateFormData: (data: Partial<typeof formData>) => void;
   nextStep: () => void;
   prevStep: () => void;
 }
