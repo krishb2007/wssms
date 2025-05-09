@@ -12,7 +12,6 @@ interface AddressFormProps {
       street: string;
       city: string;
       state: string;
-      zipCode: string;
       country: string;
     };
   };
@@ -146,43 +145,9 @@ const AddressForm: React.FC<AddressFormProps> = ({
                 </SelectContent>
               </Select>
             </div>
-
-            {formData.address.state && (
-              <div className="space-y-2">
-                <Label htmlFor="city">City</Label>
-                <Select
-                  value={formData.address.city}
-                  onValueChange={(value) => handleAddressChange("city", value)}
-                >
-                  <SelectTrigger id="city" className="w-full">
-                    <SelectValue placeholder="Select city" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {indianCities[formData.address.state]?.map((city) => (
-                      <SelectItem key={city} value={city}>
-                        {city}
-                      </SelectItem>
-                    )) || (
-                      <SelectItem value="Other">Other</SelectItem>
-                    )}
-                  </SelectContent>
-                </Select>
-              </div>
-            )}
           </>
         ) : (
           <>
-            <div className="space-y-2">
-              <Label htmlFor="city">City</Label>
-              <Input
-                id="city"
-                value={formData.address.city}
-                onChange={(e) => handleAddressChange("city", e.target.value)}
-                placeholder="Enter city"
-                required
-              />
-            </div>
-
             <div className="space-y-2">
               <Label htmlFor="state">State/Province/Region</Label>
               <Input
@@ -197,12 +162,12 @@ const AddressForm: React.FC<AddressFormProps> = ({
         )}
 
         <div className="space-y-2">
-          <Label htmlFor="zipCode">ZIP/Postal Code</Label>
+          <Label htmlFor="city">City</Label>
           <Input
-            id="zipCode"
-            value={formData.address.zipCode}
-            onChange={(e) => handleAddressChange("zipCode", e.target.value)}
-            placeholder="Enter ZIP/postal code"
+            id="city"
+            value={formData.address.city}
+            onChange={(e) => handleAddressChange("city", e.target.value)}
+            placeholder="Enter city"
             required
           />
         </div>

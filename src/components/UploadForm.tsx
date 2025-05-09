@@ -1,5 +1,5 @@
 
-import React, { useState, useRef } from "react";
+import React, { useState, useRef, useEffect } from "react";
 import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
 import { toast } from "@/components/ui/use-toast";
@@ -28,8 +28,14 @@ const UploadForm: React.FC<UploadFormProps> = ({
   const [picturePreview, setPicturePreview] = useState<string | null>(null);
   const [signaturePreview, setSignaturePreview] = useState<string | null>(null);
   const [isDrawing, setIsDrawing] = useState(false);
-  const [showCamera, setShowCamera] = useState(false);
+  const [showCamera, setShowCamera] = useState(true); // Auto-start camera
   const [lastPos, setLastPos] = useState({ x: 0, y: 0 });
+
+  // Auto-start camera on component mount
+  useEffect(() => {
+    setupCamera();
+    initializeSignaturePad();
+  }, []);
 
   // Camera setup
   const setupCamera = async () => {
@@ -176,10 +182,6 @@ const UploadForm: React.FC<UploadFormProps> = ({
     
     nextStep();
   };
-
-  React.useEffect(() => {
-    initializeSignaturePad();
-  }, []);
 
   return (
     <form onSubmit={handleSubmit}>

@@ -4,7 +4,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
-import { ChevronDown, ChevronUp } from "lucide-react";
+import { ChevronUp, ChevronDown } from "lucide-react";
 
 interface Person {
   name: string;
@@ -99,7 +99,7 @@ const PeopleInfoForm: React.FC<PeopleInfoFormProps> = ({
                 disabled={formData.numberOfPeople >= 10}
                 className="mb-1 h-8 w-8"
               >
-                <ChevronUp className="h-6 w-6" />
+                <ChevronUp className="h-5 w-5" />
               </Button>
               <Button 
                 type="button" 
@@ -109,7 +109,7 @@ const PeopleInfoForm: React.FC<PeopleInfoFormProps> = ({
                 disabled={formData.numberOfPeople <= 1}
                 className="h-8 w-8"
               >
-                <ChevronDown className="h-6 w-6" />
+                <ChevronDown className="h-5 w-5" />
               </Button>
             </div>
           </div>

@@ -14,7 +14,7 @@ const Index = () => {
   const [step, setStep] = useState(1);
   const [formData, setFormData] = useState({
     visitorName: "",
-    schoolName: "", // Added this field to match the ConfirmationPage props
+    schoolName: "Woodstock School", // Default school name
     numberOfPeople: 1,
     people: [{ name: "", role: "" }],
     purpose: "",
@@ -25,7 +25,6 @@ const Index = () => {
       street: "",
       city: "",
       state: "",
-      zipCode: "",
       country: "India", // Default country selection
     },
     picture: null as File | null,
@@ -70,6 +69,26 @@ const Index = () => {
     toast({
       title: "Registration Complete",
       description: "Your registration has been submitted successfully!",
+    });
+    // Reset form after submission
+    setStep(1);
+    setFormData({
+      visitorName: "",
+      schoolName: "Woodstock School",
+      numberOfPeople: 1,
+      people: [{ name: "", role: "" }],
+      purpose: "",
+      otherPurpose: "",
+      phoneNumber: "",
+      verifiedOtp: false,
+      address: {
+        street: "",
+        city: "",
+        state: "",
+        country: "India",
+      },
+      picture: null,
+      signature: null,
     });
   };
 
