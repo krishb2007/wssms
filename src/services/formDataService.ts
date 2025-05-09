@@ -16,6 +16,9 @@ interface FormEntry {
   };
   picture: string | null;
   signature: string | null;
+  startTime?: string;
+  endTime?: string;
+  visitCount?: number;
   timestamp: string;
 }
 
@@ -24,25 +27,37 @@ export const saveFormData = (formData: Omit<FormEntry, 'id' | 'timestamp'>): For
   let pictureData: string | null = null;
   let signatureData: string | null = null;
   
-  if (formData.picture instanceof File) {
-    pictureData = URL.createObjectURL(formData.picture);
+  // For picture handling
+  if (formData.picture && typeof formData.picture !== 'string') {
+    pictureData = URL.createObjectURL(formData.picture as unknown as Blob);
+  } else if (typeof formData.picture === 'string') {
+    pictureData = formData.picture;
   }
   
-  if (formData.signature instanceof File) {
-    signatureData = URL.createObjectURL(formData.signature);
+  // For signature handling
+  if (formData.signature && typeof formData.signature !== 'string') {
+    signatureData = URL.createObjectURL(formData.signature as unknown as Blob);
+  } else if (typeof formData.signature === 'string') {
+    signatureData = formData.signature;
   }
+  
+  // Get existing entries to check visit count
+  const existingEntriesStr = localStorage.getItem('formEntries') || '[]';
+  const existingEntries: FormEntry[] = JSON.parse(existingEntriesStr);
+  
+  // Count previous visits by this person
+  const visitCount = existingEntries.filter(entry => 
+    entry.visitorName.toLowerCase() === formData.visitorName.toLowerCase()
+  ).length + 1; // +1 for current visit
   
   const entry: FormEntry = {
     id: Date.now().toString(),
     ...formData,
     picture: pictureData,
     signature: signatureData,
+    visitCount,
     timestamp: new Date().toISOString()
   };
-  
-  // Get existing entries
-  const existingEntriesStr = localStorage.getItem('formEntries') || '[]';
-  const existingEntries: FormEntry[] = JSON.parse(existingEntriesStr);
   
   // Add new entry
   existingEntries.push(entry);
@@ -62,6 +77,20 @@ export const getAllFormEntries = (): FormEntry[] => {
 export const getFormEntry = (id: string): FormEntry | undefined => {
   const entries = getAllFormEntries();
   return entries.find(entry => entry.id === id);
+};
+
+export const searchEntries = (query: string): FormEntry[] => {
+  if (!query.trim()) return getAllFormEntries();
+  
+  const entries = getAllFormEntries();
+  const lowerQuery = query.toLowerCase();
+  
+  return entries.filter(entry => 
+    entry.visitorName.toLowerCase().includes(lowerQuery) ||
+    entry.purpose.toLowerCase().includes(lowerQuery) ||
+    entry.phoneNumber.includes(lowerQuery) ||
+    entry.address.city.toLowerCase().includes(lowerQuery)
+  );
 };
 
 export const notifyAdmin = (entry: FormEntry) => {

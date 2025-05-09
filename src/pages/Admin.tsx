@@ -1,22 +1,30 @@
 
 import React, { useState, useEffect } from "react";
-import { getAllFormEntries } from "@/services/formDataService";
+import { getAllFormEntries, searchEntries } from "@/services/formDataService";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Badge } from "@/components/ui/badge";
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
+import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
+import { Input } from "@/components/ui/input";
 import { format } from "date-fns";
+import { Search } from "lucide-react";
 
 const Admin = () => {
   const [entries, setEntries] = useState<ReturnType<typeof getAllFormEntries>>([]);
   const [selectedEntry, setSelectedEntry] = useState<(typeof entries)[0] | null>(null);
+  const [searchQuery, setSearchQuery] = useState("");
 
   useEffect(() => {
     // Load entries when component mounts
     const loadEntries = () => {
-      const allEntries = getAllFormEntries();
-      setEntries(allEntries);
+      if (searchQuery.trim()) {
+        const results = searchEntries(searchQuery);
+        setEntries(results);
+      } else {
+        const allEntries = getAllFormEntries();
+        setEntries(allEntries);
+      }
     };
 
     loadEntries();
@@ -25,7 +33,7 @@ const Admin = () => {
     const intervalId = setInterval(loadEntries, 30000);
     
     return () => clearInterval(intervalId);
-  }, []);
+  }, [searchQuery]);
 
   // Get background notification permission
   useEffect(() => {
@@ -42,14 +50,42 @@ const Admin = () => {
     }
   };
 
+  const handleSearch = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (searchQuery.trim()) {
+      const results = searchEntries(searchQuery);
+      setEntries(results);
+    } else {
+      setEntries(getAllFormEntries());
+    }
+  };
+
   return (
     <div className="container mx-auto px-4 py-8">
       <div className="flex justify-between items-center mb-6">
         <h1 className="text-3xl font-bold">Admin Dashboard</h1>
-        <Button onClick={() => setEntries(getAllFormEntries())}>
+        <Button onClick={() => {
+          setSearchQuery("");
+          setEntries(getAllFormEntries());
+        }}>
           Refresh
         </Button>
       </div>
+
+      <Card className="p-6 mb-6">
+        <form onSubmit={handleSearch} className="flex gap-2 mb-4">
+          <Input
+            placeholder="Search by name, purpose, phone..."
+            value={searchQuery}
+            onChange={(e) => setSearchQuery(e.target.value)}
+            className="flex-1"
+          />
+          <Button type="submit">
+            <Search className="h-4 w-4 mr-2" />
+            Search
+          </Button>
+        </form>
+      </Card>
 
       <Card className="p-6">
         <h2 className="text-xl font-semibold mb-4">Recent Registrations</h2>
@@ -67,6 +103,7 @@ const Admin = () => {
                   <TableHead>Visitor Name</TableHead>
                   <TableHead>Purpose</TableHead>
                   <TableHead>People</TableHead>
+                  <TableHead>Visit Count</TableHead>
                   <TableHead>Contact</TableHead>
                   <TableHead>Actions</TableHead>
                 </TableRow>
@@ -84,6 +121,9 @@ const Admin = () => {
                       </Badge>
                     </TableCell>
                     <TableCell>{entry.numberOfPeople}</TableCell>
+                    <TableCell>
+                      <Badge variant="outline">{entry.visitCount || 1}</Badge>
+                    </TableCell>
                     <TableCell>{entry.phoneNumber}</TableCell>
                     <TableCell>
                       <Dialog>
@@ -99,6 +139,7 @@ const Admin = () => {
                         <DialogContent className="max-w-3xl">
                           <DialogHeader>
                             <DialogTitle>Registration Details</DialogTitle>
+                            <DialogDescription>Complete details about this visitor registration.</DialogDescription>
                           </DialogHeader>
                           {selectedEntry && (
                             <div className="space-y-6 max-h-[70vh] overflow-y-auto">
@@ -106,7 +147,14 @@ const Admin = () => {
                                 <h3 className="font-semibold text-lg">Visitor Information</h3>
                                 <p className="text-sm">Name: {selectedEntry.visitorName}</p>
                                 <p className="text-sm">School: {selectedEntry.schoolName}</p>
+                                <p className="text-sm">Visit Count: {selectedEntry.visitCount || 1}</p>
                                 <p className="text-sm">Registered: {formatDate(selectedEntry.timestamp)}</p>
+                              </div>
+                              
+                              <div>
+                                <h3 className="font-semibold text-lg">Visit Duration</h3>
+                                <p className="text-sm">Start: {selectedEntry.startTime ? formatDate(selectedEntry.startTime) : 'Not specified'}</p>
+                                <p className="text-sm">End: {selectedEntry.endTime ? formatDate(selectedEntry.endTime) : 'Not specified'}</p>
                               </div>
                               
                               <div>
@@ -137,9 +185,9 @@ const Admin = () => {
                               <div>
                                 <h3 className="font-semibold text-lg">Address</h3>
                                 <p className="text-sm">
-                                  {selectedEntry.address.city}, 
-                                  {selectedEntry.address.state ? `${selectedEntry.address.state}, ` : ''} 
-                                  {selectedEntry.address.country}
+                                  {selectedEntry.address.city}
+                                  {selectedEntry.address.state ? `, ${selectedEntry.address.state}` : ''} 
+                                  {selectedEntry.address.country ? `, ${selectedEntry.address.country}` : ''}
                                 </p>
                               </div>
                               

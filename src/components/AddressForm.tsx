@@ -1,5 +1,5 @@
 
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -60,7 +60,12 @@ const AddressForm: React.FC<AddressFormProps> = ({
   nextStep,
   prevStep,
 }) => {
-  const [selectedCountry, setSelectedCountry] = useState(formData.address.country || "");
+  const [selectedCountry, setSelectedCountry] = useState(formData.address.country || "India");
+
+  // Initialize state when component loads
+  useEffect(() => {
+    setSelectedCountry(formData.address.country || "India");
+  }, [formData.address.country]);
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -80,10 +85,9 @@ const AddressForm: React.FC<AddressFormProps> = ({
     setSelectedCountry(value);
     handleAddressChange("country", value);
     
-    // Reset city and state if country changes
+    // Reset state if country changes and it's not India
     if (value !== "India") {
       handleAddressChange("state", "");
-      handleAddressChange("city", "");
     }
   };
 
@@ -110,33 +114,27 @@ const AddressForm: React.FC<AddressFormProps> = ({
           </Select>
         </div>
 
-        {selectedCountry === "India" ? (
-          <>
-            <div className="space-y-2">
-              <Label htmlFor="state">State</Label>
-              <Select
-                value={formData.address.state}
-                onValueChange={(value) => {
-                  handleAddressChange("state", value);
-                  // Reset city when state changes
-                  handleAddressChange("city", "");
-                }}
-                required
-              >
-                <SelectTrigger id="state" className="w-full">
-                  <SelectValue placeholder="Select state" />
-                </SelectTrigger>
-                <SelectContent>
-                  {indianStates.map((state) => (
-                    <SelectItem key={state} value={state}>
-                      {state}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            </div>
-          </>
-        ) : null}
+        {selectedCountry === "India" && (
+          <div className="space-y-2">
+            <Label htmlFor="state">State</Label>
+            <Select
+              value={formData.address.state}
+              onValueChange={(value) => handleAddressChange("state", value)}
+              required
+            >
+              <SelectTrigger id="state" className="w-full">
+                <SelectValue placeholder="Select state" />
+              </SelectTrigger>
+              <SelectContent>
+                {indianStates.map((state) => (
+                  <SelectItem key={state} value={state}>
+                    {state}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </div>
+        )}
 
         <div className="space-y-2">
           <Label htmlFor="city">City</Label>

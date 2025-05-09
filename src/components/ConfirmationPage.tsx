@@ -2,6 +2,7 @@
 import React from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
+import { format } from "date-fns";
 
 interface ConfirmationPageProps {
   formData: {
@@ -19,6 +20,8 @@ interface ConfirmationPageProps {
     signature: File | null;
     purpose: string;
     otherPurpose: string;
+    startTime: string;
+    endTime: string;
   };
   prevStep: () => void;
   handleSubmit: () => void;
@@ -43,6 +46,16 @@ const ConfirmationPage: React.FC<ConfirmationPageProps> = ({
     };
     
     return purposeMap[purpose] || purpose.charAt(0).toUpperCase() + purpose.slice(1);
+  };
+
+  // Helper function to format date
+  const formatDate = (dateString: string) => {
+    if (!dateString) return "Not specified";
+    try {
+      return format(new Date(dateString), 'MMM dd, yyyy - HH:mm');
+    } catch (e) {
+      return dateString;
+    }
   };
 
   return (
@@ -79,6 +92,12 @@ const ConfirmationPage: React.FC<ConfirmationPageProps> = ({
             </div>
 
             <div>
+              <h4 className="font-semibold">Visit Duration</h4>
+              <p className="text-sm">Start: {formatDate(formData.startTime)}</p>
+              <p className="text-sm">End: {formatDate(formData.endTime)}</p>
+            </div>
+
+            <div>
               <h4 className="font-semibold">Contact Information</h4>
               <p className="text-sm">{formData.phoneNumber}</p>
             </div>
@@ -86,7 +105,9 @@ const ConfirmationPage: React.FC<ConfirmationPageProps> = ({
             <div>
               <h4 className="font-semibold">Address</h4>
               <p className="text-sm">
-                {formData.address.city}, {formData.address.state}, {formData.address.country}
+                {formData.address.city}
+                {formData.address.state ? `, ${formData.address.state}` : ''}
+                {formData.address.country ? `, ${formData.address.country}` : ''}
               </p>
             </div>
 
