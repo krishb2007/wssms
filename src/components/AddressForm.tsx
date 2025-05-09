@@ -14,7 +14,7 @@ interface AddressFormProps {
       country: string;
     };
   };
-  updateFormData: (data: Partial<typeof formData>) => void;
+  updateFormData: (data: Partial<{ address: { city: string; state: string; country: string } }>) => void;
   nextStep: () => void;
   prevStep: () => void;
 }
@@ -95,6 +95,7 @@ const AddressForm: React.FC<AddressFormProps> = ({
           <Select 
             value={selectedCountry} 
             onValueChange={handleCountryChange}
+            required
           >
             <SelectTrigger id="country" className="w-full">
               <SelectValue placeholder="Select country" />
@@ -120,6 +121,7 @@ const AddressForm: React.FC<AddressFormProps> = ({
                   // Reset city when state changes
                   handleAddressChange("city", "");
                 }}
+                required
               >
                 <SelectTrigger id="state" className="w-full">
                   <SelectValue placeholder="Select state" />
@@ -134,20 +136,7 @@ const AddressForm: React.FC<AddressFormProps> = ({
               </Select>
             </div>
           </>
-        ) : (
-          <>
-            <div className="space-y-2">
-              <Label htmlFor="state">State/Province/Region</Label>
-              <Input
-                id="state"
-                value={formData.address.state}
-                onChange={(e) => handleAddressChange("state", e.target.value)}
-                placeholder="Enter state/province/region"
-                required
-              />
-            </div>
-          </>
-        )}
+        ) : null}
 
         <div className="space-y-2">
           <Label htmlFor="city">City</Label>

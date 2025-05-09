@@ -3,14 +3,14 @@ import React, { useState, useRef, useEffect } from "react";
 import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
 import { toast } from "@/components/ui/use-toast";
-import { Camera, Signature } from "lucide-react";
+import { Camera } from "lucide-react";
 
 interface UploadFormProps {
   formData: {
     picture: File | null;
     signature: File | null;
   };
-  updateFormData: (data: Partial<typeof formData>) => void;
+  updateFormData: (data: Partial<{ picture: File | null; signature: File | null }>) => void;
   nextStep: () => void;
   prevStep: () => void;
 }
@@ -23,18 +23,13 @@ const UploadForm: React.FC<UploadFormProps> = ({
 }) => {
   const videoRef = useRef<HTMLVideoElement>(null);
   const canvasRef = useRef<HTMLCanvasElement>(null);
-  const signatureCanvasRef = useRef<HTMLCanvasElement>(null);
   
   const [picturePreview, setPicturePreview] = useState<string | null>(null);
-  const [signaturePreview, setSignaturePreview] = useState<string | null>(null);
-  const [isDrawing, setIsDrawing] = useState(false);
   const [showCamera, setShowCamera] = useState(true); // Auto-start camera
-  const [lastPos, setLastPos] = useState({ x: 0, y: 0 });
 
   // Auto-start camera on component mount
   useEffect(() => {
     setupCamera();
-    initializeSignaturePad();
   }, []);
 
   // Camera setup
@@ -89,92 +84,13 @@ const UploadForm: React.FC<UploadFormProps> = ({
     }
   };
 
-  // Signature pad
-  const initializeSignaturePad = () => {
-    if (signatureCanvasRef.current) {
-      const canvas = signatureCanvasRef.current;
-      const ctx = canvas.getContext("2d");
-      if (ctx) {
-        ctx.lineWidth = 2;
-        ctx.lineCap = "round";
-        ctx.strokeStyle = "black";
-      }
-    }
-  };
-
-  const startDrawing = (e: React.MouseEvent | React.TouchEvent) => {
-    setIsDrawing(true);
-    const { x, y } = getPointerPosition(e);
-    setLastPos({ x, y });
-  };
-
-  const draw = (e: React.MouseEvent | React.TouchEvent) => {
-    if (!isDrawing || !signatureCanvasRef.current) return;
-    
-    const ctx = signatureCanvasRef.current.getContext("2d");
-    if (!ctx) return;
-    
-    const { x, y } = getPointerPosition(e);
-    
-    ctx.beginPath();
-    ctx.moveTo(lastPos.x, lastPos.y);
-    ctx.lineTo(x, y);
-    ctx.stroke();
-    
-    setLastPos({ x, y });
-  };
-
-  const stopDrawing = () => {
-    setIsDrawing(false);
-    
-    if (signatureCanvasRef.current) {
-      signatureCanvasRef.current.toBlob((blob) => {
-        if (blob) {
-          const file = new File([blob], "signature.png", { type: "image/png" });
-          updateFormData({ signature: file });
-          setSignaturePreview(URL.createObjectURL(blob));
-        }
-      });
-    }
-  };
-
-  const getPointerPosition = (e: React.MouseEvent | React.TouchEvent) => {
-    if (!signatureCanvasRef.current) return { x: 0, y: 0 };
-    
-    const rect = signatureCanvasRef.current.getBoundingClientRect();
-    let x, y;
-    
-    if ('touches' in e) {
-      // Touch event
-      x = e.touches[0].clientX - rect.left;
-      y = e.touches[0].clientY - rect.top;
-    } else {
-      // Mouse event
-      x = e.clientX - rect.left;
-      y = e.clientY - rect.top;
-    }
-    
-    return { x, y };
-  };
-
-  const clearSignature = () => {
-    if (signatureCanvasRef.current) {
-      const ctx = signatureCanvasRef.current.getContext("2d");
-      if (ctx) {
-        ctx.clearRect(0, 0, signatureCanvasRef.current.width, signatureCanvasRef.current.height);
-        setSignaturePreview(null);
-        updateFormData({ signature: null });
-      }
-    }
-  };
-
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     
-    if (!formData.picture || !formData.signature) {
+    if (!formData.picture) {
       toast({
-        title: "Missing Files",
-        description: "Please provide both a picture and signature",
+        title: "Missing Photo",
+        description: "Please provide your photograph",
         variant: "destructive",
       });
       return;
@@ -231,37 +147,6 @@ const UploadForm: React.FC<UploadFormProps> = ({
               </Button>
             )}
             <canvas ref={canvasRef} className="hidden" />
-          </div>
-        </div>
-
-        <div className="space-y-4">
-          <Label htmlFor="signature">Your Signature</Label>
-          <div className="flex flex-col items-center">
-            <div className="w-full border-2 border-gray-300 rounded-lg bg-white">
-              <canvas 
-                ref={signatureCanvasRef} 
-                width="400" 
-                height="150" 
-                className="w-full touch-none"
-                onMouseDown={startDrawing}
-                onMouseMove={draw}
-                onMouseUp={stopDrawing}
-                onMouseLeave={stopDrawing}
-                onTouchStart={startDrawing}
-                onTouchMove={draw}
-                onTouchEnd={stopDrawing}
-              />
-            </div>
-            <div className="mt-2 flex justify-center">
-              <Button
-                type="button"
-                variant="outline"
-                onClick={clearSignature}
-                className="mt-2"
-              >
-                <Signature className="mr-2" /> Clear Signature
-              </Button>
-            </div>
           </div>
         </div>
 

@@ -10,7 +10,7 @@ interface PurposeFormProps {
     purpose: string;
     otherPurpose: string;
   };
-  updateFormData: (data: Partial<typeof formData>) => void;
+  updateFormData: (data: Partial<{ purpose: string; otherPurpose: string }>) => void;
   nextStep: () => void;
   prevStep: () => void;
 }
