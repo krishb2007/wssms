@@ -1,15 +1,14 @@
 
 import React, { useState } from "react";
-import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { MapPin } from "lucide-react";
 
 interface AddressFormProps {
   formData: {
     address: {
-      street: string;
       city: string;
       state: string;
       country: string;
@@ -91,17 +90,6 @@ const AddressForm: React.FC<AddressFormProps> = ({
   return (
     <form onSubmit={handleSubmit}>
       <div className="space-y-6">
-        <div className="space-y-2">
-          <Label htmlFor="street">Street Address</Label>
-          <Input
-            id="street"
-            value={formData.address.street}
-            onChange={(e) => handleAddressChange("street", e.target.value)}
-            placeholder="Enter street address"
-            required
-          />
-        </div>
-
         <div className="space-y-2">
           <Label htmlFor="country">Country</Label>
           <Select 

@@ -7,6 +7,7 @@ import PurposeForm from "@/components/PurposeForm";
 import ContactInfoForm from "@/components/ContactInfoForm";
 import AddressForm from "@/components/AddressForm";
 import UploadForm from "@/components/UploadForm";
+import SignatureForm from "@/components/SignatureForm";
 import ConfirmationPage from "@/components/ConfirmationPage";
 import { toast } from "@/components/ui/use-toast";
 
@@ -22,7 +23,6 @@ const Index = () => {
     phoneNumber: "",
     verifiedOtp: false,
     address: {
-      street: "",
       city: "",
       state: "",
       country: "India", // Default country selection
@@ -36,10 +36,10 @@ const Index = () => {
   };
 
   const nextStep = () => {
-    if (step < 8) {
+    if (step < 9) {
       let nextStepValue = step + 1;
       
-      // Skip "PeopleInfoForm" name entry if only 1 person
+      // Skip "PeopleInfoForm" if only 1 person
       if (step === 2 && formData.numberOfPeople === 1) {
         nextStepValue = 4; // Skip to purpose form
       }
@@ -53,7 +53,7 @@ const Index = () => {
     if (step > 1) {
       let prevStepValue = step - 1;
       
-      // Skip back over "PeopleInfoForm" name entry if only 1 person
+      // Skip back over "PeopleInfoForm" if only 1 person
       if (step === 4 && formData.numberOfPeople === 1) {
         prevStepValue = 2; // Go back to name form
       }
@@ -63,33 +63,51 @@ const Index = () => {
     }
   };
 
-  const handleSubmit = () => {
+  const handleSubmit = async () => {
     // Here you would typically send the data to your backend
     console.log("Final form data:", formData);
-    toast({
-      title: "Registration Complete",
-      description: "Your registration has been submitted successfully!",
-    });
-    // Reset form after submission
-    setStep(1);
-    setFormData({
-      visitorName: "",
-      schoolName: "Woodstock School",
-      numberOfPeople: 1,
-      people: [{ name: "", role: "" }],
-      purpose: "",
-      otherPurpose: "",
-      phoneNumber: "",
-      verifiedOtp: false,
-      address: {
-        street: "",
-        city: "",
-        state: "",
-        country: "India",
-      },
-      picture: null,
-      signature: null,
-    });
+    
+    // For demonstration purposes, let's simulate sending to a backend
+    try {
+      // In a real implementation, this would be a fetch call to your API
+      // await fetch('your-backend-api/register', {
+      //   method: 'POST',
+      //   headers: { 'Content-Type': 'application/json' },
+      //   body: JSON.stringify(formData)
+      // });
+      
+      toast({
+        title: "Registration Complete",
+        description: "Your registration has been submitted successfully!",
+      });
+      
+      // Reset form after submission
+      setStep(1);
+      setFormData({
+        visitorName: "",
+        schoolName: "Woodstock School",
+        numberOfPeople: 1,
+        people: [{ name: "", role: "" }],
+        purpose: "",
+        otherPurpose: "",
+        phoneNumber: "",
+        verifiedOtp: false,
+        address: {
+          city: "",
+          state: "",
+          country: "India",
+        },
+        picture: null,
+        signature: null,
+      });
+    } catch (error) {
+      console.error("Error submitting form:", error);
+      toast({
+        title: "Error",
+        description: "There was a problem submitting your registration.",
+        variant: "destructive",
+      });
+    }
   };
 
   // Render the appropriate form based on the current step
@@ -153,6 +171,15 @@ const Index = () => {
         );
       case 8:
         return (
+          <SignatureForm
+            formData={formData}
+            updateFormData={updateFormData}
+            nextStep={nextStep}
+            prevStep={prevStep}
+          />
+        );
+      case 9:
+        return (
           <ConfirmationPage
             formData={formData}
             prevStep={prevStep}
@@ -180,12 +207,12 @@ const Index = () => {
                 Campus Registration Form
               </h2>
               <p className="mt-2 text-sm text-gray-600">
-                Step {step} of 8: {getStepName(step)}
+                Step {step} of 9: {getStepName(step)}
               </p>
               <div className="w-full bg-gray-200 h-2 mt-4 rounded-full">
                 <div 
                   className="bg-blue-600 h-2 rounded-full transition-all duration-300"
-                  style={{ width: `${(step / 8) * 100}%` }}
+                  style={{ width: `${(step / 9) * 100}%` }}
                 ></div>
               </div>
             </div>
@@ -213,8 +240,10 @@ const getStepName = (step: number): string => {
     case 6:
       return "Address Information";
     case 7:
-      return "Upload Documents";
+      return "Upload Photo";
     case 8:
+      return "Signature";
+    case 9:
       return "Review & Submit";
     default:
       return "";

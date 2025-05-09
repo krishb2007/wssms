@@ -42,6 +42,10 @@ const PurposeForm: React.FC<PurposeFormProps> = ({
             <SelectContent>
               <SelectItem value="visit">Visit</SelectItem>
               <SelectItem value="work">Work</SelectItem>
+              <SelectItem value="tourism">Tourism</SelectItem>
+              <SelectItem value="meeting">Meeting</SelectItem>
+              <SelectItem value="official_visit">Official Visit</SelectItem>
+              <SelectItem value="student_visit">Student Visit</SelectItem>
               <SelectItem value="other">Other</SelectItem>
             </SelectContent>
           </Select>

@@ -11,7 +11,6 @@ interface ConfirmationPageProps {
     people: Array<{ name: string; role: string }>;
     phoneNumber: string;
     address: {
-      street: string;
       city: string;
       state: string;
       country: string;
@@ -30,6 +29,22 @@ const ConfirmationPage: React.FC<ConfirmationPageProps> = ({
   prevStep,
   handleSubmit,
 }) => {
+  // Helper function to format purpose text
+  const formatPurpose = (purpose: string): string => {
+    if (purpose === "other") return formData.otherPurpose;
+    
+    const purposeMap: Record<string, string> = {
+      "visit": "Visit",
+      "work": "Work",
+      "tourism": "Tourism",
+      "meeting": "Meeting",
+      "official_visit": "Official Visit",
+      "student_visit": "Student Visit"
+    };
+    
+    return purposeMap[purpose] || purpose.charAt(0).toUpperCase() + purpose.slice(1);
+  };
+
   return (
     <div className="space-y-6">
       <div>
@@ -60,11 +75,7 @@ const ConfirmationPage: React.FC<ConfirmationPageProps> = ({
 
             <div>
               <h4 className="font-semibold">Purpose of Visit</h4>
-              <p className="text-sm">
-                {formData.purpose === "other" 
-                  ? formData.otherPurpose 
-                  : formData.purpose.charAt(0).toUpperCase() + formData.purpose.slice(1)}
-              </p>
+              <p className="text-sm">{formatPurpose(formData.purpose)}</p>
             </div>
 
             <div>
@@ -75,8 +86,7 @@ const ConfirmationPage: React.FC<ConfirmationPageProps> = ({
             <div>
               <h4 className="font-semibold">Address</h4>
               <p className="text-sm">
-                {formData.address.street}, {formData.address.city},{" "}
-                {formData.address.state}, {formData.address.country}
+                {formData.address.city}, {formData.address.state}, {formData.address.country}
               </p>
             </div>
 
