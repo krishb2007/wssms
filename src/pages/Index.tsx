@@ -1,4 +1,3 @@
-
 import React, { useState } from "react";
 import WelcomePage from "@/components/WelcomePage";
 import NameForm from "@/components/NameForm";
@@ -10,6 +9,7 @@ import UploadForm from "@/components/UploadForm";
 import SignatureForm from "@/components/SignatureForm";
 import ConfirmationPage from "@/components/ConfirmationPage";
 import { toast } from "@/components/ui/use-toast";
+import { saveFormData, notifyAdmin } from "@/services/formDataService";
 
 const Index = () => {
   const [step, setStep] = useState(1);
@@ -64,22 +64,22 @@ const Index = () => {
   };
 
   const handleSubmit = async () => {
-    // Here you would typically send the data to your backend
-    console.log("Final form data:", formData);
-    
-    // For demonstration purposes, let's simulate sending to a backend
     try {
-      // In a real implementation, this would be a fetch call to your API
-      // await fetch('your-backend-api/register', {
-      //   method: 'POST',
-      //   headers: { 'Content-Type': 'application/json' },
-      //   body: JSON.stringify(formData)
-      // });
+      // Save form data to our "database"
+      const savedEntry = saveFormData(formData);
+      
+      // Notify admin about the new entry
+      notifyAdmin(savedEntry);
       
       toast({
         title: "Registration Complete",
         description: "Your registration has been submitted successfully!",
       });
+      
+      // Request notification permission for demo purposes
+      if ('Notification' in window && Notification.permission === 'default') {
+        Notification.requestPermission();
+      }
       
       // Reset form after submission
       setStep(1);
@@ -110,7 +110,6 @@ const Index = () => {
     }
   };
 
-  // Render the appropriate form based on the current step
   const renderForm = () => {
     switch (step) {
       case 1:
@@ -224,7 +223,6 @@ const Index = () => {
   );
 };
 
-// Helper function to get step name
 const getStepName = (step: number): string => {
   switch (step) {
     case 1:
