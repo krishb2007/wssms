@@ -22,11 +22,14 @@ const DurationForm: React.FC<DurationFormProps> = ({
   prevStep,
 }) => {
   useEffect(() => {
-    // Set the start time to current time if not already set
+    // Set the start time to current time in IST if not already set
     if (!formData.startTime) {
+      // Create current date in IST (UTC+5:30)
       const now = new Date();
+      // Add 5 hours and 30 minutes to convert to IST
+      const istTime = new Date(now.getTime() + (5.5 * 60 * 60 * 1000));
       // Format the date and time to match the datetime-local input format
-      const formattedDateTime = now.toISOString().slice(0, 16);
+      const formattedDateTime = istTime.toISOString().slice(0, 16);
       updateFormData({ startTime: formattedDateTime });
     }
   }, []);
@@ -36,6 +39,20 @@ const DurationForm: React.FC<DurationFormProps> = ({
     nextStep();
   };
 
+  // Format the time to display in a user-friendly way
+  const formatTime = (dateTimeStr: string) => {
+    if (!dateTimeStr) return '';
+    
+    const date = new Date(dateTimeStr);
+    // Format to show only time in 12-hour format with AM/PM
+    return date.toLocaleTimeString('en-US', { 
+      hour: '2-digit', 
+      minute: '2-digit',
+      hour12: true,
+      timeZone: 'Asia/Kolkata' // IST timezone
+    });
+  };
+
   return (
     <form onSubmit={handleSubmit}>
       <div className="space-y-6">
@@ -43,13 +60,9 @@ const DurationForm: React.FC<DurationFormProps> = ({
         
         <div className="space-y-2">
           <Label htmlFor="startTime">Start Time (Current)</Label>
-          <Input
-            id="startTime"
-            type="datetime-local"
-            value={formData.startTime}
-            readOnly
-            className="bg-gray-100"
-          />
+          <div className="bg-gray-100 p-3 rounded border">
+            {formatTime(formData.startTime)}
+          </div>
           <p className="text-xs text-gray-500">
             Your visit starts now
           </p>
@@ -59,13 +72,22 @@ const DurationForm: React.FC<DurationFormProps> = ({
           <Label htmlFor="endTime">End Time</Label>
           <Input
             id="endTime"
-            type="datetime-local"
+            type="time"
             value={formData.endTime}
-            onChange={(e) => updateFormData({ endTime: e.target.value })}
+            onChange={(e) => {
+              // Get current date in IST
+              const now = new Date();
+              const istDate = new Date(now.getTime() + (5.5 * 60 * 60 * 1000));
+              const dateStr = istDate.toISOString().split('T')[0];
+              
+              // Combine date with selected time
+              const endDateTime = `${dateStr}T${e.target.value}:00`;
+              updateFormData({ endTime: endDateTime });
+            }}
             required
           />
           <p className="text-xs text-gray-500">
-            When will your visit end?
+            When will your visit end today?
           </p>
         </div>
 

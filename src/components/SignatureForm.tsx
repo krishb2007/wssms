@@ -1,14 +1,14 @@
-
 import React, { useRef, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Signature } from "lucide-react";
+import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
 
 interface SignatureFormProps {
   formData: {
     signature: File | null;
   };
-  updateFormData: (data: Partial<typeof formData>) => void;
+  updateFormData: (data: Partial<{ signature: File | null }>) => void;
   nextStep: () => void;
   prevStep: () => void;
 }
@@ -144,10 +144,44 @@ const SignatureForm: React.FC<SignatureFormProps> = ({
       <div className="space-y-6">
         <div>
           <h3 className="text-lg font-medium">Signature</h3>
-          <p className="text-sm text-gray-500 mt-1">Please sign below</p>
+          <p className="text-sm text-gray-500 mt-1">Please sign the Student Protection Form</p>
         </div>
         
-        <Card className="overflow-hidden">
+        <Accordion type="single" collapsible className="w-full">
+          <AccordionItem value="policy">
+            <AccordionTrigger className="text-blue-600">
+              Read Student Protection Policy
+            </AccordionTrigger>
+            <AccordionContent>
+              <div className="text-sm text-gray-700 space-y-3 px-1 py-2">
+                <p>
+                  <strong>Woodstock School Student Protection Policy</strong>
+                </p>
+                <p>
+                  Woodstock School is committed to the safety and wellbeing of all students. 
+                  By signing this form, you acknowledge that you have read and understood 
+                  the school's student protection guidelines.
+                </p>
+                <p>
+                  As a visitor to our campus, you agree to:
+                </p>
+                <ul className="list-disc pl-5 space-y-1">
+                  <li>Follow all campus safety protocols</li>
+                  <li>Respect student privacy and personal boundaries</li>
+                  <li>Report any concerns about student safety to staff immediately</li>
+                  <li>Remain in designated visitor areas unless escorted by staff</li>
+                  <li>Comply with all instructions from school security and staff</li>
+                </ul>
+                <p>
+                  The school reserves the right to refuse or terminate your visit at any time if these 
+                  guidelines are not respected.
+                </p>
+              </div>
+            </AccordionContent>
+          </AccordionItem>
+        </Accordion>
+        
+        <Card className="overflow-hidden mt-4">
           <CardContent className="p-6">
             {signaturePreview ? (
               <div className="flex flex-col items-center">
