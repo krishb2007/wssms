@@ -2,6 +2,7 @@
 import React, { useState } from "react";
 import WelcomePage from "@/components/WelcomePage";
 import NameForm from "@/components/NameForm";
+import NumberOfPeopleForm from "@/components/NumberOfPeopleForm"; 
 import PeopleInfoForm from "@/components/PeopleInfoForm";
 import PurposeForm from "@/components/PurposeForm";
 import DurationForm from "@/components/DurationForm";
@@ -31,8 +32,8 @@ const Index = () => {
       state: "",
       country: "India", // Default country selection
     },
-    picture: null as string | null,
-    signature: null as string | null,
+    picture: null as File | string | null,
+    signature: null as File | string | null,
   });
 
   const updateFormData = (data: Partial<typeof formData>) => {
@@ -40,12 +41,12 @@ const Index = () => {
   };
 
   const nextStep = () => {
-    if (step < 10) {
+    if (step < 11) {
       let nextStepValue = step + 1;
       
       // Skip "PeopleInfoForm" if only 1 person
-      if (step === 2 && formData.numberOfPeople === 1) {
-        nextStepValue = 4; // Skip to purpose form
+      if (step === 3 && formData.numberOfPeople === 1) {
+        nextStepValue = 5; // Skip to purpose form
       }
       
       setStep(nextStepValue);
@@ -58,8 +59,8 @@ const Index = () => {
       let prevStepValue = step - 1;
       
       // Skip back over "PeopleInfoForm" if only 1 person
-      if (step === 4 && formData.numberOfPeople === 1) {
-        prevStepValue = 2; // Go back to name form
+      if (step === 5 && formData.numberOfPeople === 1) {
+        prevStepValue = 3; // Go back to number of people form
       }
       
       setStep(prevStepValue);
@@ -70,7 +71,7 @@ const Index = () => {
   const handleSubmit = async () => {
     try {
       // Save form data to our "database"
-      const savedEntry = saveFormData(formData);
+      const savedEntry = saveFormData(formData as any);
       
       // Notify admin about the new entry
       notifyAdmin(savedEntry);
@@ -131,7 +132,7 @@ const Index = () => {
         );
       case 3:
         return (
-          <PeopleInfoForm
+          <NumberOfPeopleForm
             formData={formData}
             updateFormData={updateFormData}
             nextStep={nextStep}
@@ -140,7 +141,7 @@ const Index = () => {
         );
       case 4:
         return (
-          <PurposeForm
+          <PeopleInfoForm
             formData={formData}
             updateFormData={updateFormData}
             nextStep={nextStep}
@@ -149,7 +150,7 @@ const Index = () => {
         );
       case 5:
         return (
-          <DurationForm
+          <PurposeForm
             formData={formData}
             updateFormData={updateFormData}
             nextStep={nextStep}
@@ -158,7 +159,7 @@ const Index = () => {
         );
       case 6:
         return (
-          <ContactInfoForm
+          <DurationForm
             formData={formData}
             updateFormData={updateFormData}
             nextStep={nextStep}
@@ -167,7 +168,7 @@ const Index = () => {
         );
       case 7:
         return (
-          <AddressForm
+          <ContactInfoForm
             formData={formData}
             updateFormData={updateFormData}
             nextStep={nextStep}
@@ -176,7 +177,7 @@ const Index = () => {
         );
       case 8:
         return (
-          <UploadForm
+          <AddressForm
             formData={formData}
             updateFormData={updateFormData}
             nextStep={nextStep}
@@ -185,17 +186,26 @@ const Index = () => {
         );
       case 9:
         return (
-          <SignatureForm
+          <UploadForm
             formData={formData}
-            updateFormData={updateFormData}
+            updateFormData={updateFormData as any}
             nextStep={nextStep}
             prevStep={prevStep}
           />
         );
       case 10:
         return (
-          <ConfirmationPage
+          <SignatureForm
             formData={formData}
+            updateFormData={updateFormData as any}
+            nextStep={nextStep}
+            prevStep={prevStep}
+          />
+        );
+      case 11:
+        return (
+          <ConfirmationPage
+            formData={formData as any}
             prevStep={prevStep}
             handleSubmit={handleSubmit}
           />
@@ -221,12 +231,12 @@ const Index = () => {
                 Campus Registration Form
               </h2>
               <p className="mt-2 text-sm text-gray-600">
-                Step {step} of 10: {getStepName(step)}
+                Step {step} of 11: {getStepName(step)}
               </p>
               <div className="w-full bg-gray-200 h-2 mt-4 rounded-full">
                 <div 
                   className="bg-blue-600 h-2 rounded-full transition-all duration-300"
-                  style={{ width: `${(step / 10) * 100}%` }}
+                  style={{ width: `${(step / 11) * 100}%` }}
                 ></div>
               </div>
             </div>
@@ -245,20 +255,22 @@ const getStepName = (step: number): string => {
     case 2:
       return "Your Name";
     case 3:
-      return "People Information";
+      return "Number of Visitors";
     case 4:
-      return "Purpose of Visit";
+      return "Additional Visitors";
     case 5:
-      return "Visit Duration";
+      return "Purpose of Visit";
     case 6:
-      return "Contact Details";
+      return "Visit Duration";
     case 7:
-      return "Address Information";
+      return "Contact Details";
     case 8:
-      return "Upload Photo";
+      return "Address Information";
     case 9:
-      return "Signature";
+      return "Upload Photo";
     case 10:
+      return "Signature";
+    case 11:
       return "Review & Submit";
     default:
       return "";

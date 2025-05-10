@@ -1,54 +1,32 @@
 
-import React, { useEffect } from "react";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
+import React from "react";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent } from "@/components/ui/card";
+import { Label } from "@/components/ui/label";
 import { Plus, Minus, Users } from "lucide-react";
 
-interface Person {
-  name: string;
-  role: string;
-}
-
-interface PeopleInfoFormProps {
+interface NumberOfPeopleFormProps {
   formData: {
     numberOfPeople: number;
-    people: Person[];
+    people: Array<{ name: string; role: string }>;
     visitorName: string;
   };
   updateFormData: (data: Partial<{ 
-    numberOfPeople: number;
-    people: Person[];
+    numberOfPeople: number; 
+    people: Array<{ name: string; role: string }>; 
   }>) => void;
   nextStep: () => void;
   prevStep: () => void;
 }
 
-const PeopleInfoForm: React.FC<PeopleInfoFormProps> = ({
+const NumberOfPeopleForm: React.FC<NumberOfPeopleFormProps> = ({
   formData,
   updateFormData,
   nextStep,
   prevStep,
 }) => {
-  // Initialize first person with visitor's name
-  useEffect(() => {
-    if (formData.people.length > 0 && formData.people[0].name === "" && formData.visitorName) {
-      const updatedPeople = [...formData.people];
-      updatedPeople[0] = { ...updatedPeople[0], name: formData.visitorName };
-      updateFormData({ people: updatedPeople });
-    }
-  }, [formData.visitorName]);
-
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     nextStep();
-  };
-
-  const handlePersonChange = (index: number, field: keyof Person, value: string) => {
-    const updatedPeople = [...formData.people];
-    updatedPeople[index] = { ...updatedPeople[index], [field]: value };
-    updateFormData({ people: updatedPeople });
   };
 
   const increaseNumberOfPeople = () => {
@@ -65,7 +43,7 @@ const PeopleInfoForm: React.FC<PeopleInfoFormProps> = ({
 
   const handleNumberOfPeopleChange = (value: number) => {
     if (value >= 1) {
-      // Create or maintain existing people entries when changing number of people
+      // Create or maintain existing people entries
       const updatedPeople = Array(value).fill(0).map((_, i) => 
         i < formData.people.length 
           ? formData.people[i] 
@@ -73,6 +51,11 @@ const PeopleInfoForm: React.FC<PeopleInfoFormProps> = ({
             ? { name: formData.visitorName, role: "" }
             : { name: "", role: "" }
       );
+      
+      // Always ensure the first person is the visitor
+      if (formData.visitorName && (!updatedPeople[0] || !updatedPeople[0].name)) {
+        updatedPeople[0] = { name: formData.visitorName, role: "" };
+      }
       
       updateFormData({ 
         numberOfPeople: value,
@@ -84,7 +67,7 @@ const PeopleInfoForm: React.FC<PeopleInfoFormProps> = ({
   return (
     <form onSubmit={handleSubmit}>
       <div className="space-y-6">
-        <h3 className="text-lg font-medium">People Information</h3>
+        <h3 className="text-lg font-medium">Number of Visitors</h3>
         
         <div className="space-y-2">
           <Label>Number of Visitors (including yourself)</Label>
@@ -115,35 +98,9 @@ const PeopleInfoForm: React.FC<PeopleInfoFormProps> = ({
             </Button>
           </div>
           <p className="text-xs text-gray-500">
-            Enter the number of people visiting
+            Enter the total number of people in your group
           </p>
         </div>
-
-        {formData.numberOfPeople > 1 && (
-          <div className="space-y-4">
-            <h4 className="font-medium">Additional Visitors</h4>
-            
-            {Array.from({ length: formData.numberOfPeople - 1 }).map((_, index) => (
-              <Card key={index} className="overflow-hidden">
-                <CardContent className="pt-6">
-                  <div className="space-y-4">
-                    <div className="font-medium">Person {index + 2}</div>
-                    <div className="space-y-2">
-                      <Label htmlFor={`name-${index + 1}`}>Full Name</Label>
-                      <Input
-                        id={`name-${index + 1}`}
-                        value={formData.people[index + 1]?.name || ""}
-                        onChange={(e) => handlePersonChange(index + 1, "name", e.target.value)}
-                        placeholder="Enter full name"
-                        required
-                      />
-                    </div>
-                  </div>
-                </CardContent>
-              </Card>
-            ))}
-          </div>
-        )}
 
         <div className="pt-4 flex space-x-4">
           <Button
@@ -164,4 +121,4 @@ const PeopleInfoForm: React.FC<PeopleInfoFormProps> = ({
   );
 };
 
-export default PeopleInfoForm;
+export default NumberOfPeopleForm;
