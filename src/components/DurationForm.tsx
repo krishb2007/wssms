@@ -73,7 +73,7 @@ const DurationForm: React.FC<DurationFormProps> = ({
           <Input
             id="endTime"
             type="time"
-            value={formData.endTime}
+            value={formData.endTime ? new Date(formData.endTime).toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit', hour12: false }).substring(0, 5) : ""}
             onChange={(e) => {
               // Get current date in IST
               const now = new Date();

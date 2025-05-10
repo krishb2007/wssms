@@ -21,28 +21,45 @@ import {
   AlertDialogTitle,
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
+import { Spinner } from "@/components/ui/spinner";
+import { FormEntry } from "@/services/formDataService";
+import { useAuth } from "@/App";
 
 const Admin = () => {
-  const [entries, setEntries] = useState<ReturnType<typeof getAllFormEntries>>([]);
-  const [selectedEntry, setSelectedEntry] = useState<(typeof entries)[0] | null>(null);
+  const [entries, setEntries] = useState<FormEntry[]>([]);
+  const [selectedEntry, setSelectedEntry] = useState<FormEntry | null>(null);
   const [searchQuery, setSearchQuery] = useState("");
+  const [isLoading, setIsLoading] = useState(true);
+  const { user } = useAuth();
 
   useEffect(() => {
     // Load entries when component mounts
-    const loadEntries = () => {
-      if (searchQuery.trim()) {
-        const results = searchEntries(searchQuery);
-        setEntries(results);
-      } else {
-        const allEntries = getAllFormEntries();
-        setEntries(allEntries);
+    const loadEntries = async () => {
+      setIsLoading(true);
+      try {
+        if (searchQuery.trim()) {
+          const results = await searchEntries(searchQuery);
+          setEntries(results);
+        } else {
+          const allEntries = await getAllFormEntries();
+          setEntries(allEntries);
+        }
+      } catch (error) {
+        console.error("Error loading entries:", error);
+        toast({
+          title: "Error",
+          description: "Failed to load visitor entries. Please try again.",
+          variant: "destructive",
+        });
+      } finally {
+        setIsLoading(false);
       }
     };
 
     loadEntries();
     
     // Set up a refresh interval to check for new entries
-    const intervalId = setInterval(loadEntries, 30000);
+    const intervalId = setInterval(() => loadEntries(), 30000);
     
     return () => clearInterval(intervalId);
   }, [searchQuery]);
@@ -62,31 +79,75 @@ const Admin = () => {
     }
   };
 
-  const handleSearch = (e: React.FormEvent) => {
+  const handleSearch = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (searchQuery.trim()) {
-      const results = searchEntries(searchQuery);
-      setEntries(results);
-    } else {
-      setEntries(getAllFormEntries());
+    setIsLoading(true);
+    try {
+      if (searchQuery.trim()) {
+        const results = await searchEntries(searchQuery);
+        setEntries(results);
+      } else {
+        const allEntries = await getAllFormEntries();
+        setEntries(allEntries);
+      }
+    } catch (error) {
+      console.error("Error searching:", error);
+      toast({
+        title: "Error",
+        description: "Failed to search entries. Please try again.",
+        variant: "destructive",
+      });
+    } finally {
+      setIsLoading(false);
     }
   };
 
-  const handleDeleteEntry = (id: string) => {
-    const success = deleteFormEntry(id);
-    if (success) {
-      toast({
-        title: "Entry deleted",
-        description: "The visitor entry has been successfully removed.",
-      });
-      // Update the entries list
-      setEntries(entries.filter(entry => entry.id !== id));
-    } else {
+  const handleDeleteEntry = async (id: string) => {
+    try {
+      const success = await deleteFormEntry(id);
+      if (success) {
+        toast({
+          title: "Entry deleted",
+          description: "The visitor entry has been successfully removed.",
+        });
+        // Update the entries list
+        setEntries(entries.filter(entry => entry.id !== id));
+      } else {
+        toast({
+          title: "Error",
+          description: "There was a problem deleting the entry.",
+          variant: "destructive",
+        });
+      }
+    } catch (error) {
+      console.error("Error deleting entry:", error);
       toast({
         title: "Error",
-        description: "There was a problem deleting the entry.",
+        description: "Failed to delete the entry. Please try again.",
         variant: "destructive",
       });
+    }
+  };
+
+  const handleRefresh = async () => {
+    setSearchQuery("");
+    setIsLoading(true);
+    try {
+      const allEntries = await getAllFormEntries();
+      setEntries(allEntries);
+      toast({
+        title: "Refreshed",
+        description: "Visitor data has been updated.",
+      });
+    } catch (error) {
+      console.error("Error refreshing:", error);
+      toast({
+        title: "Error",
+        description: "Failed to refresh data. Please try again.",
+        variant: "destructive",
+      });
+    } finally {
+      setIsLoading(false);
     }
   };
 
@@ -94,12 +155,12 @@ const Admin = () => {
     <div className="container mx-auto px-4 py-8">
       <div className="flex justify-between items-center mb-6">
         <h1 className="text-3xl font-bold">Admin Dashboard</h1>
-        <Button onClick={() => {
-          setSearchQuery("");
-          setEntries(getAllFormEntries());
-        }}>
-          Refresh
-        </Button>
+        <div className="flex items-center gap-4">
+          <p className="text-sm">Logged in as: {user?.email}</p>
+          <Button onClick={handleRefresh}>
+            Refresh
+          </Button>
+        </div>
       </div>
 
       <Card className="p-6 mb-6">
@@ -110,7 +171,7 @@ const Admin = () => {
             onChange={(e) => setSearchQuery(e.target.value)}
             className="flex-1"
           />
-          <Button type="submit">
+          <Button type="submit" disabled={isLoading}>
             <Search className="h-4 w-4 mr-2" />
             Search
           </Button>
@@ -120,7 +181,11 @@ const Admin = () => {
       <Card className="p-6">
         <h2 className="text-xl font-semibold mb-4">Recent Registrations</h2>
         
-        {entries.length === 0 ? (
+        {isLoading ? (
+          <div className="flex justify-center py-12">
+            <Spinner size="lg" />
+          </div>
+        ) : entries.length === 0 ? (
           <div className="text-center py-12">
             <p className="text-gray-500">No registrations found</p>
           </div>
@@ -230,6 +295,17 @@ const Admin = () => {
                                         src={selectedEntry.picture} 
                                         alt="Visitor" 
                                         className="h-48 object-cover rounded-md" 
+                                      />
+                                    </div>
+                                  )}
+                                  
+                                  {selectedEntry.signature && (
+                                    <div>
+                                      <h3 className="font-semibold text-lg">Signature</h3>
+                                      <img 
+                                        src={selectedEntry.signature} 
+                                        alt="Signature" 
+                                        className="h-24 object-contain rounded-md bg-white border p-2" 
                                       />
                                     </div>
                                   )}

@@ -1,3 +1,4 @@
+
 import React, { useState } from "react";
 import WelcomePage from "@/components/WelcomePage";
 import NameForm from "@/components/NameForm";
@@ -11,9 +12,11 @@ import SignatureForm from "@/components/SignatureForm";
 import ConfirmationPage from "@/components/ConfirmationPage";
 import { toast } from "@/components/ui/use-toast";
 import { saveFormData, notifyAdmin } from "@/services/formDataService";
+import { Spinner } from "@/components/ui/spinner";
 
 const Index = () => {
   const [step, setStep] = useState(1);
+  const [isSubmitting, setIsSubmitting] = useState(false);
   const [formData, setFormData] = useState({
     visitorName: "",
     schoolName: "Woodstock School", // Default school name
@@ -56,8 +59,10 @@ const Index = () => {
 
   const handleSubmit = async () => {
     try {
-      // Save form data to our "database"
-      const savedEntry = saveFormData(formData);
+      setIsSubmitting(true);
+      
+      // Save form data to Supabase
+      const savedEntry = await saveFormData(formData);
       
       // Notify admin about the new entry
       notifyAdmin(savedEntry);
@@ -100,10 +105,21 @@ const Index = () => {
         description: "There was a problem submitting your registration.",
         variant: "destructive",
       });
+    } finally {
+      setIsSubmitting(false);
     }
   };
 
   const renderForm = () => {
+    if (isSubmitting) {
+      return (
+        <div className="flex flex-col items-center justify-center py-12">
+          <Spinner size="lg" />
+          <p className="mt-4 text-lg">Submitting your registration...</p>
+        </div>
+      );
+    }
+
     switch (step) {
       case 1:
         return <WelcomePage nextStep={nextStep} />;
