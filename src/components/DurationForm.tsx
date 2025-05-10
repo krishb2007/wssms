@@ -1,5 +1,5 @@
 
-import React from "react";
+import React, { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
@@ -21,6 +21,16 @@ const DurationForm: React.FC<DurationFormProps> = ({
   nextStep,
   prevStep,
 }) => {
+  useEffect(() => {
+    // Set the start time to current time if not already set
+    if (!formData.startTime) {
+      const now = new Date();
+      // Format the date and time to match the datetime-local input format
+      const formattedDateTime = now.toISOString().slice(0, 16);
+      updateFormData({ startTime: formattedDateTime });
+    }
+  }, []);
+
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     nextStep();
@@ -32,16 +42,16 @@ const DurationForm: React.FC<DurationFormProps> = ({
         <h3 className="text-lg font-medium">Visit Duration</h3>
         
         <div className="space-y-2">
-          <Label htmlFor="startTime">Start Time</Label>
+          <Label htmlFor="startTime">Start Time (Current)</Label>
           <Input
             id="startTime"
             type="datetime-local"
             value={formData.startTime}
-            onChange={(e) => updateFormData({ startTime: e.target.value })}
-            required
+            readOnly
+            className="bg-gray-100"
           />
           <p className="text-xs text-gray-500">
-            When will your visit begin?
+            Your visit starts now
           </p>
         </div>
         

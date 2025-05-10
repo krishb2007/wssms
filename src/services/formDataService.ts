@@ -1,6 +1,6 @@
 
 // Mock database using localStorage
-interface FormEntry {
+export interface FormEntry {
   id: string;
   visitorName: string;
   schoolName: string;
@@ -77,6 +77,17 @@ export const getAllFormEntries = (): FormEntry[] => {
 export const getFormEntry = (id: string): FormEntry | undefined => {
   const entries = getAllFormEntries();
   return entries.find(entry => entry.id === id);
+};
+
+export const deleteFormEntry = (id: string): boolean => {
+  const entries = getAllFormEntries();
+  const updatedEntries = entries.filter(entry => entry.id !== id);
+  
+  if (updatedEntries.length < entries.length) {
+    localStorage.setItem('formEntries', JSON.stringify(updatedEntries));
+    return true;
+  }
+  return false;
 };
 
 export const searchEntries = (query: string): FormEntry[] => {

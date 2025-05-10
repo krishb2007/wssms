@@ -1,10 +1,10 @@
 
-import React from "react";
+import React, { useEffect } from "react";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
-import { ChevronUp, ChevronDown } from "lucide-react";
+import { ChevronUp, ChevronDown, Users } from "lucide-react";
 
 interface Person {
   name: string;
@@ -15,6 +15,7 @@ interface PeopleInfoFormProps {
   formData: {
     numberOfPeople: number;
     people: Person[];
+    visitorName: string;
   };
   updateFormData: (data: Partial<{ 
     numberOfPeople: number;
@@ -30,6 +31,15 @@ const PeopleInfoForm: React.FC<PeopleInfoFormProps> = ({
   nextStep,
   prevStep,
 }) => {
+  // Initialize first person with visitor's name
+  useEffect(() => {
+    if (formData.people.length > 0 && formData.people[0].name === "" && formData.visitorName) {
+      const updatedPeople = [...formData.people];
+      updatedPeople[0] = { ...updatedPeople[0], name: formData.visitorName };
+      updateFormData({ people: updatedPeople });
+    }
+  }, [formData.visitorName]);
+
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     nextStep();
@@ -61,7 +71,9 @@ const PeopleInfoForm: React.FC<PeopleInfoFormProps> = ({
       const updatedPeople = Array(value).fill(0).map((_, i) => 
         i < formData.people.length 
           ? formData.people[i] 
-          : { name: "", role: "" }
+          : i === 0 && formData.visitorName 
+            ? { name: formData.visitorName, role: "" }
+            : { name: "", role: "" }
       );
       
       updateFormData({ 
@@ -133,7 +145,7 @@ const PeopleInfoForm: React.FC<PeopleInfoFormProps> = ({
                         id={`name-${index}`}
                         value={formData.people[index]?.name || ""}
                         onChange={(e) => handlePersonChange(index, "name", e.target.value)}
-                        placeholder="Enter full name"
+                        placeholder={index === 0 ? "Your name (already filled)" : "Enter full name"}
                         required
                       />
                     </div>
@@ -154,6 +166,7 @@ const PeopleInfoForm: React.FC<PeopleInfoFormProps> = ({
             Back
           </Button>
           <Button type="submit" className="flex-1">
+            <Users className="mr-2 h-4 w-4" />
             Continue
           </Button>
         </div>

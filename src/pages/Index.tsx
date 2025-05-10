@@ -31,8 +31,8 @@ const Index = () => {
       state: "",
       country: "India", // Default country selection
     },
-    picture: null as File | null,
-    signature: null as File | null,
+    picture: null as string | null,
+    signature: null as string | null,
   });
 
   const updateFormData = (data: Partial<typeof formData>) => {

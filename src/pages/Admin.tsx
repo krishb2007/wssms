@@ -1,6 +1,6 @@
 
 import React, { useState, useEffect } from "react";
-import { getAllFormEntries, searchEntries } from "@/services/formDataService";
+import { getAllFormEntries, searchEntries, deleteFormEntry } from "@/services/formDataService";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
@@ -8,7 +8,19 @@ import { Badge } from "@/components/ui/badge";
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { format } from "date-fns";
-import { Search } from "lucide-react";
+import { Search, Trash2 } from "lucide-react";
+import { toast } from "@/components/ui/use-toast";
+import { 
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from "@/components/ui/alert-dialog";
 
 const Admin = () => {
   const [entries, setEntries] = useState<ReturnType<typeof getAllFormEntries>>([]);
@@ -57,6 +69,24 @@ const Admin = () => {
       setEntries(results);
     } else {
       setEntries(getAllFormEntries());
+    }
+  };
+
+  const handleDeleteEntry = (id: string) => {
+    const success = deleteFormEntry(id);
+    if (success) {
+      toast({
+        title: "Entry deleted",
+        description: "The visitor entry has been successfully removed.",
+      });
+      // Update the entries list
+      setEntries(entries.filter(entry => entry.id !== id));
+    } else {
+      toast({
+        title: "Error",
+        description: "There was a problem deleting the entry.",
+        variant: "destructive",
+      });
     }
   };
 
@@ -126,98 +156,116 @@ const Admin = () => {
                     </TableCell>
                     <TableCell>{entry.phoneNumber}</TableCell>
                     <TableCell>
-                      <Dialog>
-                        <DialogTrigger asChild>
-                          <Button 
-                            variant="outline" 
-                            size="sm" 
-                            onClick={() => setSelectedEntry(entry)}
-                          >
-                            View
-                          </Button>
-                        </DialogTrigger>
-                        <DialogContent className="max-w-3xl">
-                          <DialogHeader>
-                            <DialogTitle>Registration Details</DialogTitle>
-                            <DialogDescription>Complete details about this visitor registration.</DialogDescription>
-                          </DialogHeader>
-                          {selectedEntry && (
-                            <div className="space-y-6 max-h-[70vh] overflow-y-auto">
-                              <div>
-                                <h3 className="font-semibold text-lg">Visitor Information</h3>
-                                <p className="text-sm">Name: {selectedEntry.visitorName}</p>
-                                <p className="text-sm">School: {selectedEntry.schoolName}</p>
-                                <p className="text-sm">Visit Count: {selectedEntry.visitCount || 1}</p>
-                                <p className="text-sm">Registered: {formatDate(selectedEntry.timestamp)}</p>
-                              </div>
-                              
-                              <div>
-                                <h3 className="font-semibold text-lg">Visit Duration</h3>
-                                <p className="text-sm">Start: {selectedEntry.startTime ? formatDate(selectedEntry.startTime) : 'Not specified'}</p>
-                                <p className="text-sm">End: {selectedEntry.endTime ? formatDate(selectedEntry.endTime) : 'Not specified'}</p>
-                              </div>
-                              
-                              <div>
-                                <h3 className="font-semibold text-lg">People ({selectedEntry.numberOfPeople})</h3>
-                                <ul className="list-disc pl-5 text-sm">
-                                  {selectedEntry.people.map((person, idx) => (
-                                    <li key={idx}>
-                                      {person.name || selectedEntry.visitorName} {person.role ? `- ${person.role}` : ''}
-                                    </li>
-                                  ))}
-                                </ul>
-                              </div>
-                              
-                              <div>
-                                <h3 className="font-semibold text-lg">Purpose of Visit</h3>
-                                <p className="text-sm">
-                                  {selectedEntry.purpose === 'other' 
-                                    ? selectedEntry.otherPurpose 
-                                    : selectedEntry.purpose.replace('_', ' ')}
-                                </p>
-                              </div>
-                              
-                              <div>
-                                <h3 className="font-semibold text-lg">Contact Information</h3>
-                                <p className="text-sm">{selectedEntry.phoneNumber}</p>
-                              </div>
-                              
-                              <div>
-                                <h3 className="font-semibold text-lg">Address</h3>
-                                <p className="text-sm">
-                                  {selectedEntry.address.city}
-                                  {selectedEntry.address.state ? `, ${selectedEntry.address.state}` : ''} 
-                                  {selectedEntry.address.country ? `, ${selectedEntry.address.country}` : ''}
-                                </p>
-                              </div>
-                              
-                              <div className="grid grid-cols-2 gap-4">
-                                {selectedEntry.picture && (
-                                  <div>
-                                    <h3 className="font-semibold text-lg">Photo</h3>
-                                    <img 
-                                      src={selectedEntry.picture} 
-                                      alt="Visitor" 
-                                      className="h-48 object-cover rounded-md" 
-                                    />
-                                  </div>
-                                )}
+                      <div className="flex space-x-2">
+                        <Dialog>
+                          <DialogTrigger asChild>
+                            <Button 
+                              variant="outline" 
+                              size="sm" 
+                              onClick={() => setSelectedEntry(entry)}
+                            >
+                              View
+                            </Button>
+                          </DialogTrigger>
+                          <DialogContent className="max-w-3xl">
+                            <DialogHeader>
+                              <DialogTitle>Registration Details</DialogTitle>
+                              <DialogDescription>Complete details about this visitor registration.</DialogDescription>
+                            </DialogHeader>
+                            {selectedEntry && (
+                              <div className="space-y-6 max-h-[70vh] overflow-y-auto">
+                                <div>
+                                  <h3 className="font-semibold text-lg">Visitor Information</h3>
+                                  <p className="text-sm">Name: {selectedEntry.visitorName}</p>
+                                  <p className="text-sm">School: {selectedEntry.schoolName}</p>
+                                  <p className="text-sm">Visit Count: {selectedEntry.visitCount || 1}</p>
+                                  <p className="text-sm">Registered: {formatDate(selectedEntry.timestamp)}</p>
+                                </div>
                                 
-                                {selectedEntry.signature && (
-                                  <div>
-                                    <h3 className="font-semibold text-lg">Signature</h3>
-                                    <img 
-                                      src={selectedEntry.signature} 
-                                      alt="Signature" 
-                                      className="h-32 object-contain rounded-md bg-white" 
-                                    />
-                                  </div>
-                                )}
+                                <div>
+                                  <h3 className="font-semibold text-lg">Visit Duration</h3>
+                                  <p className="text-sm">Start: {selectedEntry.startTime ? formatDate(selectedEntry.startTime) : 'Not specified'}</p>
+                                  <p className="text-sm">End: {selectedEntry.endTime ? formatDate(selectedEntry.endTime) : 'Not specified'}</p>
+                                </div>
+                                
+                                <div>
+                                  <h3 className="font-semibold text-lg">People ({selectedEntry.numberOfPeople})</h3>
+                                  <ul className="list-disc pl-5 text-sm">
+                                    {selectedEntry.people.map((person, idx) => (
+                                      <li key={idx}>
+                                        {person.name || selectedEntry.visitorName} {person.role ? `- ${person.role}` : ''}
+                                      </li>
+                                    ))}
+                                  </ul>
+                                </div>
+                                
+                                <div>
+                                  <h3 className="font-semibold text-lg">Purpose of Visit</h3>
+                                  <p className="text-sm">
+                                    {selectedEntry.purpose === 'other' 
+                                      ? selectedEntry.otherPurpose 
+                                      : selectedEntry.purpose.replace('_', ' ')}
+                                  </p>
+                                </div>
+                                
+                                <div>
+                                  <h3 className="font-semibold text-lg">Contact Information</h3>
+                                  <p className="text-sm">{selectedEntry.phoneNumber}</p>
+                                </div>
+                                
+                                <div>
+                                  <h3 className="font-semibold text-lg">Address</h3>
+                                  <p className="text-sm">
+                                    {selectedEntry.address.city}
+                                    {selectedEntry.address.state ? `, ${selectedEntry.address.state}` : ''} 
+                                    {selectedEntry.address.country ? `, ${selectedEntry.address.country}` : ''}
+                                  </p>
+                                </div>
+                                
+                                <div className="grid grid-cols-2 gap-4">
+                                  {selectedEntry.picture && (
+                                    <div>
+                                      <h3 className="font-semibold text-lg">Photo</h3>
+                                      <img 
+                                        src={selectedEntry.picture} 
+                                        alt="Visitor" 
+                                        className="h-48 object-cover rounded-md" 
+                                      />
+                                    </div>
+                                  )}
+                                </div>
                               </div>
-                            </div>
-                          )}
-                        </DialogContent>
-                      </Dialog>
+                            )}
+                          </DialogContent>
+                        </Dialog>
+                        
+                        <AlertDialog>
+                          <AlertDialogTrigger asChild>
+                            <Button 
+                              variant="destructive" 
+                              size="sm"
+                            >
+                              <Trash2 className="h-4 w-4" />
+                            </Button>
+                          </AlertDialogTrigger>
+                          <AlertDialogContent>
+                            <AlertDialogHeader>
+                              <AlertDialogTitle>Delete Visitor Entry</AlertDialogTitle>
+                              <AlertDialogDescription>
+                                Are you sure you want to delete this visitor entry? This action cannot be undone.
+                              </AlertDialogDescription>
+                            </AlertDialogHeader>
+                            <AlertDialogFooter>
+                              <AlertDialogCancel>Cancel</AlertDialogCancel>
+                              <AlertDialogAction
+                                onClick={() => handleDeleteEntry(entry.id)}
+                              >
+                                Delete
+                              </AlertDialogAction>
+                            </AlertDialogFooter>
+                          </AlertDialogContent>
+                        </AlertDialog>
+                      </div>
                     </TableCell>
                   </TableRow>
                 ))}
