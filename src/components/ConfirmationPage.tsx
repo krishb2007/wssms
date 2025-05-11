@@ -33,7 +33,7 @@ const ConfirmationPage: React.FC<ConfirmationPageProps> = ({
   prevStep,
   handleSubmit,
 }) => {
-  const [policyAgreed, setPolicyAgreed] = React.useState(false);
+ 
 
   // Helper function to format purpose text
   const formatPurpose = (purpose: string): string => {
@@ -169,14 +169,7 @@ const ConfirmationPage: React.FC<ConfirmationPageProps> = ({
   Submit Registration
 </Button>
         
-        <Button
-          type="button"
-          onClick={handleSubmit}
-          disabled={!policyAgreed}
-          className="flex-1"
-        >
-          Submit Registration
-        </Button>
+       
       </div>
     </div>
   );
