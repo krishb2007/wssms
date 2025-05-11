@@ -6,7 +6,7 @@ import { Label } from "@/components/ui/label";
 import { signIn, SignInCredentials } from "@/services/authService";
 import { toast } from "@/components/ui/use-toast";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Lock, LogIn } from "lucide-react";
+import { Lock, LogIn, Loader } from "lucide-react";
 
 interface LoginFormProps {
   onLoginSuccess: () => void;
@@ -18,27 +18,34 @@ const LoginForm: React.FC<LoginFormProps> = ({ onLoginSuccess }) => {
     password: "",
   });
   const [isLoading, setIsLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setCredentials({
       ...credentials,
       [e.target.name]: e.target.value,
     });
+    
+    // Clear error when user makes changes
+    if (error) setError(null);
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsLoading(true);
+    setError(null);
 
     try {
       const { user, error } = await signIn(credentials);
       
       if (error || !user) {
+        setError(error || "Invalid credentials. Please try again.");
         toast({
           title: "Login Failed",
           description: error || "Invalid credentials. Please try again.",
           variant: "destructive",
         });
+        setIsLoading(false);
         return;
       }
 
@@ -47,14 +54,19 @@ const LoginForm: React.FC<LoginFormProps> = ({ onLoginSuccess }) => {
         description: "You have been logged in successfully.",
       });
       
-      onLoginSuccess();
+      // Small delay to ensure authentication state is fully processed
+      setTimeout(() => {
+        onLoginSuccess();
+        setIsLoading(false);
+      }, 500);
+      
     } catch (error) {
+      setError("An unexpected error occurred. Please try again later.");
       toast({
         title: "Login Error",
         description: "An unexpected error occurred. Please try again later.",
         variant: "destructive",
       });
-    } finally {
       setIsLoading(false);
     }
   };
@@ -67,6 +79,12 @@ const LoginForm: React.FC<LoginFormProps> = ({ onLoginSuccess }) => {
         </CardHeader>
         <CardContent>
           <form onSubmit={handleSubmit} className="space-y-4">
+            {error && (
+              <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded relative">
+                {error}
+              </div>
+            )}
+            
             <div className="space-y-2">
               <Label htmlFor="email">Email</Label>
               <Input
@@ -77,8 +95,10 @@ const LoginForm: React.FC<LoginFormProps> = ({ onLoginSuccess }) => {
                 value={credentials.email}
                 onChange={handleChange}
                 required
+                disabled={isLoading}
               />
             </div>
+            
             <div className="space-y-2">
               <div className="flex justify-between">
                 <Label htmlFor="password">Password</Label>
@@ -91,15 +111,20 @@ const LoginForm: React.FC<LoginFormProps> = ({ onLoginSuccess }) => {
                 value={credentials.password}
                 onChange={handleChange}
                 required
+                disabled={isLoading}
               />
             </div>
+            
             <Button
               type="submit"
               className="w-full"
               disabled={isLoading}
             >
               {isLoading ? (
-                "Logging in..."
+                <>
+                  <Loader className="mr-2 h-4 w-4 animate-spin" />
+                  Logging in...
+                </>
               ) : (
                 <>
                   <LogIn className="mr-2 h-4 w-4" />

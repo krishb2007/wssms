@@ -1,5 +1,6 @@
 
 import { supabase } from "@/integrations/supabase/client";
+import { toast } from "@/components/ui/use-toast";
 
 export type SignUpCredentials = {
   email: string;
@@ -17,9 +18,39 @@ export type AuthUser = {
   role?: string;
 };
 
+// Helper function to clean up auth state and prevent auth limbo
+const cleanupAuthState = () => {
+  // Remove standard auth tokens
+  localStorage.removeItem('supabase.auth.token');
+  
+  // Remove all Supabase auth keys from localStorage
+  Object.keys(localStorage).forEach((key) => {
+    if (key.startsWith('supabase.auth.') || key.includes('sb-')) {
+      localStorage.removeItem(key);
+    }
+  });
+  
+  // Remove from sessionStorage if in use
+  Object.keys(sessionStorage || {}).forEach((key) => {
+    if (key.startsWith('supabase.auth.') || key.includes('sb-')) {
+      sessionStorage.removeItem(key);
+    }
+  });
+};
+
 // Sign up a new user
 export const signUp = async (credentials: SignUpCredentials): Promise<{ user: AuthUser | null; error: string | null }> => {
   try {
+    // Clean up any existing auth state
+    cleanupAuthState();
+    
+    // Try to sign out globally first
+    try {
+      await supabase.auth.signOut({ scope: 'global' });
+    } catch (err) {
+      // Ignore errors here and continue
+    }
+    
     const { data, error } = await supabase.auth.signUp({
       email: credentials.email,
       password: credentials.password,
@@ -63,6 +94,16 @@ export const signUp = async (credentials: SignUpCredentials): Promise<{ user: Au
 // Sign in an existing user
 export const signIn = async (credentials: SignInCredentials): Promise<{ user: AuthUser | null; error: string | null }> => {
   try {
+    // Clean up any existing auth state
+    cleanupAuthState();
+    
+    // Try to sign out globally first
+    try {
+      await supabase.auth.signOut({ scope: 'global' });
+    } catch (err) {
+      // Ignore errors here and continue
+    }
+    
     const { data, error } = await supabase.auth.signInWithPassword({
       email: credentials.email,
       password: credentials.password,
@@ -92,6 +133,14 @@ export const signIn = async (credentials: SignInCredentials): Promise<{ user: Au
       email: data.user.email || '',
       role: adminUser?.role || 'user'
     };
+    
+    // Force refresh to ensure clean state with new auth tokens
+    setTimeout(() => {
+      toast({
+        title: "Authentication successful",
+        description: "Redirecting to admin panel...",
+      });
+    }, 0);
 
     return { user: authUser, error: null };
   } catch (err) {
@@ -102,10 +151,17 @@ export const signIn = async (credentials: SignInCredentials): Promise<{ user: Au
 // Sign out the current user
 export const signOut = async (): Promise<{ error: string | null }> => {
   try {
-    const { error } = await supabase.auth.signOut();
+    // Clean up first
+    cleanupAuthState();
+    
+    const { error } = await supabase.auth.signOut({ scope: 'global' });
     if (error) {
       return { error: error.message };
     }
+    
+    // Force page reload for clean state
+    window.location.href = '/';
+    
     return { error: null };
   } catch (err) {
     return { error: "An unexpected error occurred during sign out" };

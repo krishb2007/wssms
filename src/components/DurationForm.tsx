@@ -1,9 +1,10 @@
 
-import React, { useEffect } from "react";
+import React, { useEffect, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
-import { Clock } from "lucide-react";
+import { Clock, ArrowRightLeft } from "lucide-react";
+import { format, differenceInMinutes } from "date-fns";
 
 interface DurationFormProps {
   formData: {
@@ -21,8 +22,10 @@ const DurationForm: React.FC<DurationFormProps> = ({
   nextStep,
   prevStep,
 }) => {
+  const [duration, setDuration] = useState<string>("");
+  
+  // Set the start time to current time in IST if not already set
   useEffect(() => {
-    // Set the start time to current time in IST if not already set
     if (!formData.startTime) {
       // Create current date in IST (UTC+5:30)
       const now = new Date();
@@ -34,8 +37,48 @@ const DurationForm: React.FC<DurationFormProps> = ({
     }
   }, []);
 
+  // Calculate duration whenever start or end time changes
+  useEffect(() => {
+    if (formData.startTime && formData.endTime) {
+      const start = new Date(formData.startTime);
+      const end = new Date(formData.endTime);
+      
+      if (end > start) {
+        const diffMinutes = differenceInMinutes(end, start);
+        const hours = Math.floor(diffMinutes / 60);
+        const minutes = diffMinutes % 60;
+        
+        let durationText = "";
+        if (hours > 0) {
+          durationText += `${hours} hour${hours > 1 ? 's' : ''}`;
+        }
+        if (minutes > 0) {
+          durationText += `${hours > 0 ? ' ' : ''}${minutes} minute${minutes > 1 ? 's' : ''}`;
+        }
+        
+        setDuration(durationText || "Less than a minute");
+      } else {
+        setDuration("End time must be after start time");
+      }
+    } else {
+      setDuration("");
+    }
+  }, [formData.startTime, formData.endTime]);
+
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
+    
+    // Validate that end time is after start time
+    if (formData.startTime && formData.endTime) {
+      const start = new Date(formData.startTime);
+      const end = new Date(formData.endTime);
+      
+      if (end <= start) {
+        // Don't proceed if end time is not after start time
+        return;
+      }
+    }
+    
     nextStep();
   };
 
@@ -45,18 +88,26 @@ const DurationForm: React.FC<DurationFormProps> = ({
     
     const date = new Date(dateTimeStr);
     // Format to show only time in 12-hour format with AM/PM
-    return date.toLocaleTimeString('en-US', { 
-      hour: '2-digit', 
-      minute: '2-digit',
-      hour12: true,
+    return format(date, 'hh:mm a', { 
       timeZone: 'Asia/Kolkata' // IST timezone
     });
+  };
+  
+  // Get current date in IST for display
+  const getCurrentDateIST = () => {
+    const now = new Date();
+    const istTime = new Date(now.getTime() + (5.5 * 60 * 60 * 1000));
+    return format(istTime, 'EEEE, MMMM d, yyyy');
   };
 
   return (
     <form onSubmit={handleSubmit}>
       <div className="space-y-6">
         <h3 className="text-lg font-medium">Visit Duration</h3>
+        
+        <div className="text-sm text-gray-500 mb-4">
+          Today: {getCurrentDateIST()}
+        </div>
         
         <div className="space-y-2">
           <Label htmlFor="startTime">Start Time (Current)</Label>
@@ -90,6 +141,16 @@ const DurationForm: React.FC<DurationFormProps> = ({
             When will your visit end today?
           </p>
         </div>
+        
+        {duration && (
+          <div className="bg-blue-50 border border-blue-200 rounded p-3 flex items-center">
+            <Clock className="h-4 w-4 text-blue-500 mr-2" />
+            <div>
+              <p className="text-sm text-blue-700">Visit Duration:</p>
+              <p className="font-medium">{duration}</p>
+            </div>
+          </div>
+        )}
 
         <div className="pt-4 flex space-x-4">
           <Button
@@ -100,7 +161,11 @@ const DurationForm: React.FC<DurationFormProps> = ({
           >
             Back
           </Button>
-          <Button type="submit" className="flex-1">
+          <Button 
+            type="submit" 
+            className="flex-1"
+            disabled={!formData.endTime || !duration || duration.includes("must be after")}
+          >
             <Clock className="mr-2 h-4 w-4" />
             Continue
           </Button>
