@@ -67,8 +67,6 @@ const DurationForm: React.FC<DurationFormProps> = ({
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    
-    // Since end time is optional, we can skip validation and simply proceed
     nextStep();
   };
 

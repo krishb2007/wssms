@@ -25,7 +25,7 @@ const Index = () => {
     purpose: "",
     otherPurpose: "",
     startTime: "",
-    endTime: null as string | null, // Modified to be optional
+    endTime: null as string | null, // Optional end time
     phoneNumber: "",
     verifiedOtp: false,
     address: {
@@ -60,6 +60,7 @@ const Index = () => {
   const handleSubmit = async () => {
     try {
       setIsSubmitting(true);
+      console.log("Submitting form data:", formData);
       
       // Prepare data for saving to database
       const dataToSave: Omit<FormEntry, 'id' | 'timestamp'> = {
@@ -75,11 +76,13 @@ const Index = () => {
         address: formData.address,
         picture: formData.picture,
         signature: formData.signature,
-        // No need to include visitCount or timestamp here
       };
+      
+      console.log("Data being sent to saveFormData:", dataToSave);
       
       // Save form data to Supabase
       const savedEntry = await saveFormData(dataToSave);
+      console.log("Form data saved:", savedEntry);
       
       // Notify admin about the new entry
       notifyAdmin(savedEntry);

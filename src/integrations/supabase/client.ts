@@ -42,6 +42,7 @@ const initializeStorage = async () => {
     
     // Log successful initialization
     console.log('Supabase client initialized successfully');
+    console.log('Available buckets:', buckets.map(b => b.name));
     
   } catch (err) {
     console.error('Error initializing storage:', err);

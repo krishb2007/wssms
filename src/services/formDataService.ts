@@ -1,5 +1,6 @@
 
 import { supabase } from "@/integrations/supabase/client";
+import { Json } from "@/integrations/supabase/types";
 
 // FormEntry interface definition
 export interface FormEntry {
@@ -129,11 +130,11 @@ export const saveFormData = async (formData: Omit<FormEntry, 'id' | 'timestamp'>
       visitorName: data[0].visitorname,
       schoolName: data[0].schoolname,
       numberOfPeople: data[0].numberofpeople,
-      people: data[0].people,
+      people: data[0].people as Array<{ name: string; role: string }>,
       purpose: data[0].purpose,
       otherPurpose: data[0].otherpurpose,
       phoneNumber: data[0].phonenumber,
-      address: data[0].address,
+      address: data[0].address as { city: string; state: string; country: string },
       picture: data[0].picture_url,
       signature: data[0].signature_url,
       startTime: data[0].starttime,
@@ -185,11 +186,11 @@ export const getAllFormEntries = async (): Promise<FormEntry[]> => {
       visitorName: item.visitorname,
       schoolName: item.schoolname,
       numberOfPeople: item.numberofpeople,
-      people: item.people,
+      people: item.people as Array<{ name: string; role: string }>,
       purpose: item.purpose,
       otherPurpose: item.otherpurpose,
       phoneNumber: item.phonenumber,
-      address: item.address,
+      address: item.address as { city: string; state: string; country: string },
       picture: item.picture_url,
       signature: item.signature_url,
       startTime: item.starttime,
@@ -224,11 +225,11 @@ export const getFormEntry = async (id: string): Promise<FormEntry | undefined> =
       visitorName: data.visitorname,
       schoolName: data.schoolname,
       numberOfPeople: data.numberofpeople,
-      people: data.people,
+      people: data.people as Array<{ name: string; role: string }>,
       purpose: data.purpose,
       otherPurpose: data.otherpurpose,
       phoneNumber: data.phonenumber,
-      address: data.address,
+      address: data.address as { city: string; state: string; country: string },
       picture: data.picture_url,
       signature: data.signature_url,
       startTime: data.starttime,
