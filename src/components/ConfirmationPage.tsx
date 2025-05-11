@@ -155,20 +155,7 @@ const ConfirmationPage: React.FC<ConfirmationPageProps> = ({
         </CardContent>
       </Card>
 
-      <div className="bg-amber-50 border border-amber-200 p-4 rounded-md">
-        <h4 className="text-sm font-bold text-amber-800 mb-2">Child Protection Policy</h4>
-        <div className="text-xs text-amber-800 max-h-40 overflow-y-auto mb-4 pr-2">
-          I hereby acknowledge and understand the Importance of adhering to Woodstock School's Child Protection Pollicy and the provisions of the POCSO Act 2012. I commit to following the guidelines outlined below:
-          <ol className="list-decimal ml-4 mt-2 space-y-1">
-            <li>Protection of Children: The POCSO Act Is designed to protect children (under 18 years of age) from sexual offences, including sexual harassment, assault, and exploitation.</li>
-            <li>Mandatory Reporting: Any suspicion or knowledge of an offences against a child must be reported to the authorities. Failure to report such an incident is a punishable offences.</li>
-            <li>Child-Friendly Procedures: The Act ensures that all legal proceedings are conducted in a manner that is child-friendly and that the privacy and dignity of the child are respected.</li>
-            <li>Punishable Offences: The Act covers a wide range of offences, including penetrative sexual assault, sexual harassment, and use of a child for pornography, all of which carry severe penalties.</li>
-            <li>No Tolerance Policy: The school maintains a strict no-tolerance policy regarding any form of child abuse or exploitation or behaviour that's unacceptable in the presence of children like smoking, using abusive and inappropriate language, consuming alcohol, or visiting the campus in an inebriated condition.</li>
-          </ol>
-          <p className="mt-2">Please be mindful of privacy (taking pictures and uploading them on social media) and physical contact with children.</p>
-        </div>
-        <div className="flex items-start">
+     
       
         </div>
       </div>
