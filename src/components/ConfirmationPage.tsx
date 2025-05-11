@@ -45,6 +45,7 @@ const ConfirmationPage: React.FC<ConfirmationPageProps> = ({
       "tourism": "Tourism",
       "meeting": "Meeting",
       "official_visit": "Official Visit",
+      "sports": "Sports",
       "student_visit": "Student Visit"
     };
     
