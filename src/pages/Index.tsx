@@ -11,7 +11,7 @@ import UploadForm from "@/components/UploadForm";
 import SignatureForm from "@/components/SignatureForm";
 import ConfirmationPage from "@/components/ConfirmationPage";
 import { toast } from "@/components/ui/use-toast";
-import { saveFormData, notifyAdmin } from "@/services/formDataService";
+import { saveFormData, notifyAdmin, FormEntry } from "@/services/formDataService";
 import { Spinner } from "@/components/ui/spinner";
 
 const Index = () => {
@@ -25,7 +25,7 @@ const Index = () => {
     purpose: "",
     otherPurpose: "",
     startTime: "",
-    endTime: "",
+    endTime: null as string | null, // Modified to be optional
     phoneNumber: "",
     verifiedOtp: false,
     address: {
@@ -61,8 +61,25 @@ const Index = () => {
     try {
       setIsSubmitting(true);
       
+      // Prepare data for saving to database
+      const dataToSave: Omit<FormEntry, 'id' | 'timestamp'> = {
+        visitorName: formData.visitorName,
+        schoolName: formData.schoolName,
+        numberOfPeople: formData.numberOfPeople,
+        people: formData.people,
+        purpose: formData.purpose,
+        otherPurpose: formData.otherPurpose,
+        startTime: formData.startTime,
+        endTime: formData.endTime,
+        phoneNumber: formData.phoneNumber,
+        address: formData.address,
+        picture: formData.picture,
+        signature: formData.signature,
+        // No need to include visitCount or timestamp here
+      };
+      
       // Save form data to Supabase
-      const savedEntry = await saveFormData(formData);
+      const savedEntry = await saveFormData(dataToSave);
       
       // Notify admin about the new entry
       notifyAdmin(savedEntry);
@@ -87,7 +104,7 @@ const Index = () => {
         purpose: "",
         otherPurpose: "",
         startTime: "",
-        endTime: "",
+        endTime: null,
         phoneNumber: "",
         verifiedOtp: false,
         address: {

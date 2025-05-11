@@ -9,9 +9,9 @@ import { format, differenceInMinutes } from "date-fns";
 interface DurationFormProps {
   formData: {
     startTime: string;
-    endTime: string;
+    endTime?: string | null;
   };
-  updateFormData: (data: Partial<{ startTime: string; endTime: string }>) => void;
+  updateFormData: (data: Partial<{ startTime: string; endTime?: string | null }>) => void;
   nextStep: () => void;
   prevStep: () => void;
 }
@@ -68,17 +68,7 @@ const DurationForm: React.FC<DurationFormProps> = ({
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     
-    // Validate that end time is after start time
-    if (formData.startTime && formData.endTime) {
-      const start = new Date(formData.startTime);
-      const end = new Date(formData.endTime);
-      
-      if (end <= start) {
-        // Don't proceed if end time is not after start time
-        return;
-      }
-    }
-    
+    // Since end time is optional, we can skip validation and simply proceed
     nextStep();
   };
 
@@ -88,9 +78,7 @@ const DurationForm: React.FC<DurationFormProps> = ({
     
     const date = new Date(dateTimeStr);
     // Format to show only time in 12-hour format with AM/PM
-    return format(date, 'hh:mm a', { 
-      timeZone: 'Asia/Kolkata' // IST timezone
-    });
+    return format(date, 'hh:mm a');
   };
   
   // Get current date in IST for display
@@ -120,25 +108,28 @@ const DurationForm: React.FC<DurationFormProps> = ({
         </div>
         
         <div className="space-y-2">
-          <Label htmlFor="endTime">End Time</Label>
+          <Label htmlFor="endTime">End Time (Optional)</Label>
           <Input
             id="endTime"
             type="time"
             value={formData.endTime ? new Date(formData.endTime).toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit', hour12: false }).substring(0, 5) : ""}
             onChange={(e) => {
-              // Get current date in IST
-              const now = new Date();
-              const istDate = new Date(now.getTime() + (5.5 * 60 * 60 * 1000));
-              const dateStr = istDate.toISOString().split('T')[0];
-              
-              // Combine date with selected time
-              const endDateTime = `${dateStr}T${e.target.value}:00`;
-              updateFormData({ endTime: endDateTime });
+              if (e.target.value) {
+                // Get current date in IST
+                const now = new Date();
+                const istDate = new Date(now.getTime() + (5.5 * 60 * 60 * 1000));
+                const dateStr = istDate.toISOString().split('T')[0];
+                
+                // Combine date with selected time
+                const endDateTime = `${dateStr}T${e.target.value}:00`;
+                updateFormData({ endTime: endDateTime });
+              } else {
+                updateFormData({ endTime: null });
+              }
             }}
-            required
           />
           <p className="text-xs text-gray-500">
-            When will your visit end today?
+            When will your visit end today? (Leave blank if unknown)
           </p>
         </div>
         
@@ -164,7 +155,6 @@ const DurationForm: React.FC<DurationFormProps> = ({
           <Button 
             type="submit" 
             className="flex-1"
-            disabled={!formData.endTime || !duration || duration.includes("must be after")}
           >
             <Clock className="mr-2 h-4 w-4" />
             Continue

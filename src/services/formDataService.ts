@@ -19,7 +19,7 @@ export interface FormEntry {
   picture: string | null;
   signature: string | null;
   startTime?: string;
-  endTime?: string;
+  endTime?: string | null; // Making end time optional
   visitCount?: number;
   timestamp: string;
 }
@@ -74,25 +74,25 @@ export const saveFormData = async (formData: Omit<FormEntry, 'id' | 'timestamp'>
     const { count } = await supabase
       .from('visitor_registrations')
       .select('*', { count: 'exact', head: true })
-      .eq('visitorName', formData.visitorName);
+      .eq('visitorname', formData.visitorName);
     
     const visitCount = (count || 0) + 1; // +1 for current visit
     
-    // Prepare entry for database
+    // Prepare entry for database - using lowercase column names to match Supabase schema
     const entry = {
-      visitorName: formData.visitorName,
-      schoolName: formData.schoolName,
-      numberOfPeople: formData.numberOfPeople,
+      visitorname: formData.visitorName,
+      schoolname: formData.schoolName,
+      numberofpeople: formData.numberOfPeople,
       people: formData.people,
       purpose: formData.purpose,
-      otherPurpose: formData.otherPurpose,
-      phoneNumber: formData.phoneNumber,
+      otherpurpose: formData.otherPurpose,
+      phonenumber: formData.phoneNumber,
       address: formData.address,
       picture_url: pictureUrl,
       signature_url: signatureUrl,
-      startTime: formData.startTime,
-      endTime: formData.endTime,
-      visitCount: visitCount,
+      starttime: formData.startTime,
+      endtime: formData.endTime || null, // Make end time optional
+      visitcount: visitCount,
       created_at: new Date().toISOString()
     };
     
@@ -123,22 +123,22 @@ export const saveFormData = async (formData: Omit<FormEntry, 'id' | 'timestamp'>
       return localEntry;
     }
     
-    // Return the saved entry with the right format for the application
+    // Return the saved entry with the right format for the application - map from DB column names to app property names
     const savedEntry: FormEntry = {
       id: data[0].id,
-      visitorName: data[0].visitorName,
-      schoolName: data[0].schoolName,
-      numberOfPeople: data[0].numberOfPeople,
+      visitorName: data[0].visitorname,
+      schoolName: data[0].schoolname,
+      numberOfPeople: data[0].numberofpeople,
       people: data[0].people,
       purpose: data[0].purpose,
-      otherPurpose: data[0].otherPurpose,
-      phoneNumber: data[0].phoneNumber,
+      otherPurpose: data[0].otherpurpose,
+      phoneNumber: data[0].phonenumber,
       address: data[0].address,
       picture: data[0].picture_url,
       signature: data[0].signature_url,
-      startTime: data[0].startTime,
-      endTime: data[0].endTime,
-      visitCount: data[0].visitCount,
+      startTime: data[0].starttime,
+      endTime: data[0].endtime,
+      visitCount: data[0].visitcount,
       timestamp: data[0].created_at
     };
     
@@ -179,22 +179,22 @@ export const getAllFormEntries = async (): Promise<FormEntry[]> => {
       return JSON.parse(entriesStr);
     }
     
-    // Convert Supabase data to FormEntry format
+    // Convert Supabase data to FormEntry format - map from DB column names to app property names
     return data.map(item => ({
       id: item.id,
-      visitorName: item.visitorName,
-      schoolName: item.schoolName,
-      numberOfPeople: item.numberOfPeople,
+      visitorName: item.visitorname,
+      schoolName: item.schoolname,
+      numberOfPeople: item.numberofpeople,
       people: item.people,
       purpose: item.purpose,
-      otherPurpose: item.otherPurpose,
-      phoneNumber: item.phoneNumber,
+      otherPurpose: item.otherpurpose,
+      phoneNumber: item.phonenumber,
       address: item.address,
       picture: item.picture_url,
       signature: item.signature_url,
-      startTime: item.startTime,
-      endTime: item.endTime,
-      visitCount: item.visitCount,
+      startTime: item.starttime,
+      endTime: item.endtime,
+      visitCount: item.visitcount,
       timestamp: item.created_at
     }));
   } catch (err) {
@@ -221,19 +221,19 @@ export const getFormEntry = async (id: string): Promise<FormEntry | undefined> =
     
     return {
       id: data.id,
-      visitorName: data.visitorName,
-      schoolName: data.schoolName,
-      numberOfPeople: data.numberOfPeople,
+      visitorName: data.visitorname,
+      schoolName: data.schoolname,
+      numberOfPeople: data.numberofpeople,
       people: data.people,
       purpose: data.purpose,
-      otherPurpose: data.otherPurpose,
-      phoneNumber: data.phoneNumber,
+      otherPurpose: data.otherpurpose,
+      phoneNumber: data.phonenumber,
       address: data.address,
       picture: data.picture_url,
       signature: data.signature_url,
-      startTime: data.startTime,
-      endTime: data.endTime,
-      visitCount: data.visitCount,
+      startTime: data.starttime,
+      endTime: data.endtime,
+      visitCount: data.visitcount,
       timestamp: data.created_at
     };
   } catch (err) {
@@ -241,99 +241,6 @@ export const getFormEntry = async (id: string): Promise<FormEntry | undefined> =
     // Fallback to localStorage
     const entries = JSON.parse(localStorage.getItem('formEntries') || '[]');
     return entries.find((entry: FormEntry) => entry.id === id);
-  }
-};
-
-export const deleteFormEntry = async (id: string): Promise<boolean> => {
-  try {
-    const { error } = await supabase
-      .from('visitor_registrations')
-      .delete()
-      .eq('id', id);
-    
-    if (error) {
-      console.error('Error deleting from Supabase:', error);
-      // Fallback to localStorage
-      const entries = JSON.parse(localStorage.getItem('formEntries') || '[]');
-      const updatedEntries = entries.filter((entry: FormEntry) => entry.id !== id);
-      
-      if (updatedEntries.length < entries.length) {
-        localStorage.setItem('formEntries', JSON.stringify(updatedEntries));
-        return true;
-      }
-      return false;
-    }
-    
-    return true;
-  } catch (err) {
-    console.error('Error in deleteFormEntry:', err);
-    // Fallback to localStorage
-    const entries = JSON.parse(localStorage.getItem('formEntries') || '[]');
-    const updatedEntries = entries.filter((entry: FormEntry) => entry.id !== id);
-    
-    if (updatedEntries.length < entries.length) {
-      localStorage.setItem('formEntries', JSON.stringify(updatedEntries));
-      return true;
-    }
-    return false;
-  }
-};
-
-export const searchEntries = async (query: string): Promise<FormEntry[]> => {
-  if (!query.trim()) return getAllFormEntries();
-  
-  try {
-    const lowerQuery = query.toLowerCase();
-    
-    // Search in Supabase - note that this is a simplified search
-    // In a production app, you might want to use more sophisticated search capabilities
-    const { data, error } = await supabase
-      .from('visitor_registrations')
-      .select('*')
-      .or(`visitorName.ilike.%${lowerQuery}%,purpose.ilike.%${lowerQuery}%,phoneNumber.ilike.%${lowerQuery}%`);
-    
-    if (error) {
-      console.error('Error searching in Supabase:', error);
-      // Fallback to localStorage
-      const entries = JSON.parse(localStorage.getItem('formEntries') || '[]');
-      return entries.filter((entry: FormEntry) => 
-        entry.visitorName.toLowerCase().includes(lowerQuery) ||
-        entry.purpose.toLowerCase().includes(lowerQuery) ||
-        entry.phoneNumber.includes(lowerQuery) ||
-        entry.address.city.toLowerCase().includes(lowerQuery)
-      );
-    }
-    
-    // Convert Supabase data to FormEntry format
-    return data.map(item => ({
-      id: item.id,
-      visitorName: item.visitorName,
-      schoolName: item.schoolName,
-      numberOfPeople: item.numberOfPeople,
-      people: item.people,
-      purpose: item.purpose,
-      otherPurpose: item.otherPurpose,
-      phoneNumber: item.phoneNumber,
-      address: item.address,
-      picture: item.picture_url,
-      signature: item.signature_url,
-      startTime: item.startTime,
-      endTime: item.endTime,
-      visitCount: item.visitCount,
-      timestamp: item.created_at
-    }));
-  } catch (err) {
-    console.error('Error in searchEntries:', err);
-    // Fallback to localStorage
-    const entries = JSON.parse(localStorage.getItem('formEntries') || '[]');
-    const lowerQuery = query.toLowerCase();
-    
-    return entries.filter((entry: FormEntry) => 
-      entry.visitorName.toLowerCase().includes(lowerQuery) ||
-      entry.purpose.toLowerCase().includes(lowerQuery) ||
-      entry.phoneNumber.includes(lowerQuery) ||
-      entry.address.city.toLowerCase().includes(lowerQuery)
-    );
   }
 };
 

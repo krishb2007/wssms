@@ -9,7 +9,7 @@ interface ContactInfoFormProps {
     phoneNumber: string;
     verifiedOtp: boolean;
   };
-  updateFormData: (data: Partial<typeof formData>) => void;
+  updateFormData: (data: Partial<{ phoneNumber: string; verifiedOtp: boolean }>) => void;
   nextStep: () => void;
   prevStep: () => void;
 }

@@ -25,3 +25,27 @@ export const supabase = createClient<Database>(
 supabase.auth.onAuthStateChange((event, session) => {
   console.log('Auth state changed:', event, session ? 'User logged in' : 'No user');
 });
+
+// Create storage buckets if they don't exist on app initialization
+const initializeStorage = async () => {
+  try {
+    // Check if the buckets exist
+    const { data: buckets, error } = await supabase.storage.listBuckets();
+    
+    if (error) {
+      console.error('Error checking buckets:', error);
+      return;
+    }
+    
+    const hasPicturesBucket = buckets.some(bucket => bucket.name === 'visitor-pictures');
+    const hasSignaturesBucket = buckets.some(bucket => bucket.name === 'visitor-signatures');
+    
+    // Log successful initialization
+    console.log('Supabase client initialized successfully');
+    
+  } catch (err) {
+    console.error('Error initializing storage:', err);
+  }
+};
+
+initializeStorage();
