@@ -164,7 +164,7 @@ const ConfirmationPage: React.FC<ConfirmationPageProps> = ({
         <Button
   type="button"
   onClick={handleSubmit}
-  className="flex-1"
+
 >
   Submit Registration
 </Button>
