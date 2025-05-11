@@ -169,27 +169,19 @@ const ConfirmationPage: React.FC<ConfirmationPageProps> = ({
           <p className="mt-2">Please be mindful of privacy (taking pictures and uploading them on social media) and physical contact with children.</p>
         </div>
         <div className="flex items-start">
-          <Checkbox 
-            id="policy" 
-            checked={policyAgreed} 
-            onCheckedChange={(checked) => setPolicyAgreed(checked === true)} 
-            className="mt-1"
-          />
-          <label htmlFor="policy" className="ml-2 text-sm text-amber-900">
-            I have read and agree to comply with the Child Protection Policy
-          </label>
+      
         </div>
       </div>
 
       <div className="pt-4 flex space-x-4">
         <Button
-          type="button"
-          variant="outline"
-          onClick={prevStep}
-          className="flex-1"
-        >
-          Back
-        </Button>
+  type="button"
+  onClick={handleSubmit}
+  className="flex-1"
+>
+  Submit Registration
+</Button>
+        
         <Button
           type="button"
           onClick={handleSubmit}
