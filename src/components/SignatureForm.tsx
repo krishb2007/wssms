@@ -152,32 +152,57 @@ const SignatureForm: React.FC<SignatureFormProps> = ({
             <AccordionTrigger className="text-blue-600">
               Read Student Protection Policy
             </AccordionTrigger>
-            <AccordionContent>
-              <div className="text-sm text-gray-700 space-y-3 px-1 py-2">
-                <p>
-                  <strong>Woodstock School Student Protection Policy</strong>
-                </p>
-                <p>
-                  Woodstock School is committed to the safety and wellbeing of all students. 
-                  By signing this form, you acknowledge that you have read and understood 
-                  the school's student protection guidelines.
-                </p>
-                <p>
-                  As a visitor to our campus, you agree to:
-                </p>
-                <ul className="list-disc pl-5 space-y-1">
-                  <li>Follow all campus safety protocols</li>
-                  <li>Respect student privacy and personal boundaries</li>
-                  <li>Report any concerns about student safety to staff immediately</li>
-                  <li>Remain in designated visitor areas unless escorted by staff</li>
-                  <li>Comply with all instructions from school security and staff</li>
-                </ul>
-                <p>
-                  The school reserves the right to refuse or terminate your visit at any time if these 
-                  guidelines are not respected.
-                </p>
-              </div>
-            </AccordionContent>
+           <AccordionContent>
+  <div className="text-sm text-gray-700 space-y-3 px-1 py-2">
+    <p>
+      <strong>Woodstock School Student Protection Policy</strong>
+    </p>
+    <p>
+      Woodstock School is committed to the safety and well-being of all students.
+      By signing this form, you acknowledge that you have read and understood
+      the school's student protection guidelines.
+    </p>
+    <p>
+      I hereby acknowledge and understand the importance of adhering to
+      Woodstock School's Child Protection Policy and the provisions of the POCSO Act 2012.
+      I commit to following the guidelines outlined below:
+    </p>
+    <ol className="list-decimal ml-4 mt-2 space-y-1">
+      <li>
+        Protection of Children: The POCSO Act is designed to protect children
+        (under 18 years of age) from sexual offences, including sexual harassment,
+        assault, and exploitation.
+      </li>
+      <li>
+        Mandatory Reporting: Any suspicion or knowledge of an offence against a child must
+        be reported to the authorities. Failure to report such an incident is a punishable offence.
+      </li>
+      <li>
+        Child-Friendly Procedures: The Act ensures that all legal proceedings are conducted
+        in a manner that is child-friendly and that the privacy and dignity of the child are respected.
+      </li>
+      <li>
+        Punishable Offences: The Act covers a wide range of offences, including penetrative
+        sexual assault, sexual harassment, and use of a child for pornography, all of which carry
+        severe penalties.
+      </li>
+      <li>
+        No Tolerance Policy: The school maintains a strict no-tolerance policy regarding any
+        form of child abuse or exploitation or behavior that's unacceptable in the presence of
+        children like smoking, using abusive and inappropriate language, consuming alcohol, or
+        visiting the campus in an inebriated condition.
+      </li>
+    </ol>
+    <p className="mt-2">
+      Please be mindful of privacy (taking pictures and uploading them on social media)
+      and physical contact with children.
+    </p>
+    <p>
+      The school reserves the right to refuse or terminate your visit at any time if these
+      guidelines are not respected.
+    </p>
+  </div>
+</AccordionContent>
           </AccordionItem>
         </Accordion>
         
