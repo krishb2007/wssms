@@ -3,33 +3,57 @@ import { supabase } from "@/integrations/supabase/client";
 
 // FormEntry interface definition
 export interface FormEntry {
-  id: string;
+  id?: number;
+  timestamp?: string;
   visitorName: string;
   schoolName: string;
   numberOfPeople: number;
   people: Array<{ name: string; role: string }>;
   purpose: string;
   otherPurpose: string;
-  phoneNumber: string;
   address: {
     city: string;
     state: string;
     country: string;
   };
-  picture: string | File | null;
-  signature: string | File | null;
+  picture: string | null; // Database only stores URLs, not File objects
+  signature: string | null; // Database only stores URLs, not File objects
   startTime?: string;
   endTime?: string | null; // Making end time optional
   visitCount?: number;
-  timestamp: string;
+  phoneNumber: string;
 }
 
-// Save form data to Supabase
-export const saveFormData = async (formData: Omit<FormEntry, 'id' | 'timestamp'>): Promise<FormEntry> => {
+// Form data input type (can include File objects before storage)
+export interface FormDataInput {
+  visitorName: string;
+  schoolName: string;
+  numberOfPeople: number;
+  people: Array<{ name: string; role: string }>;
+  purpose: string;
+  otherPurpose: string;
+  address: {
+    city: string;
+    state: string;
+    country: string;
+  };
+  picture: File | string | null;
+  signature: File | string | null;
+  startTime: string;
+  endTime: string | null;
+  phoneNumber: string;
+}
+
+export const saveFormData = async (formData: FormDataInput): Promise<FormEntry> => {
   try {
-    // Process file data
-    let pictureUrl: string | null = null;
-    let signatureUrl: string | null = null;
+    console.log("Starting to save form data");
+    
+    // Create a copy of form data that will be modified with URLs instead of files
+    const dbFormData: Partial<FormEntry> = {
+      ...formData,
+      picture: null,
+      signature: null
+    };
     
     // For picture handling - upload to Supabase storage if it's a File
     if (formData.picture && typeof formData.picture !== 'string') {
@@ -40,15 +64,20 @@ export const saveFormData = async (formData: Omit<FormEntry, 'id' | 'timestamp'>
       const { data: pictureData, error: pictureError } = await supabase.storage
         .from('visitor-pictures')
         .upload(fileName, file);
-      
+        
       if (pictureError) {
-        console.error('Error uploading picture:', pictureError);
-      } else if (pictureData) {
-        const { data } = supabase.storage.from('visitor-pictures').getPublicUrl(pictureData.path);
-        pictureUrl = data.publicUrl;
+        console.error("Error uploading picture:", pictureError);
+        throw pictureError;
       }
+      
+      // Get public URL for the file
+      const { data: pictureUrl } = supabase.storage
+        .from('visitor-pictures')
+        .getPublicUrl(fileName);
+        
+      dbFormData.picture = pictureUrl.publicUrl;
     } else if (typeof formData.picture === 'string') {
-      pictureUrl = formData.picture;
+      dbFormData.picture = formData.picture;
     }
     
     // For signature handling - upload to Supabase storage if it's a File or Blob
@@ -59,199 +88,87 @@ export const saveFormData = async (formData: Omit<FormEntry, 'id' | 'timestamp'>
       const { data: signatureData, error: signatureError } = await supabase.storage
         .from('visitor-signatures')
         .upload(fileName, file);
-      
+        
       if (signatureError) {
-        console.error('Error uploading signature:', signatureError);
-      } else if (signatureData) {
-        const { data } = supabase.storage.from('visitor-signatures').getPublicUrl(signatureData.path);
-        signatureUrl = data.publicUrl;
+        console.error("Error uploading signature:", signatureError);
+        throw signatureError;
       }
+      
+      // Get public URL for the file
+      const { data: signatureUrl } = supabase.storage
+        .from('visitor-signatures')
+        .getPublicUrl(fileName);
+        
+      dbFormData.signature = signatureUrl.publicUrl;
     } else if (typeof formData.signature === 'string') {
-      signatureUrl = formData.signature;
+      dbFormData.signature = formData.signature;
     }
     
-    // Count previous visits by this person
-    const { count } = await supabase
-      .from('visitor_registrations')
-      .select('*', { count: 'exact', head: true })
-      .eq('visitorname', formData.visitorName);
-    
-    const visitCount = (count || 0) + 1; // +1 for current visit
-    
-    // Prepare entry for database - using lowercase column names to match Supabase schema
-    const entry = {
-      visitorname: formData.visitorName,
-      schoolname: formData.schoolName,
-      numberofpeople: formData.numberOfPeople,
-      people: formData.people,
-      purpose: formData.purpose,
-      otherpurpose: formData.otherPurpose,
-      phonenumber: formData.phoneNumber,
-      address: formData.address,
-      picture_url: pictureUrl,
-      signature_url: signatureUrl,
-      starttime: formData.startTime,
-      endtime: formData.endTime || null, // Make end time optional
-      visitcount: visitCount,
-      created_at: new Date().toISOString()
-    };
-    
-    // Insert into Supabase
+    // Insert the data into the database
     const { data, error } = await supabase
       .from('visitor_registrations')
-      .insert([entry])
+      .insert([{
+        visitor_name: dbFormData.visitorName,
+        school_name: dbFormData.schoolName,
+        number_of_people: dbFormData.numberOfPeople,
+        people: dbFormData.people,
+        purpose: dbFormData.purpose,
+        other_purpose: dbFormData.otherPurpose,
+        address: dbFormData.address,
+        picture_url: dbFormData.picture,
+        signature_url: dbFormData.signature,
+        start_time: dbFormData.startTime,
+        end_time: dbFormData.endTime,
+        phone_number: dbFormData.phoneNumber
+      }])
       .select();
     
     if (error) {
-      console.error('Error saving to Supabase:', error);
-      
-      // Fallback to localStorage if Supabase fails
-      const localEntry: FormEntry = {
-        id: Date.now().toString(),
-        ...formData,
-        picture: pictureUrl,
-        signature: signatureUrl,
-        visitCount,
-        timestamp: new Date().toISOString()
-      };
-      
-      const existingEntriesStr = localStorage.getItem('formEntries') || '[]';
-      const existingEntries: FormEntry[] = JSON.parse(existingEntriesStr);
-      existingEntries.push(localEntry);
-      localStorage.setItem('formEntries', JSON.stringify(existingEntries));
-      
-      return localEntry;
+      console.error("Database error:", error);
+      throw error;
     }
     
-    // Return the saved entry with the right format for the application - map from DB column names to app property names
+    console.log("Form data saved successfully:", data);
+    
+    // Return the saved entry (transforming from snake_case to camelCase)
     const savedEntry: FormEntry = {
       id: data[0].id,
-      visitorName: data[0].visitorname,
-      schoolName: data[0].schoolname,
-      numberOfPeople: data[0].numberofpeople,
-      people: data[0].people as Array<{ name: string; role: string }>,
+      timestamp: data[0].created_at,
+      visitorName: data[0].visitor_name,
+      schoolName: data[0].school_name,
+      numberOfPeople: data[0].number_of_people,
+      people: data[0].people,
       purpose: data[0].purpose,
-      otherPurpose: data[0].otherpurpose,
-      phoneNumber: data[0].phonenumber,
-      address: data[0].address as { city: string; state: string; country: string },
+      otherPurpose: data[0].other_purpose,
+      address: data[0].address,
       picture: data[0].picture_url,
       signature: data[0].signature_url,
-      startTime: data[0].starttime,
-      endTime: data[0].endtime,
-      visitCount: data[0].visitcount,
-      timestamp: data[0].created_at
+      startTime: data[0].start_time,
+      endTime: data[0].end_time,
+      phoneNumber: data[0].phone_number,
+      visitCount: data[0].visit_count || 1
     };
     
     return savedEntry;
-  } catch (err) {
-    console.error('Unexpected error in saveFormData:', err);
-    
-    // Fallback to localStorage in case of any errors
-    const localEntry: FormEntry = {
-      id: Date.now().toString(),
-      ...formData,
-      picture: typeof formData.picture === 'string' ? formData.picture : null,
-      signature: typeof formData.signature === 'string' ? formData.signature : null,
-      visitCount: 1,
-      timestamp: new Date().toISOString()
-    };
-    
-    const existingEntriesStr = localStorage.getItem('formEntries') || '[]';
-    const existingEntries: FormEntry[] = JSON.parse(existingEntriesStr);
-    existingEntries.push(localEntry);
-    localStorage.setItem('formEntries', JSON.stringify(existingEntries));
-    
-    return localEntry;
+  } catch (error) {
+    console.error("Error in saveFormData:", error);
+    throw error;
   }
 };
 
-export const getAllFormEntries = async (): Promise<FormEntry[]> => {
+export const notifyAdmin = async (entry: FormEntry) => {
   try {
-    const { data, error } = await supabase
-      .from('visitor_registrations')
-      .select('*')
-      .order('created_at', { ascending: false });
+    console.log("Would notify admin about entry:", entry);
+    // In a real-world scenario, you'd send an email or push notification here
     
-    if (error) {
-      console.error('Error fetching from Supabase:', error);
-      // Fallback to localStorage
-      const entriesStr = localStorage.getItem('formEntries') || '[]';
-      return JSON.parse(entriesStr);
+    // For demo purposes, showing a notification if the browser supports it
+    if ('Notification' in window && Notification.permission === 'granted') {
+      new Notification('New Visitor Registration', {
+        body: `${entry.visitorName} has registered to visit ${entry.schoolName}`,
+        icon: entry.picture || undefined
+      });
     }
-    
-    // Convert Supabase data to FormEntry format - map from DB column names to app property names
-    return data.map(item => ({
-      id: item.id,
-      visitorName: item.visitorname,
-      schoolName: item.schoolname,
-      numberOfPeople: item.numberofpeople,
-      people: item.people as Array<{ name: string; role: string }>,
-      purpose: item.purpose,
-      otherPurpose: item.otherpurpose,
-      phoneNumber: item.phonenumber,
-      address: item.address as { city: string; state: string; country: string },
-      picture: item.picture_url,
-      signature: item.signature_url,
-      startTime: item.starttime,
-      endTime: item.endtime,
-      visitCount: item.visitcount,
-      timestamp: item.created_at
-    }));
-  } catch (err) {
-    console.error('Error in getAllFormEntries:', err);
-    // Fallback to localStorage
-    const entriesStr = localStorage.getItem('formEntries') || '[]';
-    return JSON.parse(entriesStr);
-  }
-};
-
-export const getFormEntry = async (id: string): Promise<FormEntry | undefined> => {
-  try {
-    const { data, error } = await supabase
-      .from('visitor_registrations')
-      .select('*')
-      .eq('id', id)
-      .single();
-    
-    if (error || !data) {
-      // Fallback to localStorage
-      const entries = JSON.parse(localStorage.getItem('formEntries') || '[]');
-      return entries.find((entry: FormEntry) => entry.id === id);
-    }
-    
-    return {
-      id: data.id,
-      visitorName: data.visitorname,
-      schoolName: data.schoolname,
-      numberOfPeople: data.numberofpeople,
-      people: data.people as Array<{ name: string; role: string }>,
-      purpose: data.purpose,
-      otherPurpose: data.otherpurpose,
-      phoneNumber: data.phonenumber,
-      address: data.address as { city: string; state: string; country: string },
-      picture: data.picture_url,
-      signature: data.signature_url,
-      startTime: data.starttime,
-      endTime: data.endtime,
-      visitCount: data.visitcount,
-      timestamp: data.created_at
-    };
-  } catch (err) {
-    console.error('Error in getFormEntry:', err);
-    // Fallback to localStorage
-    const entries = JSON.parse(localStorage.getItem('formEntries') || '[]');
-    return entries.find((entry: FormEntry) => entry.id === id);
-  }
-};
-
-export const notifyAdmin = (entry: FormEntry) => {
-  // In a real application, this would send an email, push notification, etc.
-  console.log(`[ADMIN NOTIFICATION] New visitor: ${entry.visitorName}`);
-  
-  // For demo purposes, we'll show a notification using the browser API
-  if ('Notification' in window && Notification.permission === 'granted') {
-    new Notification('New Visitor Registration', {
-      body: `${entry.visitorName} (${entry.purpose}) has registered to visit the campus.`
-    });
+  } catch (error) {
+    console.error("Error notifying admin:", error);
   }
 };

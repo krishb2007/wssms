@@ -10,13 +10,13 @@ import UploadForm from "@/components/UploadForm";
 import SignatureForm from "@/components/SignatureForm";
 import ConfirmationPage from "@/components/ConfirmationPage";
 import { toast } from "@/components/ui/use-toast";
-import { saveFormData, notifyAdmin } from "@/services/formDataService";
+import { saveFormData, notifyAdmin, FormDataInput } from "@/services/formDataService";
 import { Spinner } from "@/components/ui/spinner";
 
 const Index = () => {
   const [step, setStep] = useState(1);
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const [formData, setFormData] = useState({
+  const [formData, setFormData] = useState<FormDataInput>({
     visitorName: "",
     schoolName: "Woodstock School", // Default school name
     numberOfPeople: 1,
@@ -61,26 +61,8 @@ const Index = () => {
       setIsSubmitting(true);
       console.log("Submitting form data:", formData);
       
-      // Prepare data for saving to database
-      const dataToSave = {
-        visitorName: formData.visitorName,
-        schoolName: formData.schoolName,
-        numberOfPeople: formData.numberOfPeople,
-        people: formData.people,
-        purpose: formData.purpose,
-        otherPurpose: formData.otherPurpose,
-        startTime: formData.startTime,
-        endTime: formData.endTime,
-        phoneNumber: formData.phoneNumber,
-        address: formData.address,
-        picture: formData.picture,
-        signature: formData.signature,
-      };
-      
-      console.log("Data being sent to saveFormData:", dataToSave);
-      
       // Save form data to Supabase
-      const savedEntry = await saveFormData(dataToSave);
+      const savedEntry = await saveFormData(formData);
       console.log("Form data saved:", savedEntry);
       
       // Notify admin about the new entry
