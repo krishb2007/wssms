@@ -53,12 +53,12 @@ const App = () => {
           <Sonner />
           <BrowserRouter>
             <div className="fixed top-4 right-4 z-50 flex gap-2">
-              <Route
-                path="/"
-                element={<Index />} 
-              />
-              <Route path="*" element={<NotFound />} />
+              {/* This area can be used for navigation buttons or user controls */}
             </div>
+            <Routes>
+              <Route path="/" element={<Index />} />
+              <Route path="*" element={<NotFound />} />
+            </Routes>
           </BrowserRouter>
         </TooltipProvider>
       </AuthContext.Provider>

@@ -40,6 +40,31 @@ const initializeStorage = async () => {
     const hasPicturesBucket = buckets.some(bucket => bucket.name === 'visitor-pictures');
     const hasSignaturesBucket = buckets.some(bucket => bucket.name === 'visitor-signatures');
     
+    // Create buckets if they don't exist
+    if (!hasPicturesBucket) {
+      try {
+        await supabase.storage.createBucket('visitor-pictures', {
+          public: true,
+          fileSizeLimit: 2097152, // 2MB limit for pictures
+        });
+        console.log('Created visitor-pictures bucket');
+      } catch (err) {
+        console.error('Error creating visitor-pictures bucket:', err);
+      }
+    }
+    
+    if (!hasSignaturesBucket) {
+      try {
+        await supabase.storage.createBucket('visitor-signatures', {
+          public: true,
+          fileSizeLimit: 1048576, // 1MB limit for signatures
+        });
+        console.log('Created visitor-signatures bucket');
+      } catch (err) {
+        console.error('Error creating visitor-signatures bucket:', err);
+      }
+    }
+    
     // Log successful initialization
     console.log('Supabase client initialized successfully');
     console.log('Available buckets:', buckets.map(b => b.name));

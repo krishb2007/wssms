@@ -1,4 +1,3 @@
-
 import React, { useState } from "react";
 import WelcomePage from "@/components/WelcomePage";
 import NameForm from "@/components/NameForm";
@@ -11,7 +10,7 @@ import UploadForm from "@/components/UploadForm";
 import SignatureForm from "@/components/SignatureForm";
 import ConfirmationPage from "@/components/ConfirmationPage";
 import { toast } from "@/components/ui/use-toast";
-import { saveFormData, notifyAdmin, FormEntry } from "@/services/formDataService";
+import { saveFormData, notifyAdmin } from "@/services/formDataService";
 import { Spinner } from "@/components/ui/spinner";
 
 const Index = () => {
@@ -63,7 +62,7 @@ const Index = () => {
       console.log("Submitting form data:", formData);
       
       // Prepare data for saving to database
-      const dataToSave: Omit<FormEntry, 'id' | 'timestamp'> = {
+      const dataToSave = {
         visitorName: formData.visitorName,
         schoolName: formData.schoolName,
         numberOfPeople: formData.numberOfPeople,

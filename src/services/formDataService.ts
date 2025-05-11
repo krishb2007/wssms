@@ -1,6 +1,5 @@
 
 import { supabase } from "@/integrations/supabase/client";
-import { Json } from "@/integrations/supabase/types";
 
 // FormEntry interface definition
 export interface FormEntry {
@@ -17,8 +16,8 @@ export interface FormEntry {
     state: string;
     country: string;
   };
-  picture: string | null;
-  signature: string | null;
+  picture: string | File | null;
+  signature: string | File | null;
   startTime?: string;
   endTime?: string | null; // Making end time optional
   visitCount?: number;
@@ -34,7 +33,7 @@ export const saveFormData = async (formData: Omit<FormEntry, 'id' | 'timestamp'>
     
     // For picture handling - upload to Supabase storage if it's a File
     if (formData.picture && typeof formData.picture !== 'string') {
-      const file = formData.picture as unknown as File;
+      const file = formData.picture as File;
       const fileExt = file.name.split('.').pop();
       const fileName = `${Date.now()}-picture.${fileExt}`;
       
@@ -54,7 +53,7 @@ export const saveFormData = async (formData: Omit<FormEntry, 'id' | 'timestamp'>
     
     // For signature handling - upload to Supabase storage if it's a File or Blob
     if (formData.signature && typeof formData.signature !== 'string') {
-      const file = formData.signature as unknown as File;
+      const file = formData.signature as File;
       const fileName = `${Date.now()}-signature.png`;
       
       const { data: signatureData, error: signatureError } = await supabase.storage
