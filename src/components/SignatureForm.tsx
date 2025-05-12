@@ -1,3 +1,4 @@
+
 import React, { useRef, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
@@ -6,9 +7,9 @@ import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/
 
 interface SignatureFormProps {
   formData: {
-    signature: File | null;
+    signature: File | string | null;
   };
-  updateFormData: (data: Partial<{ signature: File | null }>) => void;
+  updateFormData: (data: Partial<{ signature: File | string | null }>) => void;
   nextStep: () => void;
   prevStep: () => void;
 }
@@ -21,7 +22,9 @@ const SignatureForm: React.FC<SignatureFormProps> = ({
 }) => {
   const [isDrawing, setIsDrawing] = useState(false);
   const [signaturePreview, setSignaturePreview] = useState<string | null>(
-    formData.signature ? URL.createObjectURL(formData.signature) : null
+    formData.signature && typeof formData.signature !== 'string' 
+      ? URL.createObjectURL(formData.signature as File)
+      : typeof formData.signature === 'string' ? formData.signature : null
   );
   
   const canvasRef = useRef<HTMLCanvasElement>(null);
@@ -158,18 +161,13 @@ const SignatureForm: React.FC<SignatureFormProps> = ({
       <strong>Woodstock School Student Protection Policy</strong>
     </p>
     <p>
-      Woodstock School is committed to the safety and well-being of all students.
-      By signing this form, you acknowledge that you have read and understood
-      the school's student protection guidelines.
-    </p>
-    <p>
-      I hereby acknowledge and understand the importance of adhering to
+      I hereby acknowledge and understand the Importance of adhering to
       Woodstock School's Child Protection Policy and the provisions of the POCSO Act 2012.
       I commit to following the guidelines outlined below:
     </p>
     <ol className="list-decimal ml-4 mt-2 space-y-1">
       <li>
-        Protection of Children: The POCSO Act is designed to protect children
+        Protection of Children: The POCSO Act Is designed to protect children
         (under 18 years of age) from sexual offences, including sexual harassment,
         assault, and exploitation.
       </li>

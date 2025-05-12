@@ -7,10 +7,9 @@ import { Camera } from "lucide-react";
 
 interface UploadFormProps {
   formData: {
-    picture: File | null;
-    signature: File | null;
+    picture: File | string | null;
   };
-  updateFormData: (data: Partial<{ picture: File | null; signature: File | null }>) => void;
+  updateFormData: (data: Partial<{ picture: File | string | null }>) => void;
   nextStep: () => void;
   prevStep: () => void;
 }
@@ -24,7 +23,11 @@ const UploadForm: React.FC<UploadFormProps> = ({
   const videoRef = useRef<HTMLVideoElement>(null);
   const canvasRef = useRef<HTMLCanvasElement>(null);
   
-  const [picturePreview, setPicturePreview] = useState<string | null>(null);
+  const [picturePreview, setPicturePreview] = useState<string | null>(
+    formData.picture && typeof formData.picture !== 'string' 
+      ? URL.createObjectURL(formData.picture as File)
+      : typeof formData.picture === 'string' ? formData.picture : null
+  );
   const [showCamera, setShowCamera] = useState(true); // Auto-start camera
 
   // Auto-start camera on component mount

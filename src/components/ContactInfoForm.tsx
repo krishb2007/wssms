@@ -7,9 +7,8 @@ import { Button } from "@/components/ui/button";
 interface ContactInfoFormProps {
   formData: {
     phoneNumber: string;
-    verifiedOtp: boolean;
   };
-  updateFormData: (data: Partial<{ phoneNumber: string; verifiedOtp: boolean }>) => void;
+  updateFormData: (data: Partial<{ phoneNumber: string }>) => void;
   nextStep: () => void;
   prevStep: () => void;
 }
@@ -22,8 +21,6 @@ const ContactInfoForm: React.FC<ContactInfoFormProps> = ({
 }) => {
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    // Skip OTP verification, set as verified directly
-    updateFormData({ verifiedOtp: true });
     nextStep();
   };
 

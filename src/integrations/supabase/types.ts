@@ -9,30 +9,6 @@ export type Json =
 export type Database = {
   public: {
     Tables: {
-      admin_users: {
-        Row: {
-          created_at: string | null
-          email: string
-          id: string
-          role: string
-          user_id: string
-        }
-        Insert: {
-          created_at?: string | null
-          email: string
-          id?: string
-          role?: string
-          user_id: string
-        }
-        Update: {
-          created_at?: string | null
-          email?: string
-          id?: string
-          role?: string
-          user_id?: string
-        }
-        Relationships: []
-      }
       visitor_registrations: {
         Row: {
           address: Json
@@ -40,12 +16,10 @@ export type Database = {
           endtime: string | null
           id: string
           numberofpeople: number
-          otherpurpose: string | null
           people: Json
           phonenumber: string
           picture_url: string | null
           purpose: string
-          schoolname: string
           signature_url: string | null
           starttime: string | null
           user_id: string | null
@@ -58,12 +32,10 @@ export type Database = {
           endtime?: string | null
           id?: string
           numberofpeople: number
-          otherpurpose?: string | null
           people: Json
           phonenumber: string
           picture_url?: string | null
           purpose: string
-          schoolname: string
           signature_url?: string | null
           starttime?: string | null
           user_id?: string | null
@@ -76,12 +48,10 @@ export type Database = {
           endtime?: string | null
           id?: string
           numberofpeople?: number
-          otherpurpose?: string | null
           people?: Json
           phonenumber?: string
           picture_url?: string | null
           purpose?: string
-          schoolname?: string
           signature_url?: string | null
           starttime?: string | null
           user_id?: string | null

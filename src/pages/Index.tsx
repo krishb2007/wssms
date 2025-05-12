@@ -36,7 +36,7 @@ const Index = () => {
     signature: null as File | string | null,
   });
 
-  const updateFormData = (data: Partial<typeof formData>) => {
+  const updateFormData = (data: Partial<FormDataInput>) => {
     setFormData((prev) => ({ ...prev, ...data }));
   };
 
