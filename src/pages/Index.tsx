@@ -13,10 +13,13 @@ import ConfirmationPage from "@/components/ConfirmationPage";
 import { toast } from "@/components/ui/use-toast";
 import { saveFormData, notifyAdmin, FormDataInput } from "@/services/formDataService";
 import { Spinner } from "@/components/ui/spinner";
+import { Alert, AlertTitle, AlertDescription } from "@/components/ui/alert";
+import { AlertCircle } from "lucide-react";
 
 const Index = () => {
   const [step, setStep] = useState(1);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [submissionError, setSubmissionError] = useState<string | null>(null);
   const [formData, setFormData] = useState<FormDataInput>({
     visitorName: "",
     schoolName: "Woodstock School", // Default school name
@@ -59,6 +62,7 @@ const Index = () => {
   const handleSubmit = async () => {
     try {
       setIsSubmitting(true);
+      setSubmissionError(null);
       console.log("Submitting form data:", formData);
       
       // Save form data to Supabase
@@ -100,6 +104,14 @@ const Index = () => {
       });
     } catch (error) {
       console.error("Error submitting form:", error);
+      
+      // Extract meaningful error message if available
+      const errorMessage = error instanceof Error 
+        ? error.message 
+        : (error as any)?.message || 'There was a problem submitting your registration.';
+      
+      setSubmissionError(errorMessage);
+      
       toast({
         title: "Error",
         description: "There was a problem submitting your registration.",
@@ -116,6 +128,37 @@ const Index = () => {
         <div className="flex flex-col items-center justify-center py-12">
           <Spinner size="lg" />
           <p className="mt-4 text-lg">Submitting your registration...</p>
+        </div>
+      );
+    }
+
+    if (submissionError) {
+      return (
+        <div className="space-y-4">
+          <Alert variant="destructive">
+            <AlertCircle className="h-4 w-4" />
+            <AlertTitle>Error</AlertTitle>
+            <AlertDescription>
+              {submissionError}
+              <div className="mt-2">
+                Please try again or contact support.
+              </div>
+            </AlertDescription>
+          </Alert>
+          <div className="flex justify-center space-x-4 pt-4">
+            <button 
+              onClick={() => setSubmissionError(null)}
+              className="px-4 py-2 bg-gray-200 rounded hover:bg-gray-300"
+            >
+              Back to Form
+            </button>
+            <button 
+              onClick={handleSubmit}
+              className="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700"
+            >
+              Try Again
+            </button>
+          </div>
         </div>
       );
     }
