@@ -65,18 +65,22 @@ export const signUp = async (credentials: SignUpCredentials): Promise<{ user: Au
     }
 
     // Create a record in the admin_users table
-    const { error: profileError } = await supabase
-      .from('admin_users')
-      .insert([
-        { 
-          user_id: data.user.id,
-          email: data.user.email,
-          role: 'admin'
-        }
-      ]);
+    try {
+      const { error: profileError } = await supabase
+        .from('admin_users')
+        .insert([
+          { 
+            user_id: data.user.id,
+            email: data.user.email,
+            role: 'admin'
+          }
+        ]);
 
-    if (profileError) {
-      console.error("Error creating admin user profile:", profileError);
+      if (profileError) {
+        console.error("Error creating admin user profile:", profileError);
+      }
+    } catch (err) {
+      console.error("Error inserting admin user:", err);
     }
 
     const authUser: AuthUser = {
@@ -118,20 +122,29 @@ export const signIn = async (credentials: SignInCredentials): Promise<{ user: Au
     }
 
     // Fetch the admin profile to get the role
-    const { data: adminUser, error: profileError } = await supabase
-      .from('admin_users')
-      .select('role')
-      .eq('user_id', data.user.id)
-      .single();
+    let role = 'user';
+    try {
+      const { data: adminUser, error: profileError } = await supabase
+        .from('admin_users')
+        .select('role')
+        .eq('user_id', data.user.id)
+        .single();
 
-    if (profileError && profileError.code !== 'PGRST116') {
-      console.error("Error fetching admin user profile:", profileError);
+      if (profileError && profileError.code !== 'PGRST116') {
+        console.error("Error fetching admin user profile:", profileError);
+      }
+
+      if (adminUser) {
+        role = adminUser.role;
+      }
+    } catch (err) {
+      console.error("Error querying admin_users:", err);
     }
 
     const authUser: AuthUser = {
       id: data.user.id,
       email: data.user.email || '',
-      role: adminUser?.role || 'user'
+      role: role
     };
     
     // Force refresh to ensure clean state with new auth tokens
@@ -182,20 +195,29 @@ export const getCurrentUser = async (): Promise<{ user: AuthUser | null; error: 
     }
 
     // Fetch the admin profile to get the role
-    const { data: adminUser, error: profileError } = await supabase
-      .from('admin_users')
-      .select('role')
-      .eq('user_id', data.session.user.id)
-      .single();
+    let role = 'user';
+    try {
+      const { data: adminUser, error: profileError } = await supabase
+        .from('admin_users')
+        .select('role')
+        .eq('user_id', data.session.user.id)
+        .single();
 
-    if (profileError && profileError.code !== 'PGRST116') {
-      console.error("Error fetching admin user profile:", profileError);
+      if (profileError && profileError.code !== 'PGRST116') {
+        console.error("Error fetching admin user profile:", profileError);
+      }
+
+      if (adminUser) {
+        role = adminUser.role;
+      }
+    } catch (err) {
+      console.error("Error querying admin_users:", err);
     }
 
     const authUser: AuthUser = {
       id: data.session.user.id,
       email: data.session.user.email || '',
-      role: adminUser?.role || 'user'
+      role: role
     };
 
     return { user: authUser, error: null };
