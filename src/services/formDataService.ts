@@ -109,11 +109,11 @@ export const saveFormData = async (formData: FormDataInput): Promise<FormEntry> 
       .from('visitor_registrations')
       .insert({
         visitorname: dbFormData.visitorName,
-        schoolname: formData.schoolName, // Use formData directly
+        schoolname: formData.schoolName,
         numberofpeople: dbFormData.numberOfPeople,
         people: dbFormData.people,
         purpose: dbFormData.purpose,
-        otherpurpose: formData.otherPurpose, // Use formData directly
+        otherpurpose: formData.otherPurpose,
         address: dbFormData.address,
         picture_url: dbFormData.picture,
         signature_url: dbFormData.signature,
@@ -135,11 +135,11 @@ export const saveFormData = async (formData: FormDataInput): Promise<FormEntry> 
       id: data[0].id,
       timestamp: data[0].created_at,
       visitorName: data[0].visitorname,
-      schoolName: formData.schoolName, // Use formData directly since it's not in the response
+      schoolName: formData.schoolName, // Since this field may not be in the response
       numberOfPeople: data[0].numberofpeople,
       people: data[0].people as Array<{ name: string; role: string }>,
       purpose: data[0].purpose,
-      otherPurpose: formData.otherPurpose, // Use formData directly since it's not in the response
+      otherPurpose: formData.otherPurpose, // Since this field may not be in the response
       address: data[0].address as { city: string; state: string; country: string },
       picture: data[0].picture_url,
       signature: data[0].signature_url,

@@ -153,7 +153,7 @@ const ConfirmationPage: React.FC<ConfirmationPageProps> = ({
         </CardContent>
       </Card>
 
-      <div className="pt-4">
+      <div className="pt-4 flex flex-col space-y-2">
         <Button
           type="button"
           onClick={handleSubmit}
@@ -165,7 +165,7 @@ const ConfirmationPage: React.FC<ConfirmationPageProps> = ({
           type="button"
           variant="outline"
           onClick={prevStep}
-          className="w-full mt-2"
+          className="w-full"
         >
           Back
         </Button>

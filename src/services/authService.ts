@@ -66,6 +66,7 @@ export const signUp = async (credentials: SignUpCredentials): Promise<{ user: Au
 
     // Create a record in the admin_users table
     try {
+      // Using the correct table from the database
       const { error: profileError } = await supabase
         .from('admin_users')
         .insert([
@@ -124,6 +125,7 @@ export const signIn = async (credentials: SignInCredentials): Promise<{ user: Au
     // Fetch the admin profile to get the role
     let role = 'user';
     try {
+      // Using the correct table from the database
       const { data: adminUser, error: profileError } = await supabase
         .from('admin_users')
         .select('role')
@@ -197,6 +199,7 @@ export const getCurrentUser = async (): Promise<{ user: AuthUser | null; error: 
     // Fetch the admin profile to get the role
     let role = 'user';
     try {
+      // Using the correct table from the database
       const { data: adminUser, error: profileError } = await supabase
         .from('admin_users')
         .select('role')

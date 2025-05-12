@@ -1,9 +1,10 @@
 
 import React from "react";
-import { Button } from "@/components/ui/button";
+import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { Label } from "@/components/ui/label";
+import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { CardContent } from "@/components/ui/card";
 
 interface PurposeFormProps {
   formData: {
@@ -23,63 +24,90 @@ const PurposeForm: React.FC<PurposeFormProps> = ({
 }) => {
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
+    if (formData.purpose === "other" && !formData.otherPurpose) {
+      alert("Please specify your purpose of visit");
+      return;
+    }
     nextStep();
   };
 
   return (
-    <form onSubmit={handleSubmit}>
-      <div className="space-y-6">
-        <div className="space-y-2">
-          <Label htmlFor="purpose">Purpose of Visit</Label>
-          <Select
-            value={formData.purpose}
-            onValueChange={(value) => updateFormData({ purpose: value })}
-            required
-          >
-            <SelectTrigger id="purpose" className="w-full">
-              <SelectValue placeholder="Select purpose of your visit" />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="visit">Visit</SelectItem>
-              <SelectItem value="work">Work</SelectItem>
-              <SelectItem value="tourism">Tourism</SelectItem>
-              <SelectItem value="sports">Sports</SelectItem>
-              <SelectItem value="meeting">Meeting</SelectItem>
-              <SelectItem value="official_visit">Official Visit</SelectItem>
-              <SelectItem value="student_visit">Student Visit</SelectItem>
-              <SelectItem value="other">Other</SelectItem>
-            </SelectContent>
-          </Select>
-        </div>
-
-        {formData.purpose === "other" && (
-          <div className="space-y-2">
-            <Label htmlFor="otherPurpose">Please Specify</Label>
-            <Input
-              id="otherPurpose"
-              value={formData.otherPurpose}
-              onChange={(e) => updateFormData({ otherPurpose: e.target.value })}
-              placeholder="Please specify your purpose"
-              required
-            />
+    <CardContent>
+      <form onSubmit={handleSubmit}>
+        <div className="space-y-6">
+          <div className="space-y-3">
+            <Label>Purpose of Visit</Label>
+            <RadioGroup
+              value={formData.purpose}
+              onValueChange={(value) => updateFormData({ purpose: value })}
+              className="space-y-2"
+            >
+              <div className="flex items-center space-x-2">
+                <RadioGroupItem value="visit" id="visit" />
+                <Label htmlFor="visit">Visit</Label>
+              </div>
+              <div className="flex items-center space-x-2">
+                <RadioGroupItem value="work" id="work" />
+                <Label htmlFor="work">Work</Label>
+              </div>
+              <div className="flex items-center space-x-2">
+                <RadioGroupItem value="tourism" id="tourism" />
+                <Label htmlFor="tourism">Tourism</Label>
+              </div>
+              <div className="flex items-center space-x-2">
+                <RadioGroupItem value="sports" id="sports" />
+                <Label htmlFor="sports">Sports</Label>
+              </div>
+              <div className="flex items-center space-x-2">
+                <RadioGroupItem value="meeting" id="meeting" />
+                <Label htmlFor="meeting">Meeting</Label>
+              </div>
+              <div className="flex items-center space-x-2">
+                <RadioGroupItem value="official_visit" id="official_visit" />
+                <Label htmlFor="official_visit">Official Visit</Label>
+              </div>
+              <div className="flex items-center space-x-2">
+                <RadioGroupItem value="student_visit" id="student_visit" />
+                <Label htmlFor="student_visit">Student Visit</Label>
+              </div>
+              <div className="flex items-center space-x-2">
+                <RadioGroupItem value="other" id="other" />
+                <Label htmlFor="other">Other</Label>
+              </div>
+            </RadioGroup>
           </div>
-        )}
 
-        <div className="pt-4 flex space-x-4">
-          <Button
-            type="button"
-            variant="outline"
-            onClick={prevStep}
-            className="flex-1"
-          >
-            Back
-          </Button>
-          <Button type="submit" className="flex-1">
-            Continue
-          </Button>
+          {formData.purpose === "other" && (
+            <div className="space-y-2">
+              <Label htmlFor="otherPurpose">Please specify:</Label>
+              <Input
+                id="otherPurpose"
+                value={formData.otherPurpose}
+                onChange={(e) =>
+                  updateFormData({ otherPurpose: e.target.value })
+                }
+                placeholder="Enter purpose of visit"
+                required={formData.purpose === "other"}
+              />
+            </div>
+          )}
+
+          <div className="pt-4 flex space-x-4">
+            <Button
+              type="button"
+              variant="outline"
+              onClick={prevStep}
+              className="flex-1"
+            >
+              Back
+            </Button>
+            <Button type="submit" className="flex-1">
+              Continue
+            </Button>
+          </div>
         </div>
-      </div>
-    </form>
+      </form>
+    </CardContent>
   );
 };
 
