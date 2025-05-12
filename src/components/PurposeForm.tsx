@@ -42,10 +42,10 @@ const PurposeForm: React.FC<PurposeFormProps> = ({
               onValueChange={(value) => updateFormData({ purpose: value })}
               className="space-y-2"
             >
-              <div className="flex items-center space-x-2">
-                <RadioGroupItem value="visit" id="visit" />
-                <Label htmlFor="visit">Visit</Label>
-              </div>
+             <div className="flex items-center space-x-2">
+    <RadioGroupItem value="alumni" id="alumni" />
+    <Label htmlFor="alumni">Alumni</Label>
+</div>
               <div className="flex items-center space-x-2">
                 <RadioGroupItem value="work" id="work" />
                 <Label htmlFor="work">Work</Label>
