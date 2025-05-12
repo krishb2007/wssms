@@ -63,19 +63,22 @@ export const saveFormData = async (formData: FormDataInput): Promise<FormEntry> 
       
       const { data: pictureData, error: pictureError } = await supabase.storage
         .from('visitor-pictures')
-        .upload(fileName, file);
+        .upload(fileName, file, {
+          cacheControl: '3600',
+          upsert: true
+        });
         
       if (pictureError) {
         console.error("Error uploading picture:", pictureError);
         throw pictureError;
       }
       
-      // Get public URL for the file
-      const { data: pictureUrl } = supabase.storage
+      // Get public URL for the file (now using the publicUrl method directly)
+      const pictureUrl = supabase.storage
         .from('visitor-pictures')
         .getPublicUrl(fileName);
         
-      dbFormData.picture = pictureUrl.publicUrl;
+      dbFormData.picture = pictureUrl.data.publicUrl;
     } else if (typeof formData.picture === 'string') {
       dbFormData.picture = formData.picture;
     }
@@ -87,19 +90,22 @@ export const saveFormData = async (formData: FormDataInput): Promise<FormEntry> 
       
       const { data: signatureData, error: signatureError } = await supabase.storage
         .from('visitor-signatures')
-        .upload(fileName, file);
+        .upload(fileName, file, {
+          cacheControl: '3600',
+          upsert: true
+        });
         
       if (signatureError) {
         console.error("Error uploading signature:", signatureError);
         throw signatureError;
       }
       
-      // Get public URL for the file
-      const { data: signatureUrl } = supabase.storage
+      // Get public URL for the file (now using the publicUrl method directly)
+      const signatureUrl = supabase.storage
         .from('visitor-signatures')
         .getPublicUrl(fileName);
         
-      dbFormData.signature = signatureUrl.publicUrl;
+      dbFormData.signature = signatureUrl.data.publicUrl;
     } else if (typeof formData.signature === 'string') {
       dbFormData.signature = formData.signature;
     }

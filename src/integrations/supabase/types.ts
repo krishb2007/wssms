@@ -41,6 +41,7 @@ export type Database = {
           phonenumber: string
           picture_url: string | null
           purpose: string
+          schoolname: string | null
           signature_url: string | null
           starttime: string | null
           user_id: string | null
@@ -57,6 +58,7 @@ export type Database = {
           phonenumber: string
           picture_url?: string | null
           purpose: string
+          schoolname?: string | null
           signature_url?: string | null
           starttime?: string | null
           user_id?: string | null
@@ -73,6 +75,7 @@ export type Database = {
           phonenumber?: string
           picture_url?: string | null
           purpose?: string
+          schoolname?: string | null
           signature_url?: string | null
           starttime?: string | null
           user_id?: string | null
