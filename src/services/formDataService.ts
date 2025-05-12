@@ -3,7 +3,7 @@ import { supabase } from "@/integrations/supabase/client";
 
 // FormEntry interface definition
 export interface FormEntry {
-  id?: number;
+  id?: string;
   timestamp?: string;
   visitorName: string;
   schoolName: string;
@@ -107,20 +107,20 @@ export const saveFormData = async (formData: FormDataInput): Promise<FormEntry> 
     // Insert the data into the database
     const { data, error } = await supabase
       .from('visitor_registrations')
-      .insert([{
-        visitor_name: dbFormData.visitorName,
-        school_name: dbFormData.schoolName,
-        number_of_people: dbFormData.numberOfPeople,
+      .insert({
+        visitorname: dbFormData.visitorName,
+        schoolname: dbFormData.schoolName,
+        numberofpeople: dbFormData.numberOfPeople,
         people: dbFormData.people,
         purpose: dbFormData.purpose,
-        other_purpose: dbFormData.otherPurpose,
+        otherpurpose: dbFormData.otherPurpose,
         address: dbFormData.address,
         picture_url: dbFormData.picture,
         signature_url: dbFormData.signature,
-        start_time: dbFormData.startTime,
-        end_time: dbFormData.endTime,
-        phone_number: dbFormData.phoneNumber
-      }])
+        starttime: dbFormData.startTime,
+        endtime: dbFormData.endTime,
+        phonenumber: dbFormData.phoneNumber
+      })
       .select();
     
     if (error) {
@@ -134,19 +134,19 @@ export const saveFormData = async (formData: FormDataInput): Promise<FormEntry> 
     const savedEntry: FormEntry = {
       id: data[0].id,
       timestamp: data[0].created_at,
-      visitorName: data[0].visitor_name,
-      schoolName: data[0].school_name,
-      numberOfPeople: data[0].number_of_people,
+      visitorName: data[0].visitorname,
+      schoolName: data[0].schoolname,
+      numberOfPeople: data[0].numberofpeople,
       people: data[0].people,
       purpose: data[0].purpose,
-      otherPurpose: data[0].other_purpose,
+      otherPurpose: data[0].otherpurpose,
       address: data[0].address,
       picture: data[0].picture_url,
       signature: data[0].signature_url,
-      startTime: data[0].start_time,
-      endTime: data[0].end_time,
-      phoneNumber: data[0].phone_number,
-      visitCount: data[0].visit_count || 1
+      startTime: data[0].starttime,
+      endTime: data[0].endtime,
+      phoneNumber: data[0].phonenumber,
+      visitCount: data[0].visitcount || 1
     };
     
     return savedEntry;

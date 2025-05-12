@@ -1,3 +1,4 @@
+
 import React, { useState } from "react";
 import WelcomePage from "@/components/WelcomePage";
 import NameForm from "@/components/NameForm";
@@ -26,7 +27,6 @@ const Index = () => {
     startTime: "",
     endTime: null as string | null, // Optional end time
     phoneNumber: "",
-    verifiedOtp: false,
     address: {
       city: "",
       state: "",
@@ -90,7 +90,6 @@ const Index = () => {
         startTime: "",
         endTime: null,
         phoneNumber: "",
-        verifiedOtp: false,
         address: {
           city: "",
           state: "",

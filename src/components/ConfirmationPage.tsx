@@ -3,7 +3,6 @@ import React from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { format } from "date-fns";
-import { Checkbox } from "@/components/ui/checkbox";
 
 interface ConfirmationPageProps {
   formData: {
@@ -33,8 +32,6 @@ const ConfirmationPage: React.FC<ConfirmationPageProps> = ({
   prevStep,
   handleSubmit,
 }) => {
- 
-
   // Helper function to format purpose text
   const formatPurpose = (purpose: string): string => {
     if (purpose === "other") return formData.otherPurpose;
@@ -43,6 +40,7 @@ const ConfirmationPage: React.FC<ConfirmationPageProps> = ({
       "visit": "Visit",
       "work": "Work",
       "tourism": "Tourism",
+      "sports": "Sports",
       "meeting": "Meeting",
       "official_visit": "Official Visit",
       "student_visit": "Student Visit"
@@ -155,21 +153,22 @@ const ConfirmationPage: React.FC<ConfirmationPageProps> = ({
         </CardContent>
       </Card>
 
-     
-      
-        </div>
-      </div>
-
       <div className="pt-4 flex space-x-4">
         <Button
-  type="button"
-  onClick={handleSubmit}
-
->
-  Submit Registration
-</Button>
-        
-       
+          type="button"
+          variant="outline"
+          onClick={prevStep}
+          className="flex-1"
+        >
+          Back
+        </Button>
+        <Button
+          type="button"
+          onClick={handleSubmit}
+          className="flex-1"
+        >
+          Submit Registration
+        </Button>
       </div>
     </div>
   );
