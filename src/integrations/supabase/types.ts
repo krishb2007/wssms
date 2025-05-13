@@ -32,6 +32,7 @@ export type Database = {
       }
       visitor_registrations: {
         Row: {
+          accepted_policy: boolean | null
           address: string | null
           created_at: string | null
           endtime: string | null
@@ -49,6 +50,7 @@ export type Database = {
           visitorname: string
         }
         Insert: {
+          accepted_policy?: boolean | null
           address?: string | null
           created_at?: string | null
           endtime?: string | null
@@ -66,6 +68,7 @@ export type Database = {
           visitorname: string
         }
         Update: {
+          accepted_policy?: boolean | null
           address?: string | null
           created_at?: string | null
           endtime?: string | null

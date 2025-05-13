@@ -136,8 +136,7 @@ export const saveFormData = async (formData: FormDataInput): Promise<FormEntry> 
         starttime: formData.startTime,
         endtime: formData.endTime,
         phonenumber: formData.phoneNumber,
-        // Only add accepted_policy if it exists in the formData
-        ...(formData.acceptedPolicy !== undefined ? { accepted_policy: formData.acceptedPolicy } : {})
+        accepted_policy: formData.acceptedPolicy
       })
       .select();
     
@@ -166,8 +165,7 @@ export const saveFormData = async (formData: FormDataInput): Promise<FormEntry> 
       endTime: data[0].endtime,
       phoneNumber: data[0].phonenumber,
       visitCount: data[0].visitcount || 1,
-      // Only add acceptedPolicy if it exists in the database response
-      ...(data[0].accepted_policy !== undefined ? { acceptedPolicy: data[0].accepted_policy } : {})
+      acceptedPolicy: data[0].accepted_policy
     };
     
     return savedEntry;
