@@ -4,12 +4,16 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Signature } from "lucide-react";
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
+import { Checkbox } from "@/components/ui/checkbox";
+import { Label } from "@/components/ui/label";
+import { toast } from "@/components/ui/use-toast";
 
 interface SignatureFormProps {
   formData: {
     signature: File | string | null;
+    acceptedPolicy?: boolean;
   };
-  updateFormData: (data: Partial<{ signature: File | string | null }>) => void;
+  updateFormData: (data: Partial<{ signature: File | string | null; acceptedPolicy?: boolean }>) => void;
   nextStep: () => void;
   prevStep: () => void;
 }
@@ -31,6 +35,16 @@ const SignatureForm: React.FC<SignatureFormProps> = ({
   
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
+    
+    if (!formData.acceptedPolicy) {
+      toast({
+        title: "Policy acceptance required",
+        description: "Please read and accept the Student Protection Policy",
+        variant: "destructive"
+      });
+      return;
+    }
+    
     if (!formData.signature && canvasRef.current) {
       // If no signature has been saved yet, save the current canvas state
       saveSignature();
@@ -137,6 +151,10 @@ const SignatureForm: React.FC<SignatureFormProps> = ({
     }
   };
   
+  const handlePolicyAcceptance = (checked: boolean) => {
+    updateFormData({ acceptedPolicy: checked });
+  };
+  
   // Initialize canvas when component mounts
   React.useEffect(() => {
     initCanvas();
@@ -155,54 +173,65 @@ const SignatureForm: React.FC<SignatureFormProps> = ({
             <AccordionTrigger className="text-blue-600">
               Read Student Protection Policy
             </AccordionTrigger>
-           <AccordionContent>
-  <div className="text-sm text-gray-700 space-y-3 px-1 py-2">
-    <p>
-      <strong>Woodstock School Student Protection Policy</strong>
-    </p>
-    <p>
-      I hereby acknowledge and understand the Importance of adhering to
-      Woodstock School's Child Protection Policy and the provisions of the POCSO Act 2012.
-      I commit to following the guidelines outlined below:
-    </p>
-    <ol className="list-decimal ml-4 mt-2 space-y-1">
-      <li>
-        Protection of Children: The POCSO Act Is designed to protect children
-        (under 18 years of age) from sexual offences, including sexual harassment,
-        assault, and exploitation.
-      </li>
-      <li>
-        Mandatory Reporting: Any suspicion or knowledge of an offence against a child must
-        be reported to the authorities. Failure to report such an incident is a punishable offence.
-      </li>
-      <li>
-        Child-Friendly Procedures: The Act ensures that all legal proceedings are conducted
-        in a manner that is child-friendly and that the privacy and dignity of the child are respected.
-      </li>
-      <li>
-        Punishable Offences: The Act covers a wide range of offences, including penetrative
-        sexual assault, sexual harassment, and use of a child for pornography, all of which carry
-        severe penalties.
-      </li>
-      <li>
-        No Tolerance Policy: The school maintains a strict no-tolerance policy regarding any
-        form of child abuse or exploitation or behavior that's unacceptable in the presence of
-        children like smoking, using abusive and inappropriate language, consuming alcohol, or
-        visiting the campus in an inebriated condition.
-      </li>
-    </ol>
-    <p className="mt-2">
-      Please be mindful of privacy (taking pictures and uploading them on social media)
-      and physical contact with children.
-    </p>
-    <p>
-      The school reserves the right to refuse or terminate your visit at any time if these
-      guidelines are not respected.
-    </p>
-  </div>
-</AccordionContent>
+            <AccordionContent>
+              <div className="text-sm text-gray-700 space-y-3 px-1 py-2">
+                <p>
+                  <strong>Woodstock School Student Protection Policy</strong>
+                </p>
+                <p>
+                  I hereby acknowledge and understand the Importance of adhering to
+                  Woodstock School's Child Protection Policy and the provisions of the POCSO Act 2012.
+                  I commit to following the guidelines outlined below:
+                </p>
+                <ol className="list-decimal ml-4 mt-2 space-y-1">
+                  <li>
+                    Protection of Children: The POCSO Act Is designed to protect children
+                    (under 18 years of age) from sexual offences, including sexual harassment,
+                    assault, and exploitation.
+                  </li>
+                  <li>
+                    Mandatory Reporting: Any suspicion or knowledge of an offence against a child must
+                    be reported to the authorities. Failure to report such an incident is a punishable offence.
+                  </li>
+                  <li>
+                    Child-Friendly Procedures: The Act ensures that all legal proceedings are conducted
+                    in a manner that is child-friendly and that the privacy and dignity of the child are respected.
+                  </li>
+                  <li>
+                    Punishable Offences: The Act covers a wide range of offences, including penetrative
+                    sexual assault, sexual harassment, and use of a child for pornography, all of which carry
+                    severe penalties.
+                  </li>
+                  <li>
+                    No Tolerance Policy: The school maintains a strict no-tolerance policy regarding any
+                    form of child abuse or exploitation or behavior that's unacceptable in the presence of
+                    children like smoking, using abusive and inappropriate language, consuming alcohol, or
+                    visiting the campus in an inebriated condition.
+                  </li>
+                </ol>
+                <p className="mt-2">
+                  Please be mindful of privacy (taking pictures and uploading them on social media)
+                  and physical contact with children.
+                </p>
+                <p>
+                  The school reserves the right to refuse or terminate your visit at any time if these
+                  guidelines are not respected.
+                </p>
+              </div>
+            </AccordionContent>
           </AccordionItem>
         </Accordion>
+        
+        <div className="flex items-center space-x-2">
+          <Checkbox 
+            id="policy" 
+            checked={formData.acceptedPolicy || false}
+            onCheckedChange={(checked) => handlePolicyAcceptance(checked as boolean)}
+          />
+          <Label htmlFor="policy" className="text-sm">
+            I have read the Student Protection Policy at Woodstock School and I accept following it
+          </Label>
+        </div>
         
         <Card className="overflow-hidden mt-4">
           <CardContent className="p-6">

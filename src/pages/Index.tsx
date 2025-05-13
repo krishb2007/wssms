@@ -1,4 +1,3 @@
-
 import React, { useState } from "react";
 import WelcomePage from "@/components/WelcomePage";
 import NameForm from "@/components/NameForm";
@@ -20,7 +19,7 @@ const Index = () => {
   const [step, setStep] = useState(1);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [submissionError, setSubmissionError] = useState<string | null>(null);
-  const [formData, setFormData] = useState<FormDataInput>({
+  const [formData, setFormData] = useState<FormDataInput & {acceptedPolicy?: boolean}>({
     visitorName: "",
     schoolName: "Woodstock School", // Default school name
     numberOfPeople: 1,
@@ -37,6 +36,7 @@ const Index = () => {
     },
     picture: null as File | string | null,
     signature: null as File | string | null,
+    acceptedPolicy: false,
   });
 
   const updateFormData = (data: Partial<FormDataInput>) => {
@@ -101,6 +101,7 @@ const Index = () => {
         },
         picture: null,
         signature: null,
+        acceptedPolicy: false,
       });
     } catch (error) {
       console.error("Error submitting form:", error);

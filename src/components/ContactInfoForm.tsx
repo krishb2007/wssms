@@ -3,6 +3,7 @@ import React from "react";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
+import { toast } from "@/components/ui/use-toast";
 
 interface ContactInfoFormProps {
   formData: {
@@ -21,7 +22,24 @@ const ContactInfoForm: React.FC<ContactInfoFormProps> = ({
 }) => {
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
+    
+    // Validate phone number length
+    if (formData.phoneNumber.replace(/\D/g, '').length !== 10) {
+      toast({
+        title: "Invalid phone number",
+        description: "Please enter a valid 10-digit phone number",
+        variant: "destructive"
+      });
+      return;
+    }
+    
     nextStep();
+  };
+
+  const handlePhoneChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    // Only allow digits and limit to 10 characters
+    const value = e.target.value.replace(/\D/g, '').substring(0, 10);
+    updateFormData({ phoneNumber: value });
   };
 
   return (
@@ -33,10 +51,14 @@ const ContactInfoForm: React.FC<ContactInfoFormProps> = ({
             id="phoneNumber"
             type="tel"
             value={formData.phoneNumber}
-            onChange={(e) => updateFormData({ phoneNumber: e.target.value })}
-            placeholder="Enter phone number"
+            onChange={handlePhoneChange}
+            placeholder="Enter 10-digit phone number"
+            pattern="[0-9]{10}"
             required
           />
+          <p className="text-xs text-gray-500">
+            Please enter a 10-digit phone number without spaces or special characters
+          </p>
         </div>
 
         <div className="pt-4 flex space-x-4">

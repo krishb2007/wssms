@@ -5,6 +5,7 @@ import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { CardContent } from "@/components/ui/card";
+import { toast } from "@/components/ui/use-toast";
 
 interface PurposeFormProps {
   formData: {
@@ -25,7 +26,11 @@ const PurposeForm: React.FC<PurposeFormProps> = ({
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     if (formData.purpose === "other" && !formData.otherPurpose) {
-      alert("Please specify your purpose of visit");
+      toast({
+        title: "Information required",
+        description: "Please specify your purpose of visit",
+        variant: "destructive"
+      });
       return;
     }
     nextStep();
@@ -42,10 +47,10 @@ const PurposeForm: React.FC<PurposeFormProps> = ({
               onValueChange={(value) => updateFormData({ purpose: value })}
               className="space-y-2"
             >
-             <div className="flex items-center space-x-2">
-    <RadioGroupItem value="alumni" id="alumni" />
-    <Label htmlFor="alumni">Alumni</Label>
-</div>
+              <div className="flex items-center space-x-2">
+                <RadioGroupItem value="alumni" id="alumni" />
+                <Label htmlFor="alumni">Alumni</Label>
+              </div>
               <div className="flex items-center space-x-2">
                 <RadioGroupItem value="work" id="work" />
                 <Label htmlFor="work">Work</Label>

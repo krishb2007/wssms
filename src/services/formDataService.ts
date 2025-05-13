@@ -1,4 +1,3 @@
-
 import { supabase } from "@/integrations/supabase/client";
 
 // FormEntry interface definition
@@ -22,6 +21,7 @@ export interface FormEntry {
   endTime?: string | null; // Making end time optional
   visitCount?: number;
   phoneNumber: string;
+  acceptedPolicy?: boolean;
 }
 
 // Form data input type (can include File objects before storage)
@@ -42,6 +42,7 @@ export interface FormDataInput {
   startTime: string;
   endTime: string | null;
   phoneNumber: string;
+  acceptedPolicy?: boolean;
 }
 
 export const saveFormData = async (formData: FormDataInput): Promise<FormEntry> => {
@@ -127,7 +128,8 @@ export const saveFormData = async (formData: FormDataInput): Promise<FormEntry> 
         signature_url: dbFormData.signature,
         starttime: dbFormData.startTime,
         endtime: dbFormData.endTime,
-        phonenumber: dbFormData.phoneNumber
+        phonenumber: dbFormData.phoneNumber,
+        accepted_policy: formData.acceptedPolicy
       })
       .select();
     
@@ -154,7 +156,8 @@ export const saveFormData = async (formData: FormDataInput): Promise<FormEntry> 
       startTime: data[0].starttime,
       endTime: data[0].endtime,
       phoneNumber: data[0].phonenumber,
-      visitCount: data[0].visitcount || 1
+      visitCount: data[0].visitcount || 1,
+      acceptedPolicy: data[0].accepted_policy
     };
     
     return savedEntry;

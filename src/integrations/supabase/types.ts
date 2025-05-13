@@ -32,12 +32,12 @@ export type Database = {
       }
       visitor_registrations: {
         Row: {
-          address: Json
+          address: string | null
           created_at: string | null
           endtime: string | null
           id: string
           numberofpeople: number
-          people: Json
+          people: string
           phonenumber: string
           picture_url: string | null
           purpose: string
@@ -49,12 +49,12 @@ export type Database = {
           visitorname: string
         }
         Insert: {
-          address: Json
+          address?: string | null
           created_at?: string | null
           endtime?: string | null
           id?: string
           numberofpeople: number
-          people: Json
+          people: string
           phonenumber: string
           picture_url?: string | null
           purpose: string
@@ -66,12 +66,12 @@ export type Database = {
           visitorname: string
         }
         Update: {
-          address?: Json
+          address?: string | null
           created_at?: string | null
           endtime?: string | null
           id?: string
           numberofpeople?: number
-          people?: Json
+          people?: string
           phonenumber?: string
           picture_url?: string | null
           purpose?: string
