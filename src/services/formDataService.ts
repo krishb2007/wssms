@@ -1,3 +1,4 @@
+
 import { supabase } from "@/integrations/supabase/client";
 
 // FormEntry interface definition
@@ -114,22 +115,29 @@ export const saveFormData = async (formData: FormDataInput): Promise<FormEntry> 
     // Combine purpose and otherPurpose if purpose is "other"
     const purposeValue = formData.purpose === "other" ? formData.otherPurpose : formData.purpose;
     
-    // Insert the data into the database
+    // Convert people array to JSON string for storage
+    const peopleJson = JSON.stringify(formData.people);
+    
+    // Convert address object to JSON string for storage
+    const addressJson = JSON.stringify(formData.address);
+    
+    // Insert the data into the database - fixed to use proper types and keys
     const { data, error } = await supabase
       .from('visitor_registrations')
       .insert({
-        visitorname: dbFormData.visitorName,
-        schoolname: "Woodstock School", // Use hardcoded value since the column might not exist
-        numberofpeople: dbFormData.numberOfPeople,
-        people: dbFormData.people,
+        visitorname: formData.visitorName,
+        schoolname: "Woodstock School", // Use hardcoded value
+        numberofpeople: formData.numberOfPeople,
+        people: peopleJson, // Store as JSON string
         purpose: purposeValue, // Use the combined purpose value
-        address: dbFormData.address,
+        address: addressJson, // Store as JSON string
         picture_url: dbFormData.picture,
         signature_url: dbFormData.signature,
-        starttime: dbFormData.startTime,
-        endtime: dbFormData.endTime,
-        phonenumber: dbFormData.phoneNumber,
-        accepted_policy: formData.acceptedPolicy
+        starttime: formData.startTime,
+        endtime: formData.endTime,
+        phonenumber: formData.phoneNumber,
+        // Only add accepted_policy if it exists in the formData
+        ...(formData.acceptedPolicy !== undefined ? { accepted_policy: formData.acceptedPolicy } : {})
       })
       .select();
     
@@ -141,23 +149,25 @@ export const saveFormData = async (formData: FormDataInput): Promise<FormEntry> 
     console.log("Form data saved successfully:", data);
     
     // Return the saved entry (transforming from snake_case to camelCase)
+    // Parse the JSON strings back to objects
     const savedEntry: FormEntry = {
       id: data[0].id,
       timestamp: data[0].created_at,
       visitorName: data[0].visitorname,
       schoolName: "Woodstock School", // Using hardcoded value
       numberOfPeople: data[0].numberofpeople,
-      people: data[0].people as Array<{ name: string; role: string }>,
+      people: JSON.parse(data[0].people) as Array<{ name: string; role: string }>,
       purpose: data[0].purpose,
       otherPurpose: formData.purpose === "other" ? formData.otherPurpose : "",
-      address: data[0].address as { city: string; state: string; country: string },
+      address: JSON.parse(data[0].address) as { city: string; state: string; country: string },
       picture: data[0].picture_url,
       signature: data[0].signature_url,
       startTime: data[0].starttime,
       endTime: data[0].endtime,
       phoneNumber: data[0].phonenumber,
       visitCount: data[0].visitcount || 1,
-      acceptedPolicy: data[0].accepted_policy
+      // Only add acceptedPolicy if it exists in the database response
+      ...(data[0].accepted_policy !== undefined ? { acceptedPolicy: data[0].accepted_policy } : {})
     };
     
     return savedEntry;
