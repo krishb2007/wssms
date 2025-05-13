@@ -1,11 +1,8 @@
 import React, { useState } from "react";
 import WelcomePage from "@/components/WelcomePage";
-import NameForm from "@/components/NameForm";
-import PeopleInfoForm from "@/components/PeopleInfoForm";
-import PurposeForm from "@/components/PurposeForm";
-import DurationForm from "@/components/DurationForm";
-import ContactInfoForm from "@/components/ContactInfoForm";
-import AddressForm from "@/components/AddressForm";
+import CombinedNamePeopleForm from "@/components/CombinedNamePeopleForm";
+import CombinedPurposeDurationForm from "@/components/CombinedPurposeDurationForm";
+import CombinedContactAddressForm from "@/components/CombinedContactAddressForm";
 import UploadForm from "@/components/UploadForm";
 import SignatureForm from "@/components/SignatureForm";
 import ConfirmationPage from "@/components/ConfirmationPage";
@@ -44,7 +41,7 @@ const Index = () => {
   };
 
   const nextStep = () => {
-    if (step < 10) {
+    if (step < 7) {
       let nextStepValue = step + 1;
       setStep(nextStepValue);
       window.scrollTo(0, 0);
@@ -169,7 +166,7 @@ const Index = () => {
         return <WelcomePage nextStep={nextStep} />;
       case 2:
         return (
-          <NameForm
+          <CombinedNamePeopleForm
             formData={formData}
             updateFormData={updateFormData}
             nextStep={nextStep}
@@ -178,7 +175,7 @@ const Index = () => {
         );
       case 3:
         return (
-          <PeopleInfoForm
+          <CombinedPurposeDurationForm
             formData={formData}
             updateFormData={updateFormData}
             nextStep={nextStep}
@@ -187,7 +184,7 @@ const Index = () => {
         );
       case 4:
         return (
-          <PurposeForm
+          <CombinedContactAddressForm
             formData={formData}
             updateFormData={updateFormData}
             nextStep={nextStep}
@@ -196,7 +193,7 @@ const Index = () => {
         );
       case 5:
         return (
-          <DurationForm
+          <UploadForm
             formData={formData}
             updateFormData={updateFormData}
             nextStep={nextStep}
@@ -205,33 +202,6 @@ const Index = () => {
         );
       case 6:
         return (
-          <ContactInfoForm
-            formData={formData}
-            updateFormData={updateFormData}
-            nextStep={nextStep}
-            prevStep={prevStep}
-          />
-        );
-      case 7:
-        return (
-          <AddressForm
-            formData={formData}
-            updateFormData={updateFormData}
-            nextStep={nextStep}
-            prevStep={prevStep}
-          />
-        );
-      case 8:
-        return (
-          <UploadForm
-            formData={formData}
-            updateFormData={updateFormData}
-            nextStep={nextStep}
-            prevStep={prevStep}
-          />
-        );
-      case 9:
-        return (
           <SignatureForm
             formData={formData}
             updateFormData={updateFormData}
@@ -239,7 +209,7 @@ const Index = () => {
             prevStep={prevStep}
           />
         );
-      case 10:
+      case 7:
         return (
           <ConfirmationPage
             formData={formData}
@@ -268,12 +238,12 @@ const Index = () => {
                 Campus Registration Form
               </h2>
               <p className="mt-2 text-sm text-gray-600">
-                Step {step} of 10: {getStepName(step)}
+                Step {step} of 7: {getStepName(step)}
               </p>
               <div className="w-full bg-gray-200 h-2 mt-4 rounded-full">
                 <div 
                   className="bg-blue-600 h-2 rounded-full transition-all duration-300"
-                  style={{ width: `${(step / 10) * 100}%` }}
+                  style={{ width: `${(step / 7) * 100}%` }}
                 ></div>
               </div>
             </div>
@@ -290,22 +260,16 @@ const getStepName = (step: number): string => {
     case 1:
       return "Welcome to Woodstock School";
     case 2:
-      return "Your Name";
+      return "Visitor Information";
     case 3:
-      return "Additional Visitors";
+      return "Purpose & Duration";
     case 4:
-      return "Purpose of Visit";
+      return "Contact & Address";
     case 5:
-      return "Visit Duration";
-    case 6:
-      return "Contact Details";
-    case 7:
-      return "Address Information";
-    case 8:
       return "Upload Photo";
-    case 9:
+    case 6:
       return "Signature";
-    case 10:
+    case 7:
       return "Review & Submit";
     default:
       return "";
