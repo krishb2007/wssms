@@ -1,60 +1,54 @@
 <!DOCTYPE html>
-<head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <meta name="theme-color" content="#ffffff" />
-
-  <title>WSSMS</title>
-
-  <!-- Favicon -->
-  <link rel="icon" type="image/png" sizes="192x192" href="/icon-192.png" />
-
-  <!-- Web App Manifest -->
-  <link rel="manifest" href="/manifest.json" />
-
-  <!-- Apple Touch Icon -->
-  <link rel="apple-touch-icon" href="/icon-192.png" />
-
-  <!-- Description -->
-  <meta name="description" content="WSSMS - Woodstock School Student Management System" />
-
-  <!-- Open Graph (Social Media Preview) -->
-  <meta property="og:title" content="WSSMS" />
-  <meta property="og:description" content="Woodstock School Student Management System" />
-  <meta property="og:image" content="/icon-192.png" />
-  <meta property="og:type" content="website" />
-  <meta property="og:url" content="https://yourdomain.com" />
-
-  <!-- Optional: Add any stylesheets or fonts below -->
-  <link rel="stylesheet" href="styles.css" />
-</head>
+<html lang="en">
+  <head>
+    <!-- Meta Configuration -->
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>campus-connect-capture</title>
-    <meta name="description" content="Lovable Generated Project" />
+    <meta name="theme-color" content="#ffffff" />
+    <meta name="description" content="WSSMS - Woodstock School Student Management System" />
     <meta name="author" content="Lovable" />
 
-    <meta property="og:title" content="campus-connect-capture" />
-    <meta property="og:description" content="Lovable Generated Project" />
-    <meta property="og:type" content="website" />
-    <meta property="og:image" content="https://lovable.dev/opengraph-image-p98pqg.png" />
+    <!-- Title -->
+    <title>WSSMS</title>
 
+    <!-- Favicon and Icons -->
+    <link rel="icon" type="image/png" sizes="192x192" href="/icon-192.png" />
+    <link rel="apple-touch-icon" href="/icon-192.png" />
+
+    <!-- Web App Manifest -->
+    <link rel="manifest" href="/manifest.json" />
+
+    <!-- Open Graph Tags -->
+    <meta property="og:title" content="WSSMS" />
+    <meta property="og:description" content="Woodstock School Student Management System" />
+    <meta property="og:image" content="/icon-192.png" />
+    <meta property="og:type" content="website" />
+    <meta property="og:url" content="https://yourdomain.com" />
+
+    <!-- Twitter Card -->
     <meta name="twitter:card" content="summary_large_image" />
     <meta name="twitter:site" content="@lovable_dev" />
     <meta name="twitter:image" content="https://lovable.dev/opengraph-image-p98pqg.png" />
+
+    <!-- Optional: Stylesheets -->
+    <link rel="stylesheet" href="styles.css" />
   </head>
 
   <body>
     <div id="root"></div>
-    <!-- IMPORTANT: DO NOT REMOVE THIS SCRIPT TAG OR THIS VERY COMMENT! -->
+
+    <!-- GPT Script -->
     <script src="https://cdn.gpteng.co/gptengineer.js" type="module"></script>
     <script type="module" src="/src/main.tsx"></script>
-   <script>
-  if ('serviceWorker' in navigator) {
-    navigator.serviceWorker.register('/service-worker.js')
-      .then(() => console.log('Service Worker Registered'))
-      .catch(error => console.log('Service Worker Registration Failed:', error));
-  }
-</script>
+
+    <!-- Service Worker -->
+    <script>
+      if ('serviceWorker' in navigator) {
+        navigator.serviceWorker
+          .register('/service-worker.js')
+          .then(() => console.log('Service Worker Registered'))
+          .catch(error => console.log('Service Worker Registration Failed:', error));
+      }
+    </script>
   </body>
 </html>
