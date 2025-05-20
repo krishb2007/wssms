@@ -1,7 +1,10 @@
 
-import { supabase } from "@/integrations/supabase/client";
+import { db } from "@/integrations/firebase/client";
+import { collection, addDoc, Timestamp } from "firebase/firestore";
+import { ref, uploadBytes, getDownloadURL } from "firebase/storage";
+import { storage } from "@/integrations/firebase/client"; // Make sure you export storage in your client.ts
 
-// FormEntry interface definition
+// FormEntry interface definition (unchanged)
 export interface FormEntry {
   id?: string;
   timestamp?: string;
@@ -16,16 +19,16 @@ export interface FormEntry {
     state: string;
     country: string;
   };
-  picture: string | null; // Database only stores URLs, not File objects
-  signature: string | null; // Database only stores URLs, not File objects
+  picture: string | null;
+  signature: string | null;
   startTime?: string;
-  endTime?: string | null; // Making end time optional
+  endTime?: string | null;
   visitCount?: number;
   phoneNumber: string;
   acceptedPolicy?: boolean;
 }
 
-// Form data input type (can include File objects before storage)
+// Form data input type (unchanged)
 export interface FormDataInput {
   visitorName: string;
   schoolName: string;
@@ -48,129 +51,71 @@ export interface FormDataInput {
 
 export const saveFormData = async (formData: FormDataInput): Promise<FormEntry> => {
   try {
-    console.log("Starting to save form data");
-    
-    // Create a copy of form data that will be modified with URLs instead of files
+    console.log("Starting to save form data (Firebase)");
+
+    // Prepare data for Firestore
     const dbFormData: Partial<FormEntry> = {
       ...formData,
       picture: null,
       signature: null
     };
-    
-    // For picture handling - upload to Supabase storage if it's a File
+
+    // Handle picture upload to Firebase Storage if needed
     if (formData.picture && typeof formData.picture !== 'string') {
       const file = formData.picture as File;
       const fileExt = file.name.split('.').pop();
       const fileName = `${Date.now()}-picture.${fileExt}`;
-      
-      const { data: pictureData, error: pictureError } = await supabase.storage
-        .from('visitor-pictures')
-        .upload(fileName, file, {
-          cacheControl: '3600',
-          upsert: true
-        });
-        
-      if (pictureError) {
-        console.error("Error uploading picture:", pictureError);
-        throw pictureError;
-      }
-      
-      // Get public URL for the file (now using the publicUrl method directly)
-      const pictureUrl = supabase.storage
-        .from('visitor-pictures')
-        .getPublicUrl(fileName);
-        
-      dbFormData.picture = pictureUrl.data.publicUrl;
+      const fileRef = ref(storage, `visitor-pictures/${fileName}`);
+      await uploadBytes(fileRef, file);
+      dbFormData.picture = await getDownloadURL(fileRef);
     } else if (typeof formData.picture === 'string') {
       dbFormData.picture = formData.picture;
     }
-    
-    // For signature handling - upload to Supabase storage if it's a File or Blob
+
+    // Handle signature upload to Firebase Storage if needed
     if (formData.signature && typeof formData.signature !== 'string') {
       const file = formData.signature as File;
       const fileName = `${Date.now()}-signature.png`;
-      
-      const { data: signatureData, error: signatureError } = await supabase.storage
-        .from('visitor-signatures')
-        .upload(fileName, file, {
-          cacheControl: '3600',
-          upsert: true
-        });
-        
-      if (signatureError) {
-        console.error("Error uploading signature:", signatureError);
-        throw signatureError;
-      }
-      
-      // Get public URL for the file (now using the publicUrl method directly)
-      const signatureUrl = supabase.storage
-        .from('visitor-signatures')
-        .getPublicUrl(fileName);
-        
-      dbFormData.signature = signatureUrl.data.publicUrl;
+      const fileRef = ref(storage, `visitor-signatures/${fileName}`);
+      await uploadBytes(fileRef, file);
+      dbFormData.signature = await getDownloadURL(fileRef);
     } else if (typeof formData.signature === 'string') {
       dbFormData.signature = formData.signature;
     }
-    
+
     // Combine purpose and otherPurpose if purpose is "other"
     const purposeValue = formData.purpose === "other" ? formData.otherPurpose : formData.purpose;
-    
-    // Convert people array to JSON string for storage
-    const peopleJson = JSON.stringify(formData.people);
-    
-    // Convert address object to JSON string for storage
-    const addressJson = JSON.stringify(formData.address);
-    
-    // Insert the data into the database - fixed to use proper types and keys
-    const { data, error } = await supabase
-      .from('visitor_registrations')
-      .insert({
-        visitorname: formData.visitorName,
-        schoolname: "Woodstock School", // Use hardcoded value
-        numberofpeople: formData.numberOfPeople,
-        people: peopleJson, // Store as JSON string
-        purpose: purposeValue, // Use the combined purpose value
-        address: addressJson, // Store as JSON string
-        picture_url: dbFormData.picture,
-        signature_url: dbFormData.signature,
-        starttime: formData.startTime,
-        endtime: formData.endTime,
-        phonenumber: formData.phoneNumber,
-        accepted_policy: formData.acceptedPolicy
-      })
-      .select();
-    
-    if (error) {
-      console.error("Database error:", error);
-      throw error;
-    }
-    
-    console.log("Form data saved successfully:", data);
-    
-    // Return the saved entry (transforming from snake_case to camelCase)
-    // Parse the JSON strings back to objects
-    const savedEntry: FormEntry = {
-      id: data[0].id,
-      timestamp: data[0].created_at,
-      visitorName: data[0].visitorname,
-      schoolName: "Woodstock School", // Using hardcoded value
-      numberOfPeople: data[0].numberofpeople,
-      people: JSON.parse(data[0].people) as Array<{ name: string; role: string }>,
-      purpose: data[0].purpose,
+
+    // Prepare Firestore entry
+    const entryData = {
+      visitorName: formData.visitorName,
+      schoolName: "Woodstock School", // Hardcoded as in your example
+      numberOfPeople: formData.numberOfPeople,
+      people: formData.people,
+      purpose: purposeValue,
       otherPurpose: formData.purpose === "other" ? formData.otherPurpose : "",
-      address: JSON.parse(data[0].address) as { city: string; state: string; country: string },
-      picture: data[0].picture_url,
-      signature: data[0].signature_url,
-      startTime: data[0].starttime,
-      endTime: data[0].endtime,
-      phoneNumber: data[0].phonenumber,
-      visitCount: data[0].visitcount || 1,
-      acceptedPolicy: data[0].accepted_policy
+      address: formData.address,
+      picture: dbFormData.picture,
+      signature: dbFormData.signature,
+      startTime: formData.startTime,
+      endTime: formData.endTime,
+      phoneNumber: formData.phoneNumber,
+      acceptedPolicy: formData.acceptedPolicy ?? false,
+      timestamp: Timestamp.now()
     };
-    
+
+    // Save to Firestore
+    const docRef = await addDoc(collection(db, "visitor_registrations"), entryData);
+
+    const savedEntry: FormEntry = {
+      ...entryData,
+      id: docRef.id,
+      visitCount: 1 // You can increment logic if needed
+    };
+
     return savedEntry;
   } catch (error) {
-    console.error("Error in saveFormData:", error);
+    console.error("Error in saveFormData (Firebase):", error);
     throw error;
   }
 };
@@ -178,9 +123,6 @@ export const saveFormData = async (formData: FormDataInput): Promise<FormEntry> 
 export const notifyAdmin = async (entry: FormEntry) => {
   try {
     console.log("Would notify admin about entry:", entry);
-    // In a real-world scenario, you'd send an email or push notification here
-    
-    // For demo purposes, showing a notification if the browser supports it
     if ('Notification' in window && Notification.permission === 'granted') {
       new Notification('New Visitor Registration', {
         body: `${entry.visitorName} has registered to visit ${entry.schoolName}`,
