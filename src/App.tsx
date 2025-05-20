@@ -1,4 +1,4 @@
-
+import LoginForm from "@/components/LoginForm";
 import React from "react";
 import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
@@ -56,10 +56,18 @@ const App: React.FC = () => {
             <div className="fixed top-4 right-4 z-50 flex gap-2">
               {/* This area can be used for navigation buttons or user controls */}
             </div>
-            <Routes>
-              <Route path="/" element={<Index />} />
-              <Route path="*" element={<NotFound />} />
-            </Routes>
+            {isLoading ? (
+              <div>Loading...</div>
+            ) : !user ? (
+              <div className="flex justify-center items-center min-h-screen">
+                <LoginForm />
+              </div>
+            ) : (
+              <Routes>
+                <Route path="/" element={<Index />} />
+                <Route path="*" element={<NotFound />} />
+              </Routes>
+            )}
           </BrowserRouter>
         </TooltipProvider>
       </AuthContext.Provider>
