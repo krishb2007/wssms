@@ -29,8 +29,15 @@ const UploadForm: React.FC<UploadFormProps> = ({
       : typeof formData.picture === 'string' ? formData.picture : null
   );
 
+  // This effect always resets the camera stream when mode switches to camera
   useEffect(() => {
     if (mode === "camera") {
+      // Stop any previous stream before starting a new one!
+      if (videoRef.current && videoRef.current.srcObject) {
+        const oldStream = videoRef.current.srcObject as MediaStream;
+        oldStream.getTracks().forEach(track => track.stop());
+        videoRef.current.srcObject = null;
+      }
       setupCamera();
     }
     // eslint-disable-next-line
@@ -67,6 +74,7 @@ const UploadForm: React.FC<UploadFormProps> = ({
             const file = new File([blob], "photo.png", { type: "image/png" });
             updateFormData({ picture: file });
             setPicturePreview(URL.createObjectURL(blob));
+            // Stop the video stream after capture
             if (videoRef.current && videoRef.current.srcObject) {
               const stream = videoRef.current.srcObject as MediaStream;
               stream.getTracks().forEach(track => track.stop());
@@ -100,7 +108,7 @@ const UploadForm: React.FC<UploadFormProps> = ({
           <div className="flex flex-col items-center">
             {mode === "camera" ? (
               <div className="relative w-full">
-                <video 
+                <video
                   ref={videoRef}
                   autoPlay
                   playsInline
