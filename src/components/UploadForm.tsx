@@ -22,28 +22,27 @@ const UploadForm: React.FC<UploadFormProps> = ({
   const videoRef = useRef<HTMLVideoElement>(null);
   const canvasRef = useRef<HTMLCanvasElement>(null);
 
-  const [mode, setMode] = useState<"camera" | "preview" | "none">("camera");
+  const [mode, setMode] = useState<"camera" | "preview">("camera");
   const [picturePreview, setPicturePreview] = useState<string | null>(
     formData.picture && typeof formData.picture !== 'string'
       ? URL.createObjectURL(formData.picture as File)
       : typeof formData.picture === 'string' ? formData.picture : null
   );
 
-  // This effect always resets the camera stream when mode switches to camera
-  useEffect(() => {
-    if (mode === "camera") {
-      // Stop any previous stream before starting a new one!
-      if (videoRef.current && videoRef.current.srcObject) {
-        const oldStream = videoRef.current.srcObject as MediaStream;
-        oldStream.getTracks().forEach(track => track.stop());
-        videoRef.current.srcObject = null;
-      }
-      setupCamera();
+  // Helper: Stop any video stream
+  const stopStream = () => {
+    if (videoRef.current && videoRef.current.srcObject) {
+      const stream = videoRef.current.srcObject as MediaStream;
+      stream.getTracks().forEach(track => track.stop());
+      videoRef.current.srcObject = null;
+      console.log("Stopped previous video stream");
     }
-    // eslint-disable-next-line
-  }, [mode]);
+  };
 
+  // Camera setup
   const setupCamera = async () => {
+    stopStream(); // Always stop any previous stream first
+
     try {
       const stream = await navigator.mediaDevices.getUserMedia({
         video: { facingMode: "user" }
@@ -51,6 +50,7 @@ const UploadForm: React.FC<UploadFormProps> = ({
 
       if (videoRef.current) {
         videoRef.current.srcObject = stream;
+        console.log("Camera started, stream set");
       }
     } catch (err) {
       toast({
@@ -61,6 +61,16 @@ const UploadForm: React.FC<UploadFormProps> = ({
       console.error("Error accessing camera:", err);
     }
   };
+
+  // Auto-start camera on mount
+  useEffect(() => {
+    if (mode === "camera") {
+      setupCamera();
+    }
+    // Cleanup on unmount
+    return () => stopStream();
+    // eslint-disable-next-line
+  }, [mode]);
 
   const takePicture = () => {
     if (videoRef.current && canvasRef.current) {
@@ -74,17 +84,19 @@ const UploadForm: React.FC<UploadFormProps> = ({
             const file = new File([blob], "photo.png", { type: "image/png" });
             updateFormData({ picture: file });
             setPicturePreview(URL.createObjectURL(blob));
-            // Stop the video stream after capture
-            if (videoRef.current && videoRef.current.srcObject) {
-              const stream = videoRef.current.srcObject as MediaStream;
-              stream.getTracks().forEach(track => track.stop());
-              videoRef.current.srcObject = null;
-            }
+            stopStream();
             setMode("preview");
+            console.log("Picture taken, switched to preview");
           }
         });
       }
     }
+  };
+
+  const handleRetakePhoto = () => {
+    setPicturePreview(null);
+    setMode("camera"); // This will trigger useEffect and setupCamera
+    console.log("Retake Photo clicked: Switching to camera mode");
   };
 
   const handleSubmit = (e: React.FormEvent) => {
@@ -122,7 +134,7 @@ const UploadForm: React.FC<UploadFormProps> = ({
                   <Camera className="mr-2" /> Capture Photo
                 </Button>
               </div>
-            ) : mode === "preview" && picturePreview ? (
+            ) : picturePreview ? (
               <div className="w-full">
                 <img
                   src={picturePreview}
@@ -132,10 +144,7 @@ const UploadForm: React.FC<UploadFormProps> = ({
                 <Button
                   type="button"
                   variant="outline"
-                  onClick={() => {
-                    setPicturePreview(null);
-                    setMode("camera");
-                  }}
+                  onClick={handleRetakePhoto}
                   className="mt-4"
                 >
                   Retake Photo
