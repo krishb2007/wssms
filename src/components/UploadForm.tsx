@@ -134,7 +134,10 @@ const UploadForm: React.FC<UploadFormProps> = ({
                 <Button
                   type="button"
                   variant="outline"
-                  onClick={setupCamera}
+                  onClick={() => {
+                    setPicturePreview(null);
+                    setupCamera();
+                  }}
                   className="mt-4"
                 >
                   Retake Photo
