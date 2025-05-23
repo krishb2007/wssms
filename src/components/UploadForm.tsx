@@ -21,9 +21,9 @@ const UploadForm: React.FC<UploadFormProps> = ({
 }) => {
   const videoRef = useRef<HTMLVideoElement>(null);
   const canvasRef = useRef<HTMLCanvasElement>(null);
-  
+
   const [picturePreview, setPicturePreview] = useState<string | null>(
-    formData.picture && typeof formData.picture !== 'string' 
+    formData.picture && typeof formData.picture !== 'string'
       ? URL.createObjectURL(formData.picture as File)
       : typeof formData.picture === 'string' ? formData.picture : null
   );
@@ -32,15 +32,16 @@ const UploadForm: React.FC<UploadFormProps> = ({
   // Auto-start camera on component mount
   useEffect(() => {
     setupCamera();
+    // eslint-disable-next-line
   }, []);
 
   // Camera setup
   const setupCamera = async () => {
     try {
-      const stream = await navigator.mediaDevices.getUserMedia({ 
-        video: { facingMode: "user" } 
+      const stream = await navigator.mediaDevices.getUserMedia({
+        video: { facingMode: "user" }
       });
-      
+
       if (videoRef.current) {
         videoRef.current.srcObject = stream;
         setShowCamera(true);
@@ -62,17 +63,17 @@ const UploadForm: React.FC<UploadFormProps> = ({
         // Match canvas size to video
         canvasRef.current.width = videoRef.current.videoWidth;
         canvasRef.current.height = videoRef.current.videoHeight;
-        
+
         // Draw the video frame to the canvas
         context.drawImage(videoRef.current, 0, 0);
-        
+
         // Convert to data URL and then to file
         canvasRef.current.toBlob((blob) => {
           if (blob) {
             const file = new File([blob], "photo.png", { type: "image/png" });
             updateFormData({ picture: file });
             setPicturePreview(URL.createObjectURL(blob));
-            
+
             // Stop all video tracks
             if (videoRef.current && videoRef.current.srcObject) {
               const stream = videoRef.current.srcObject as MediaStream;
@@ -88,7 +89,7 @@ const UploadForm: React.FC<UploadFormProps> = ({
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    
+
     if (!formData.picture) {
       toast({
         title: "Missing Photo",
@@ -97,7 +98,7 @@ const UploadForm: React.FC<UploadFormProps> = ({
       });
       return;
     }
-    
+
     nextStep();
   };
 
@@ -109,9 +110,9 @@ const UploadForm: React.FC<UploadFormProps> = ({
           <div className="flex flex-col items-center">
             {showCamera ? (
               <div className="relative w-full">
-                <video 
-                  ref={videoRef} 
-                  autoPlay 
+                <video
+                  ref={videoRef}
+                  autoPlay
                   playsInline
                   className="w-full rounded-lg border border-gray-300"
                 />
@@ -134,11 +135,13 @@ const UploadForm: React.FC<UploadFormProps> = ({
                   type="button"
                   variant="outline"
                   onClick={() => {
-                    setPicturePreview(null);
+                    console.log("Retake Photo clicked");
                     setShowCamera(true);
+                    setPicturePreview(null);
                     setTimeout(() => {
+                      console.log("Calling setupCamera()");
                       setupCamera();
-                    }, 200);
+                    }, 0);
                   }}
                   className="mt-4"
                 >
@@ -177,4 +180,3 @@ const UploadForm: React.FC<UploadFormProps> = ({
 };
 
 export default UploadForm;
-
