@@ -1,4 +1,3 @@
-
 import React, { useState, useRef, useEffect } from "react";
 import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
@@ -136,7 +135,10 @@ const UploadForm: React.FC<UploadFormProps> = ({
                   variant="outline"
                   onClick={() => {
                     setPicturePreview(null);
-                    setupCamera();
+                    setShowCamera(true);
+                    setTimeout(() => {
+                      setupCamera();
+                    }, 200);
                   }}
                   className="mt-4"
                 >
@@ -175,3 +177,4 @@ const UploadForm: React.FC<UploadFormProps> = ({
 };
 
 export default UploadForm;
+
