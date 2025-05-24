@@ -94,8 +94,8 @@ const ConfirmationPage: React.FC<ConfirmationPageProps> = ({
             </div>
 
             <div>
-              <h4 className="font-semibold">Contact Information</h4>
-              <p className="text-sm">{formData.phoneNumber}</p>
+              <h4 className="font-semibold">Mobile Number</h4>
+<p className="text-sm">{formData.phoneNumber}</p>
             </div>
 
             <div>
