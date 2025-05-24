@@ -3,47 +3,13 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <meta name="theme-color" content="#ffffff" />
-    <meta name="description" content="WSSMS - Woodstock School Student Management System" />
-    <meta name="author" content="Lovable" />
-
     <title>WSSMS</title>
-
-    <!-- Favicon -->
-    <link rel="icon" type="image/png" sizes="192x192" href="/icon-192.png" />
-
-    <!-- Apple Touch Icon -->
-    <link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png" />
-
-    <!-- Manifest -->
-    <link rel="manifest" href="/manifest.json" />
-
-    <!-- Open Graph -->
-    <meta property="og:title" content="WSSMS" />
-    <meta property="og:description" content="Woodstock School Student Management System" />
-    <meta property="og:type" content="website" />
-    <meta property="og:image" content="/icon-192.png" />
-    <meta property="og:url" content="https://yourdomain.com" />
-
-    <!-- Twitter Card -->
-    <meta name="twitter:card" content="summary_large_image" />
-    <meta name="twitter:site" content="@lovable_dev" />
-    <meta name="twitter:image" content="https://lovable.dev/opengraph-image-p98pqg.png" />
-
-    <!-- Styles -->
-    <link rel="stylesheet" href="/styles.css" />
   </head>
-
   <body>
     <div id="root"></div>
 
-    <!-- GPT Engineer Script -->
-    <script src="https://cdn.gpteng.co/gptengineer.js" type="module"></script>
-
-    <!-- App Entry Point -->
     <script type="module" src="/src/main.tsx"></script>
 
-    <!-- Service Worker -->
     <script>
       if ('serviceWorker' in navigator) {
         navigator.serviceWorker.register('/service-worker.js')
