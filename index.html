@@ -23,14 +23,14 @@
     <div id="root"></div>
 
     <!-- Vite React Entry Point -->
-    <script type="module" src="/src/main.tsx"></script>
+    <script type="module" src="/src/components/main.tsx"></script>
 
     <!-- Register Service Worker for PWA -->
     <script>
       if ('serviceWorker' in navigator) {
         window.addEventListener('load', () => {
           navigator.serviceWorker.register('/service-worker.js')
-            .then(() => console.log('✅ Service Worker registered'))
+            .then(() => console.log(' Service Worker registered'))
             .catch(error => console.error('❌ Service Worker registration failed:', error));
         });
       }
