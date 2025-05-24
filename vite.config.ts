@@ -7,13 +7,13 @@ export default defineConfig(({ mode }) => ({
     host: "::",
     port: 8080,
   },
-  // Add this line
-  root: './', // Explicitly tell Vite to use the current directory as root
-              // (where package.json and public/ are located)
+  // Add these two lines
+  root: './',        // Explicitly set the project root to the current directory
+  publicDir: 'public', // Explicitly tell Vite where your public assets are
 
   plugins: [
     react(),
-    // Ensure componentTagger is still commented out for this test
+    // Ensure componentTagger is still commented out
     // mode === 'development' &&
     // componentTagger(),
   ].filter(Boolean),
