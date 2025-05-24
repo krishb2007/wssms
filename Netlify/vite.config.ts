@@ -16,9 +16,7 @@ export default defineConfig(({ mode }) => ({
     port: 8080,
   },
 
-  plugins: [
-    react(),
-  ],
+  plugins: [react()],
 
   resolve: {
     alias: {
@@ -30,7 +28,7 @@ export default defineConfig(({ mode }) => ({
     outDir: "dist",
     rollupOptions: {
       input: resolve(__dirname, "index.html"),
-      external: ["@/components/LoginForm"], // ✅ Add this line
+      
     },
   },
 }));
