@@ -27,7 +27,7 @@ const LoginForm: React.FC<LoginFormProps> = ({ onLoginSuccess }) => {
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     if (e.target.name === "phone") {
-      // Allow only digits and restrict to 11 characters
+      // Allow only digits, up to 11 characters
       const digitsOnly = e.target.value.replace(/\D/g, "").slice(0, 11);
       setCredentials({
         ...credentials,
@@ -121,8 +121,7 @@ const LoginForm: React.FC<LoginFormProps> = ({ onLoginSuccess }) => {
                 placeholder="Enter your phone number"
                 value={credentials.phone || ""}
                 onChange={handleChange}
-                maxLength={11}
-                required
+                maxLength={11} // allows up to 11 digits
                 disabled={isLoading}
               />
               <div className="text-xs text-gray-500">Enter up to 11 digits only.</div>
