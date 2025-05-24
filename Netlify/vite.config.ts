@@ -3,23 +3,29 @@ import react from "@vitejs/plugin-react-swc";
 import path from "path";
 
 export default defineConfig(({ mode }) => ({
+  root: ".", // use root directory (where index.html lives)
+  publicDir: "public",
+
   server: {
     host: "::",
     port: 8080,
   },
-  // Add these two lines
-  root: './',        // Explicitly set the project root to the current directory
-  publicDir: 'public', // Explicitly tell Vite where your public assets are
 
   plugins: [
     react(),
-    // Ensure componentTagger is still commented out
-    // mode === 'development' &&
-    // componentTagger(),
+    // mode === 'development' && componentTagger(),
   ].filter(Boolean),
+
   resolve: {
     alias: {
       "@": path.resolve(__dirname, "./src"),
+    },
+  },
+
+  build: {
+    outDir: "dist",
+    rollupOptions: {
+      input: path.resolve(__dirname, "index.html"), // this is important!
     },
   },
 }));
