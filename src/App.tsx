@@ -4,11 +4,11 @@ import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { BrowserRouter, Routes, Route, Link, Navigate, useNavigate } from "react-router-dom";
+import { BrowserRouter, Routes, Route, Link, Navigate } from "react-router-dom";
 import { useState, useEffect, createContext, useContext } from "react";
 import Index from "./pages/Index";
 import NotFound from "./pages/NotFound";
-import AdminDashboard from "./pages/AdminDashboard";   // <-- Add this import
+import AdminDashboard from "./pages/AdminDashboard";
 import { getCurrentUser, signOut, AuthUser } from "./services/authService";
 
 const queryClient = new QueryClient();
@@ -47,6 +47,12 @@ const App: React.FC = () => {
     setUser(null);
   };
 
+  // This function will be passed to LoginForm and called after login
+  const handleLoginSuccess = async () => {
+    const { user } = await getCurrentUser();
+    setUser(user);
+  };
+
   return (
     <QueryClientProvider client={queryClient}>
       <AuthContext.Provider value={{ user, isLoading, logout }}>
@@ -78,7 +84,8 @@ const App: React.FC = () => {
               <div>Loading...</div>
             ) : !user ? (
               <div className="flex justify-center items-center min-h-screen">
-                <LoginForm />
+                {/* Pass the onLoginSuccess handler here */}
+                <LoginForm onLoginSuccess={handleLoginSuccess} />
               </div>
             ) : (
               <Routes>
