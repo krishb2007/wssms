@@ -1,4 +1,3 @@
-
 import React from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
@@ -32,24 +31,20 @@ const ConfirmationPage: React.FC<ConfirmationPageProps> = ({
   prevStep,
   handleSubmit,
 }) => {
-  // Helper function to format purpose text
   const formatPurpose = (purpose: string): string => {
     if (purpose === "other") return formData.otherPurpose;
-    
     const purposeMap: Record<string, string> = {
-      "visit": "Visit",
-      "work": "Work",
-      "tourism": "Tourism",
-      "sports": "Sports",
-      "meeting": "Meeting",
-      "official_visit": "Official Visit",
-      "student_visit": "Student Visit"
+      visit: "Visit",
+      work: "Work",
+      tourism: "Tourism",
+      sports: "Sports",
+      meeting: "Meeting",
+      official_visit: "Official Visit",
+      student_visit: "Student Visit"
     };
-    
-    return purposeMap[purpose] || purpose.charAt(0).toUpperCase() + purpose.slice(1);
+    return purposeMap[purpose] || (purpose.charAt(0).toUpperCase() + purpose.slice(1));
   };
 
-  // Helper function to format date
   const formatDate = (dateString: string | null) => {
     if (!dateString) return "Not specified";
     try {
