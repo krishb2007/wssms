@@ -1,4 +1,3 @@
-
 import React, { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -12,20 +11,34 @@ interface LoginFormProps {
   onLoginSuccess: () => void;
 }
 
+// Add phone to credentials interface if not already there:
+interface CredentialsWithPhone extends SignInCredentials {
+  phone?: string;
+}
+
 const LoginForm: React.FC<LoginFormProps> = ({ onLoginSuccess }) => {
-  const [credentials, setCredentials] = useState<SignInCredentials>({
+  const [credentials, setCredentials] = useState<CredentialsWithPhone>({
     email: "",
     password: "",
+    phone: "",
   });
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    setCredentials({
-      ...credentials,
-      [e.target.name]: e.target.value,
-    });
-    
+    if (e.target.name === "phone") {
+      // Allow only digits and restrict to 11 characters
+      const digitsOnly = e.target.value.replace(/\D/g, "").slice(0, 11);
+      setCredentials({
+        ...credentials,
+        phone: digitsOnly,
+      });
+    } else {
+      setCredentials({
+        ...credentials,
+        [e.target.name]: e.target.value,
+      });
+    }
     // Clear error when user makes changes
     if (error) setError(null);
   };
@@ -37,7 +50,7 @@ const LoginForm: React.FC<LoginFormProps> = ({ onLoginSuccess }) => {
 
     try {
       const { user, error } = await signIn(credentials);
-      
+
       if (error || !user) {
         setError(error || "Invalid credentials. Please try again.");
         toast({
@@ -53,13 +66,13 @@ const LoginForm: React.FC<LoginFormProps> = ({ onLoginSuccess }) => {
         title: "Login Successful",
         description: "You have been logged in successfully.",
       });
-      
+
       // Small delay to ensure authentication state is fully processed
       setTimeout(() => {
         onLoginSuccess();
         setIsLoading(false);
       }, 500);
-      
+
     } catch (error) {
       setError("An unexpected error occurred. Please try again later.");
       toast({
@@ -84,7 +97,7 @@ const LoginForm: React.FC<LoginFormProps> = ({ onLoginSuccess }) => {
                 {error}
               </div>
             )}
-            
+
             <div className="space-y-2">
               <Label htmlFor="email">Email</Label>
               <Input
@@ -98,7 +111,23 @@ const LoginForm: React.FC<LoginFormProps> = ({ onLoginSuccess }) => {
                 disabled={isLoading}
               />
             </div>
-            
+
+            <div className="space-y-2">
+              <Label htmlFor="phone">Phone Number</Label>
+              <Input
+                id="phone"
+                name="phone"
+                type="tel"
+                placeholder="Enter your phone number"
+                value={credentials.phone || ""}
+                onChange={handleChange}
+                maxLength={11}
+                required
+                disabled={isLoading}
+              />
+              <div className="text-xs text-gray-500">Enter up to 11 digits only.</div>
+            </div>
+
             <div className="space-y-2">
               <div className="flex justify-between">
                 <Label htmlFor="password">Password</Label>
@@ -114,7 +143,7 @@ const LoginForm: React.FC<LoginFormProps> = ({ onLoginSuccess }) => {
                 disabled={isLoading}
               />
             </div>
-            
+
             <Button
               type="submit"
               className="w-full"
