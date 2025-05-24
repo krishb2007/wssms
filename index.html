@@ -9,21 +9,30 @@
     <link rel="manifest" href="/manifest.json" />
     <meta name="theme-color" content="#0a0a0a" />
 
-    <!-- PWA: Apple specific -->
+    <!-- iOS PWA Support -->
     <link rel="apple-touch-icon" href="/icons/icon-192.png" />
     <meta name="apple-mobile-web-app-capable" content="yes" />
-    <meta name="apple-mobile-web-app-status-bar-style" content="black" />
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+
+    <!-- Favicon (optional but good practice) -->
+    <link rel="icon" type="image/png" href="/favicon.png" />
   </head>
+
   <body>
+    <noscript>You need to enable JavaScript to run this app.</noscript>
     <div id="root"></div>
 
+    <!-- Vite React Entry Point -->
     <script type="module" src="/src/main.tsx"></script>
 
+    <!-- Register Service Worker for PWA -->
     <script>
       if ('serviceWorker' in navigator) {
-        navigator.serviceWorker.register('/service-worker.js')
-          .then(() => console.log('Service Worker Registered'))
-          .catch(error => console.log('Service Worker Registration Failed:', error));
+        window.addEventListener('load', () => {
+          navigator.serviceWorker.register('/service-worker.js')
+            .then(() => console.log('✅ Service Worker registered'))
+            .catch(error => console.error('❌ Service Worker registration failed:', error));
+        });
       }
     </script>
   </body>
