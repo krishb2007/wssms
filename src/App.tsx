@@ -1,19 +1,17 @@
-import LoginForm from "@/components/LoginForm";
-import React from "react";
+import React, { useState, useEffect, createContext, useContext } from "react";
 import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route, Link, Navigate } from "react-router-dom";
-import { useState, useEffect, createContext, useContext } from "react";
 import Index from "./pages/Index";
 import NotFound from "./pages/NotFound";
 import AdminDashboard from "./pages/AdminDashboard";
+import AdminLogin from "./pages/AdminLogin";
 import { getCurrentUser, signOut, AuthUser } from "./services/authService";
 
 const queryClient = new QueryClient();
 
-// Create auth context
 interface AuthContextType {
   user: AuthUser | null;
   isLoading: boolean;
@@ -47,12 +45,6 @@ const App: React.FC = () => {
     setUser(null);
   };
 
-  // This function will be passed to LoginForm and called after login
-  const handleLoginSuccess = async () => {
-    const { user } = await getCurrentUser();
-    setUser(user);
-  };
-
   return (
     <QueryClientProvider client={queryClient}>
       <AuthContext.Provider value={{ user, isLoading, logout }}>
@@ -60,50 +52,39 @@ const App: React.FC = () => {
           <Toaster />
           <Sonner />
           <BrowserRouter>
+            {/* ---- TOP RIGHT BUTTONS ---- */}
             <div className="fixed top-4 right-4 z-50 flex gap-2">
-              {/* Admin button: only show if user is admin */}
-              {user && user.role === "admin" && (
-                <Link
-                  to="/admin-dashboard"
-                  className="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700"
-                >
-                  Admin
-                </Link>
-              )}
-              {/* Logout: only show if user is logged in */}
-              {user && (
-                <button
-                  onClick={logout}
-                  className="px-4 py-2 bg-gray-600 text-white rounded hover:bg-gray-700"
-                >
-                  Logout
-                </button>
-              )}
+              <Link
+                to="/"
+                className="px-4 py-2 bg-green-600 text-white rounded hover:bg-green-700"
+              >
+                Register
+              </Link>
+              <Link
+                to="/admin-login"
+                className="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700"
+              >
+                Admin
+              </Link>
             </div>
-            {isLoading ? (
-              <div>Loading...</div>
-            ) : !user ? (
-              <div className="flex justify-center items-center min-h-screen">
-                {/* Pass the onLoginSuccess handler here */}
-                <LoginForm onLoginSuccess={handleLoginSuccess} />
-              </div>
-            ) : (
-              <Routes>
-                <Route path="/" element={<Index />} />
-                {/* Protected Admin Route */}
-                <Route
-                  path="/admin-dashboard"
-                  element={
-                    user && user.role === "admin" ? (
-                      <AdminDashboard />
-                    ) : (
-                      <Navigate to="/" replace />
-                    )
-                  }
-                />
-                <Route path="*" element={<NotFound />} />
-              </Routes>
-            )}
+            {/* ---- ROUTES ---- */}
+            <Routes>
+              <Route path="/" element={<Index />} />
+              <Route path="/admin-login" element={<AdminLogin />} />
+              <Route
+                path="/admin-dashboard"
+                element={
+                  isLoading ? (
+                    <div>Loading...</div>
+                  ) : user && user.role === "admin" ? (
+                    <AdminDashboard />
+                  ) : (
+                    <Navigate to="/admin-login" replace />
+                  )
+                }
+              />
+              <Route path="*" element={<NotFound />} />
+            </Routes>
           </BrowserRouter>
         </TooltipProvider>
       </AuthContext.Provider>

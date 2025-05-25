@@ -40,7 +40,7 @@ const ConfirmationPage: React.FC<ConfirmationPageProps> = ({
       sports: "Sports",
       meeting: "Meeting",
       official_visit: "Official Visit",
-      student_visit: "Student Visit"
+      student_visit: "Student Visit",
     };
     return purposeMap[purpose] || (purpose.charAt(0).toUpperCase() + purpose.slice(1));
   };
@@ -48,13 +48,13 @@ const ConfirmationPage: React.FC<ConfirmationPageProps> = ({
   const formatDate = (dateString: string | null) => {
     if (!dateString) return "Not specified";
     try {
-      return format(new Date(dateString), 'MMM dd, yyyy - HH:mm');
-    } catch (e) {
+      return format(new Date(dateString), "MMM dd, yyyy - HH:mm");
+    } catch {
       return dateString;
     }
   };
 
-  return ( // This opening parenthesis should align with the return keyword, or be on the next line.
+  return (
     <div className="space-y-6">
       <div>
         <h3 className="text-lg font-medium">Review Your Information</h3>
@@ -76,7 +76,8 @@ const ConfirmationPage: React.FC<ConfirmationPageProps> = ({
               <ul className="list-disc pl-5 text-sm">
                 {formData.people.map((person, idx) => (
                   <li key={idx}>
-                    {person.name || formData.visitorName} {person.role ? `- ${person.role}` : ''}
+                    {person.name || formData.visitorName}{" "}
+                    {person.role ? `- ${person.role}` : ""}
                   </li>
                 ))}
               </ul>
@@ -102,8 +103,8 @@ const ConfirmationPage: React.FC<ConfirmationPageProps> = ({
               <h4 className="font-semibold">Address</h4>
               <p className="text-sm">
                 {formData.address.city}
-                {formData.address.state ? `, ${formData.address.state}` : ''}
-                {formData.address.country ? `, ${formData.address.country}` : ''}
+                {formData.address.state ? `, ${formData.address.state}` : ""}
+                {formData.address.country ? `, ${formData.address.country}` : ""}
               </p>
             </div>
 
@@ -112,35 +113,37 @@ const ConfirmationPage: React.FC<ConfirmationPageProps> = ({
               <div className="flex flex-col space-y-2">
                 <div>
                   <p className="font-medium text-sm mb-1">Photo:</p>
-                  {formData.picture && typeof formData.picture !== 'string' ? (
-                    <img
-                      src={URL.createObjectURL(formData.picture)}
-                      alt="Visitor"
-                      className="h-32 object-cover rounded-md"
-                    />
-                  ) : formData.picture ? (
-                    <img
-                      src={formData.picture as string}
-                      alt="Visitor"
-                      className="h-32 object-cover rounded-md"
-                    />
-                  ) : null}
+                  {formData.picture &&
+                    (typeof formData.picture === "string" ? (
+                      <img
+                        src={formData.picture}
+                        alt="Visitor"
+                        className="h-32 object-cover rounded-md"
+                      />
+                    ) : (
+                      <img
+                        src={URL.createObjectURL(formData.picture)}
+                        alt="Visitor"
+                        className="h-32 object-cover rounded-md"
+                      />
+                    ))}
                 </div>
                 <div>
                   <p className="font-medium text-sm mb-1">Signature:</p>
-                  {formData.signature && typeof formData.signature !== 'string' ? (
-                    <img
-                      src={URL.createObjectURL(formData.signature)}
-                      alt="Signature"
-                      className="h-16 object-contain rounded-md bg-white"
-                    />
-                  ) : formData.signature ? (
-                    <img
-                      src={formData.signature as string}
-                      alt="Signature"
-                      className="h-16 object-contain rounded-md bg-white"
-                    />
-                  ) : null}
+                  {formData.signature &&
+                    (typeof formData.signature === "string" ? (
+                      <img
+                        src={formData.signature}
+                        alt="Signature"
+                        className="h-16 object-contain rounded-md bg-white"
+                      />
+                    ) : (
+                      <img
+                        src={URL.createObjectURL(formData.signature)}
+                        alt="Signature"
+                        className="h-16 object-contain rounded-md bg-white"
+                      />
+                    ))}
                 </div>
               </div>
             </div>
@@ -149,19 +152,10 @@ const ConfirmationPage: React.FC<ConfirmationPageProps> = ({
       </Card>
 
       <div className="pt-4 flex flex-col space-y-2">
-        <Button
-          type="button"
-          onClick={handleSubmit}
-          className="w-full"
-        >
+        <Button type="button" onClick={handleSubmit} className="w-full">
           Submit Registration
         </Button>
-        <Button
-          type="button"
-          variant="outline"
-          onClick={prevStep}
-          className="w-full"
-        >
+        <Button type="button" variant="outline" onClick={prevStep} className="w-full">
           Back
         </Button>
       </div>
