@@ -40,21 +40,21 @@ const ConfirmationPage: React.FC<ConfirmationPageProps> = ({
       sports: "Sports",
       meeting: "Meeting",
       official_visit: "Official Visit",
-      student_visit: "Student Visit"
+      student_visit: "Student Visit",
     };
-    return purposeMap[purpose] || (purpose.charAt(0).toUpperCase() + purpose.slice(1));
+    return purposeMap[purpose] || purpose.charAt(0).toUpperCase() + purpose.slice(1);
   };
 
   const formatDate = (dateString: string | null) => {
     if (!dateString) return "Not specified";
     try {
-      return format(new Date(dateString), 'MMM dd, yyyy - HH:mm');
+      return format(new Date(dateString), "MMM dd, yyyy - HH:mm");
     } catch (e) {
       return dateString;
     }
   };
 
-  return ( // This opening parenthesis should align with the return keyword, or be on the next line.
+  return (
     <div className="space-y-6">
       <div>
         <h3 className="text-lg font-medium">Review Your Information</h3>
@@ -72,11 +72,14 @@ const ConfirmationPage: React.FC<ConfirmationPageProps> = ({
             </div>
 
             <div>
-              <h4 className="font-semibold">People ({formData.numberOfPeople})</h4>
+              <h4 className="font-semibold">
+                People ({formData.numberOfPeople})
+              </h4>
               <ul className="list-disc pl-5 text-sm">
                 {formData.people.map((person, idx) => (
                   <li key={idx}>
-                    {person.name || formData.visitorName} {person.role ? `- ${person.role}` : ''}
+                    {person.name || formData.visitorName}{" "}
+                    {person.role ? `- ${person.role}` : ""}
                   </li>
                 ))}
               </ul>
@@ -89,7 +92,9 @@ const ConfirmationPage: React.FC<ConfirmationPageProps> = ({
 
             <div>
               <h4 className="font-semibold">Visit Duration</h4>
-              <p className="text-sm">Start: {formatDate(formData.startTime)}</p>
+              <p className="text-sm">
+                Start: {formatDate(formData.startTime)}
+              </p>
               <p className="text-sm">End: {formatDate(formData.endTime)}</p>
             </div>
 
@@ -102,8 +107,10 @@ const ConfirmationPage: React.FC<ConfirmationPageProps> = ({
               <h4 className="font-semibold">Address</h4>
               <p className="text-sm">
                 {formData.address.city}
-                {formData.address.state ? `, ${formData.address.state}` : ''}
-                {formData.address.country ? `, ${formData.address.country}` : ''}
+                {formData.address.state ? `, ${formData.address.state}` : ""}
+                {formData.address.country
+                  ? `, ${formData.address.country}`
+                  : ""}
               </p>
             </div>
 
@@ -112,7 +119,7 @@ const ConfirmationPage: React.FC<ConfirmationPageProps> = ({
               <div className="flex flex-col space-y-2">
                 <div>
                   <p className="font-medium text-sm mb-1">Photo:</p>
-                  {formData.picture && typeof formData.picture !== 'string' ? (
+                  {formData.picture && typeof formData.picture !== "string" ? (
                     <img
                       src={URL.createObjectURL(formData.picture)}
                       alt="Visitor"
@@ -128,7 +135,8 @@ const ConfirmationPage: React.FC<ConfirmationPageProps> = ({
                 </div>
                 <div>
                   <p className="font-medium text-sm mb-1">Signature:</p>
-                  {formData.signature && typeof formData.signature !== 'string' ? (
+                  {formData.signature &&
+                  typeof formData.signature !== "string" ? (
                     <img
                       src={URL.createObjectURL(formData.signature)}
                       alt="Signature"
@@ -149,11 +157,7 @@ const ConfirmationPage: React.FC<ConfirmationPageProps> = ({
       </Card>
 
       <div className="pt-4 flex flex-col space-y-2">
-        <Button
-          type="button"
-          onClick={handleSubmit}
-          className="w-full"
-        >
+        <Button type="button" onClick={handleSubmit} className="w-full">
           Submit Registration
         </Button>
         <Button
