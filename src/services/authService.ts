@@ -26,142 +26,124 @@ const cleanupAuthState = () => {
       localStorage.removeItem(key);
     }
   });
-  Object.keys(sessionStorage).forEach((key) => {
+  Object.keys(sessionStorage || {}).forEach((key) => {
     if (key.startsWith('supabase.auth.') || key.includes('sb-')) {
       sessionStorage.removeItem(key);
     }
   });
 };
 
-export const supabaseAuth = {
-  async signUp(credentials: SignUpCredentials): Promise<{ user: AuthUser | null; error: string | null }> {
+export async function signUp(credentials: SignUpCredentials): Promise<{ user: AuthUser | null; error: string | null }> {
+  try {
+    cleanupAuthState();
     try {
-      cleanupAuthState();
-      await supabase.auth.signOut({ scope: 'global' }).catch(() => {});
+      await supabase.auth.signOut({ scope: 'global' });
+    } catch {}
 
-      const { data, error } = await supabase.auth.signUp({
-        email: credentials.email,
-        password: credentials.password,
-      });
+    const { data, error } = await supabase.auth.signUp({
+      email: credentials.email,
+      password: credentials.password,
+    });
 
-      if (error || !data?.user) {
-        return { user: null, error: error?.message || "Failed to create user" };
-      }
-
-      const user = data.user;
-
-      const { error: insertError } = await supabase
-        .from('admin_users')
-        .insert([{ user_id: user.id, email: user.email, role: 'admin' }]);
-
-      if (insertError) {
-        console.error("Insert admin error:", insertError.message);
-      }
-
-      return {
-        user: { id: user.id, email: user.email || '', role: 'admin' },
-        error: null,
-      };
-    } catch (err: any) {
-      console.error("Sign up error:", err.message);
-      return { user: null, error: "Unexpected error during sign up" };
+    if (error || !data.user) {
+      return { user: null, error: error?.message || "Failed to create user" };
     }
-  },
 
-  async signIn(credentials: SignInCredentials): Promise<{ user: AuthUser | null; error: string | null }> {
+    // Insert into admin_users
+    await supabase
+      .from('admin_users')
+      .insert([{ user_id: data.user.id, email: data.user.email, role: 'admin' }])
+      .catch((err) => console.error("Insert admin error:", err));
+
+    return {
+      user: { id: data.user.id, email: data.user.email || '', role: 'admin' },
+      error: null,
+    };
+  } catch (err) {
+    return { user: null, error: "Unexpected error during sign up" };
+  }
+}
+
+export async function signIn(credentials: SignInCredentials): Promise<{ user: AuthUser | null; error: string | null }> {
+  try {
+    cleanupAuthState();
     try {
-      cleanupAuthState();
-      await supabase.auth.signOut({ scope: 'global' }).catch(() => {});
+      await supabase.auth.signOut({ scope: 'global' });
+    } catch {}
 
-      const { data, error } = await supabase.auth.signInWithPassword(credentials);
-      if (error || !data?.user) {
-        return { user: null, error: error?.message || "Failed to sign in" };
-      }
-
-      const user = data.user;
-      let role = 'user';
-
-      const { data: adminUser, error: roleError } = await supabase
-        .from('admin_users')
-        .select('role')
-        .eq('user_id', user.id)
-        .single();
-
-      if (roleError) console.warn("Role fetch error:", roleError.message);
-      if (adminUser?.role) role = adminUser.role;
-
-      toast({ title: "Authentication successful", description: "Redirecting to admin panel..." });
-
-      return {
-        user: { id: user.id, email: user.email || '', role },
-        error: null,
-      };
-    } catch (err: any) {
-      console.error("Sign in error:", err.message);
-      return { user: null, error: "Unexpected error during sign in" };
+    const { data, error } = await supabase.auth.signInWithPassword(credentials);
+    if (error || !data.user) {
+      return { user: null, error: error?.message || "Failed to sign in" };
     }
-  },
 
-  async signOut(): Promise<{ error: string | null }> {
-    try {
-      cleanupAuthState();
-      const { error } = await supabase.auth.signOut({ scope: 'global' });
-      if (error) return { error: error.message };
+    // Get role
+    let role = 'user';
+    const { data: adminUser } = await supabase
+      .from('admin_users')
+      .select('role')
+      .eq('user_id', data.user.id)
+      .single();
 
-      window.location.href = '/';
-      return { error: null };
-    } catch (err: any) {
-      console.error("Sign out error:", err.message);
-      return { error: "Unexpected error during sign out" };
+    if (adminUser?.role) role = adminUser.role;
+
+    toast({ title: "Authentication successful", description: "Redirecting to admin panel..." });
+
+    return {
+      user: { id: data.user.id, email: data.user.email || '', role },
+      error: null,
+    };
+  } catch {
+    return { user: null, error: "Unexpected error during sign in" };
+  }
+}
+
+export async function signOut(): Promise<{ error: string | null }> {
+  try {
+    cleanupAuthState();
+    const { error } = await supabase.auth.signOut({ scope: 'global' });
+    if (error) return { error: error.message };
+    window.location.href = '/';
+    return { error: null };
+  } catch {
+    return { error: "Unexpected error during sign out" };
+  }
+}
+
+export async function getCurrentUser(): Promise<{ user: AuthUser | null; error: string | null }> {
+  try {
+    const { data, error } = await supabase.auth.getSession();
+    if (error || !data.session?.user) {
+      return { user: null, error: error?.message || null };
     }
-  },
 
-  async getCurrentUser(): Promise<{ user: AuthUser | null; error: string | null }> {
-    try {
-      const { data, error } = await supabase.auth.getSession();
-      if (error || !data?.session?.user) {
-        return { user: null, error: error?.message || "Session not found" };
-      }
+    let role = 'user';
+    const { data: adminUser } = await supabase
+      .from('admin_users')
+      .select('role')
+      .eq('user_id', data.session.user.id)
+      .single();
 
-      const user = data.session.user;
-      let role = 'user';
+    if (adminUser?.role) role = adminUser.role;
 
-      const { data: adminUser, error: roleError } = await supabase
-        .from('admin_users')
-        .select('role')
-        .eq('user_id', user.id)
-        .single();
+    return {
+      user: { id: data.session.user.id, email: data.session.user.email || '', role },
+      error: null,
+    };
+  } catch {
+    return { user: null, error: "Unexpected error getting user" };
+  }
+}
 
-      if (roleError) console.warn("Role fetch error:", roleError.message);
-      if (adminUser?.role) role = adminUser.role;
+export async function isAdmin(userId: string): Promise<boolean> {
+  try {
+    const { data } = await supabase
+      .from('admin_users')
+      .select('role')
+      .eq('user_id', userId)
+      .single();
 
-      return {
-        user: { id: user.id, email: user.email || '', role },
-        error: null,
-      };
-    } catch (err: any) {
-      console.error("Get user error:", err.message);
-      return { user: null, error: "Unexpected error getting user" };
-    }
-  },
-
-  async isAdmin(userId: string): Promise<boolean> {
-    try {
-      const { data, error } = await supabase
-        .from('admin_users')
-        .select('role')
-        .eq('user_id', userId)
-        .single();
-
-      if (error) {
-        console.warn("isAdmin error:", error.message);
-        return false;
-      }
-
-      return data?.role === 'admin';
-    } catch (err: any) {
-      console.error("isAdmin catch error:", err.message);
-      return false;
-    }
-  },
-};
+    return data?.role === 'admin';
+  } catch {
+    return false;
+  }
+}
