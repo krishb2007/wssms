@@ -8,7 +8,7 @@ import { useState, useEffect, createContext, useContext } from "react";
 import Index from "./pages/Index";
 import NotFound from "./pages/NotFound";
 import AdminDashboard from "./pages/AdminDashboard";
-import AdminLogin from "./AdminLogin"; // <--- Add this line!
+import AdminLogin from "./pages/AdminLogin";
 import { getCurrentUser, signOut, AuthUser } from "./services/authService";
 
 const queryClient = new QueryClient();
