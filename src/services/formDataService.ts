@@ -1,10 +1,6 @@
+// Firebase has been removed from this file
 
-import { db } from "@/integrations/firebase/client";
-import { collection, addDoc, Timestamp } from "firebase/firestore";
-import { ref, uploadBytes, getDownloadURL } from "firebase/storage";
-import { storage } from "@/integrations/firebase/client"; // Make sure you export storage in your client.ts
-
-// FormEntry interface definition (unchanged)
+// Interfaces (unchanged)
 export interface FormEntry {
   id?: string;
   timestamp?: string;
@@ -28,7 +24,6 @@ export interface FormEntry {
   acceptedPolicy?: boolean;
 }
 
-// Form data input type (unchanged)
 export interface FormDataInput {
   visitorName: string;
   schoolName: string;
@@ -49,73 +44,61 @@ export interface FormDataInput {
   acceptedPolicy?: boolean;
 }
 
+// Mock upload handler
+const uploadFileMock = async (file: File): Promise<string> => {
+  // Replace with real upload logic (e.g. S3, Supabase, or backend endpoint)
+  return Promise.resolve(URL.createObjectURL(file)); // for demo/testing purposes
+};
+
 export const saveFormData = async (formData: FormDataInput): Promise<FormEntry> => {
   try {
-    console.log("Starting to save form data (Firebase)");
+    console.log("Saving form data (no Firebase)");
 
-    // Prepare data for Firestore
-    const dbFormData: Partial<FormEntry> = {
-      ...formData,
-      picture: null,
-      signature: null
-    };
+    const formId = crypto.randomUUID(); // Simulated unique ID
+    const now = new Date().toISOString(); // Simulated timestamp
 
-    // Handle picture upload to Firebase Storage if needed
-    if (formData.picture && typeof formData.picture !== 'string') {
-      const file = formData.picture as File;
-      const fileExt = file.name.split('.').pop();
-      const fileName = `${Date.now()}-picture.${fileExt}`;
-      const fileRef = ref(storage, `visitor-pictures/${fileName}`);
-      await uploadBytes(fileRef, file);
-      dbFormData.picture = await getDownloadURL(fileRef);
-    } else if (typeof formData.picture === 'string') {
-      dbFormData.picture = formData.picture;
+    let pictureUrl: string | null = null;
+    let signatureUrl: string | null = null;
+
+    if (formData.picture && typeof formData.picture !== "string") {
+      pictureUrl = await uploadFileMock(formData.picture);
+    } else if (typeof formData.picture === "string") {
+      pictureUrl = formData.picture;
     }
 
-    // Handle signature upload to Firebase Storage if needed
-    if (formData.signature && typeof formData.signature !== 'string') {
-      const file = formData.signature as File;
-      const fileName = `${Date.now()}-signature.png`;
-      const fileRef = ref(storage, `visitor-signatures/${fileName}`);
-      await uploadBytes(fileRef, file);
-      dbFormData.signature = await getDownloadURL(fileRef);
-    } else if (typeof formData.signature === 'string') {
-      dbFormData.signature = formData.signature;
+    if (formData.signature && typeof formData.signature !== "string") {
+      signatureUrl = await uploadFileMock(formData.signature);
+    } else if (typeof formData.signature === "string") {
+      signatureUrl = formData.signature;
     }
 
-    // Combine purpose and otherPurpose if purpose is "other"
     const purposeValue = formData.purpose === "other" ? formData.otherPurpose : formData.purpose;
 
-    // Prepare Firestore entry
-    const entryData = {
+    const savedEntry: FormEntry = {
+      id: formId,
+      timestamp: now,
       visitorName: formData.visitorName,
-      schoolName: "Woodstock School", // Hardcoded as in your example
+      schoolName: "Woodstock School",
       numberOfPeople: formData.numberOfPeople,
       people: formData.people,
       purpose: purposeValue,
       otherPurpose: formData.purpose === "other" ? formData.otherPurpose : "",
       address: formData.address,
-      picture: dbFormData.picture,
-      signature: dbFormData.signature,
+      picture: pictureUrl,
+      signature: signatureUrl,
       startTime: formData.startTime,
       endTime: formData.endTime,
       phoneNumber: formData.phoneNumber,
       acceptedPolicy: formData.acceptedPolicy ?? false,
-      timestamp: Timestamp.now()
+      visitCount: 1
     };
 
-    // Save to Firestore
-    const docRef = await addDoc(collection(db, "visitor_registrations"), entryData);
-
-    const savedEntry: FormEntry = {
-      ...entryData,
-      id: docRef.id,
-      visitCount: 1 // You can increment logic if needed
-    };
+    // Replace this with a real API call to save the data to your backend
+    console.log("Form data would be sent to server:", savedEntry);
 
     return savedEntry;
   } catch (error) {
-    console.error("Error in saveFormData (Firebase):", error);
+    console.error("Error saving form data (mock):", error);
     throw error;
   }
 };
