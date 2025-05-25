@@ -1,6 +1,4 @@
-// Firebase has been removed from this file
 
-// Interfaces (unchanged)
 export interface FormEntry {
   id?: string;
   timestamp?: string;
