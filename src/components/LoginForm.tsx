@@ -49,10 +49,7 @@ const LoginForm: React.FC<LoginFormProps> = ({ onLoginSuccess }) => {
     setError(null);
 
     try {
-      const { user, error } = await signIn({
-        email: credentials.email,
-        password: credentials.password,
-      });
+      const { user, error } = await signIn(credentials);
 
       if (error || !user) {
         setError(error || "Invalid credentials. Please try again.");
