@@ -1,14 +1,5 @@
 import { supabase } from "@/integrations/supabase/client";
-import { auth, db } from "@/integrations/firebase/client";
 import { toast } from "@/components/ui/use-toast";
-import {
-  createUserWithEmailAndPassword,
-  signInWithEmailAndPassword,
-  signOut as firebaseSignOut,
-  onAuthStateChanged,
-  User as FirebaseUser,
-} from "firebase/auth";
-import { doc, setDoc, getDoc } from "firebase/firestore";
 
 // Types
 export type SignUpCredentials = {
@@ -156,35 +147,5 @@ export const supabaseAuth = {
     } catch {
       return false;
     }
-  },
-};
-
-export const firebaseAuth = {
-  async signUp(
-    email: string,
-    password: string,
-    profile: { name: string; phoneNumber: string; address: { city: string; state: string; country: string } }
-  ) {
-    const userCredential = await createUserWithEmailAndPassword(auth, email, password);
-    const user = userCredential.user;
-    await setDoc(doc(db, "users", user.uid), profile);
-    return user;
-  },
-
-  signIn(email: string, password: string) {
-    return signInWithEmailAndPassword(auth, email, password);
-  },
-
-  logout() {
-    return firebaseSignOut(auth);
-  },
-
-  subscribeToAuthState(callback: (user: FirebaseUser | null) => void) {
-    return onAuthStateChanged(auth, callback);
-  },
-
-  async getUserProfile(uid: string) {
-    const docSnap = await getDoc(doc(db, "users", uid));
-    return docSnap.exists() ? docSnap.data() : null;
   },
 };
