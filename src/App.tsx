@@ -1,10 +1,9 @@
-import React from "react";
+import React, { useState, useEffect, createContext, useContext } from "react";
 import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route, Link, Navigate } from "react-router-dom";
-import { useState, useEffect, createContext, useContext } from "react";
 import Index from "./pages/Index";
 import NotFound from "./pages/NotFound";
 import AdminDashboard from "./pages/AdminDashboard";
@@ -75,7 +74,9 @@ const App: React.FC = () => {
               <Route
                 path="/admin-dashboard"
                 element={
-                  user && user.role === "admin" ? (
+                  isLoading ? (
+                    <div>Loading...</div>
+                  ) : user && user.role === "admin" ? (
                     <AdminDashboard />
                   ) : (
                     <Navigate to="/admin-login" replace />
