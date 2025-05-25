@@ -2,22 +2,21 @@ import { defineConfig } from "vite";
 import react from "@vitejs/plugin-react-swc";
 import path from "path";
 
-export default defineConfig(({ mode }) => ({
-  base: './',  //  This is crucial for Netlify/static hosting
+export default defineConfig({
+  base: '/',  // use '/' if deploying to root domain; './' only for subfolders
 
   server: {
     host: "::",
     port: 8080,
   },
-  root: './',
+
   publicDir: 'public',
 
-  plugins: [
-    react(),
-  ].filter(Boolean),
+  plugins: [react()],
+
   resolve: {
     alias: {
       "@": path.resolve(__dirname, "./src"),
     },
   },
-}));
+});
