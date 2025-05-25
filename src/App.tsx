@@ -1,10 +1,9 @@
-import LoginForm from "@/components/LoginForm";
 import React from "react";
 import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { BrowserRouter, Routes, Route, Link, Navigate } from "react-router-dom";
+import { BrowserRouter, Routes, Route } from "react-router-dom";
 import { useState, useEffect, createContext, useContext } from "react";
 import Index from "./pages/Index";
 import NotFound from "./pages/NotFound";
@@ -47,12 +46,6 @@ const App: React.FC = () => {
     setUser(null);
   };
 
-  // This function will be passed to LoginForm and called after login
-  const handleLoginSuccess = async () => {
-    const { user } = await getCurrentUser();
-    setUser(user);
-  };
-
   return (
     <QueryClientProvider client={queryClient}>
       <AuthContext.Provider value={{ user, isLoading, logout }}>
@@ -60,50 +53,23 @@ const App: React.FC = () => {
           <Toaster />
           <Sonner />
           <BrowserRouter>
-            <div className="fixed top-4 right-4 z-50 flex gap-2">
-              {/* Admin button: only show if user is admin */}
-              {user && user.role === "admin" && (
-                <Link
-                  to="/admin-dashboard"
-                  className="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700"
-                >
-                  Admin
-                </Link>
-              )}
-              {/* Logout: only show if user is logged in */}
-              {user && (
-                <button
-                  onClick={logout}
-                  className="px-4 py-2 bg-gray-600 text-white rounded hover:bg-gray-700"
-                >
-                  Logout
-                </button>
-              )}
-            </div>
-            {isLoading ? (
-              <div>Loading...</div>
-            ) : !user ? (
-              <div className="flex justify-center items-center min-h-screen">
-                {/* Pass the onLoginSuccess handler here */}
-                <LoginForm onLoginSuccess={handleLoginSuccess} />
-              </div>
-            ) : (
-              <Routes>
-                <Route path="/" element={<Index />} />
-                {/* Protected Admin Route */}
-                <Route
-                  path="/admin-dashboard"
-                  element={
-                    user && user.role === "admin" ? (
-                      <AdminDashboard />
-                    ) : (
-                      <Navigate to="/" replace />
-                    )
-                  }
-                />
-                <Route path="*" element={<NotFound />} />
-              </Routes>
-            )}
+            {/* Navigation buttons will be added in Step 2 */}
+            <Routes>
+              <Route path="/" element={<Index />} />
+              {/* Protected Admin Route */}
+              <Route
+                path="/admin-dashboard"
+                element={
+                  user && user.role === "admin" ? (
+                    <AdminDashboard />
+                  ) : (
+                    // Optionally, redirect to "/" or to the admin login page in later steps
+                    <Index />
+                  )
+                }
+              />
+              <Route path="*" element={<NotFound />} />
+            </Routes>
           </BrowserRouter>
         </TooltipProvider>
       </AuthContext.Provider>
