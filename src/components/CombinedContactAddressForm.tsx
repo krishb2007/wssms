@@ -54,12 +54,12 @@ const CombinedContactAddressForm: React.FC<CombinedContactAddressFormProps> = ({
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     
-    // Allow 10 or 11 digits, but message says 10-digit mobile number
+    // Validate mobile number length for 9–11 digits
     const digitsOnly = formData.phoneNumber.replace(/\D/g, '');
-    if (digitsOnly.length < 10 || digitsOnly.length > 11) {
+    if (digitsOnly.length < 9 || digitsOnly.length > 11) {
       toast({
         title: "Invalid mobile number",
-        description: "Please enter a valid 10-digit mobile number",
+        description: "Please enter a valid mobile number (9 to 11 digits)",
         variant: "destructive"
       });
       return;
@@ -105,12 +105,12 @@ const CombinedContactAddressForm: React.FC<CombinedContactAddressFormProps> = ({
             type="tel"
             value={formData.phoneNumber}
             onChange={handlePhoneChange}
-            placeholder="Enter 10-digit mobile number"
-            pattern="[0-9]{10,11}"
+            placeholder="Enter 9–11 digit mobile number"
+            pattern="[0-9]{9,11}"
             required
           />
           <p className="text-xs text-gray-500">
-            Please enter a 10-digit mobile number (no spaces or special characters)
+            Please enter a mobile number with 9 to 11 digits (no spaces or special characters)
           </p>
         </div>
 
