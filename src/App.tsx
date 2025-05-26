@@ -1,17 +1,18 @@
-import React, { useState, useEffect, createContext, useContext } from "react";
+import React from "react";
 import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { BrowserRouter, Routes, Route, Link, Navigate } from "react-router-dom";
+import { BrowserRouter, Routes, Route } from "react-router-dom";
+import { useState, useEffect, createContext, useContext } from "react";
 import Index from "./pages/Index";
 import NotFound from "./pages/NotFound";
 import AdminDashboard from "./pages/AdminDashboard";
-import AdminLogin from "./pages/AdminLogin";
 import { getCurrentUser, signOut, AuthUser } from "./services/authService";
 
 const queryClient = new QueryClient();
 
+// Create auth context
 interface AuthContextType {
   user: AuthUser | null;
   isLoading: boolean;
@@ -52,34 +53,18 @@ const App: React.FC = () => {
           <Toaster />
           <Sonner />
           <BrowserRouter>
-            {/* ---- TOP RIGHT BUTTONS ---- */}
-            <div className="fixed top-4 right-4 z-50 flex gap-2">
-              <Link
-                to="/"
-                className="px-4 py-2 bg-green-600 text-white rounded hover:bg-green-700"
-              >
-                Register
-              </Link>
-              <Link
-                to="/admin-login"
-                className="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700"
-              >
-                Admin
-              </Link>
-            </div>
-            {/* ---- ROUTES ---- */}
+            {/* Navigation buttons will be added in Step 2 */}
             <Routes>
               <Route path="/" element={<Index />} />
-              <Route path="/admin-login" element={<AdminLogin />} />
+              {/* Protected Admin Route */}
               <Route
                 path="/admin-dashboard"
                 element={
-                  isLoading ? (
-                    <div>Loading...</div>
-                  ) : user && user.role === "admin" ? (
+                  user && user.role === "admin" ? (
                     <AdminDashboard />
                   ) : (
-                    <Navigate to="/admin-login" replace />
+                    // Optionally, redirect to "/" or to the admin login page in later steps
+                    <Index />
                   )
                 }
               />
