@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { supabase } from '../supabaseClient'; // adjust path if needed
+import { supabase } from '../supabaseClient'; // Adjust the path if needed
 
 export default function AdminLogin() {
   const [email, setEmail] = useState('');
@@ -57,8 +57,10 @@ export default function AdminLogin() {
           onChange={e => setPassword(e.target.value)}
           required
         /><br />
-        <button type="submit" disabled={loading}>{loading ? 'Logging in...' : 'Login'}</button>
-        {error && <div style={{color: 'red'}}>{error}</div>}
+        <button type="submit" disabled={loading}>
+          {loading ? 'Logging in...' : 'Login'}
+        </button>
+        {error && <div style={{ color: 'red' }}>{error}</div>}
       </form>
     </div>
   );
