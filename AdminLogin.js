@@ -1,16 +1,18 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { supabase } from './supabaseClient';
+import { supabase } from '../supabaseClient'; // Update path if needed
 
 export default function AdminLogin() {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
+  const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
 
-  async function handleSubmit(e) {
+  async function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
     setError('');
+    setLoading(true);
 
     // Sign in with Supabase
     const { data, error } = await supabase.auth.signInWithPassword({
@@ -20,6 +22,7 @@ export default function AdminLogin() {
 
     if (error) {
       setError(error.message);
+      setLoading(false);
       return;
     }
 
@@ -28,6 +31,7 @@ export default function AdminLogin() {
     if (!adminEmails.includes(email)) {
       setError('You are not authorized as admin.');
       await supabase.auth.signOut();
+      setLoading(false);
       return;
     }
 
@@ -53,7 +57,7 @@ export default function AdminLogin() {
           onChange={e => setPassword(e.target.value)}
           required
         /><br />
-        <button type="submit">Login</button>
+        <button type="submit" disabled={loading}>{loading ? 'Logging in...' : 'Login'}</button>
         {error && <div style={{color: 'red'}}>{error}</div>}
       </form>
     </div>
