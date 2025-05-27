@@ -9,7 +9,7 @@ export default function AdminLogin() {
   const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
 
-  async function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
+  async function handleSubmit(e) {
     e.preventDefault();
     setError('');
     setLoading(true);
@@ -39,6 +39,7 @@ export default function AdminLogin() {
     navigate('/admin-dashboard');
   }
 
+  // This return must exist!
   return (
     <div>
       <h2>Admin Login</h2>
