@@ -3,11 +3,12 @@ import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { BrowserRouter, Routes, Route } from "react-router-dom";
+import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 import { useState, useEffect, createContext, useContext } from "react";
 import Index from "./pages/Index";
 import NotFound from "./pages/NotFound";
 import AdminDashboard from "./pages/AdminDashboard";
+import AdminLogin from "./pages/AdminLogin"; // <-- Add this import
 import { getCurrentUser, signOut, AuthUser } from "./services/authService";
 
 const queryClient = new QueryClient();
@@ -53,18 +54,22 @@ const App: React.FC = () => {
           <Toaster />
           <Sonner />
           <BrowserRouter>
-            {/* Navigation buttons will be added in Step 2 */}
+            {/* Navigation buttons can go here */}
             <Routes>
               <Route path="/" element={<Index />} />
-              {/* Protected Admin Route */}
+              {/* Admin Login Route */}
+              <Route path="/admin-login" element={<AdminLogin />} />
+              {/* Protected Admin Dashboard Route */}
               <Route
                 path="/admin-dashboard"
                 element={
                   user && user.role === "admin" ? (
                     <AdminDashboard />
+                  ) : isLoading ? (
+                    <div>Loading...</div>
                   ) : (
-                    // Optionally, redirect to "/" or to the admin login page in later steps
-                    <Index />
+                    // Redirect unauthorized users to admin login
+                    <Navigate to="/admin-login" replace />
                   )
                 }
               />
