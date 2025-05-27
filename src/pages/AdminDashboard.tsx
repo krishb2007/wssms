@@ -1,85 +1,127 @@
-import React, { useEffect, useState } from "react";
-import { supabase } from "@/integrations/supabase/client";
+import React, { useEffect, useState } from 'react';
+import { supabase } from '../supabaseClient';
+import { useNavigate } from 'react-router-dom';
 
-const AdminDashboard = () => {
-  const [data, setData] = useState<any[]>([]);
-  const [search, setSearch] = useState("");
-  const [editingId, setEditingId] = useState<string | null>(null);
-  const [editForm, setEditForm] = useState<any>({});
+interface Entry {
+  id: number;
+  name: string;
+  email: string;
+  // Add other fields as per your Supabase table
+}
+
+export default function AdminDashboard() {
+  const [entries, setEntries] = useState<Entry[]>([]);
+  const [editingId, setEditingId] = useState<number | null>(null);
+  const [editForm, setEditForm] = useState<Partial<Entry>>({});
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState('');
+  const navigate = useNavigate();
+
+  // Ensure only signed-in admins can access this page
+  useEffect(() => {
+    (async () => {
+      const { data: { user } } = await supabase.auth.getUser();
+      const adminEmails = ['admin@example.com']; // <-- replace with your admin email(s)
+      if (!user || !adminEmails.includes(user.email!)) {
+        navigate('/admin-login');
+      }
+    })();
+  }, [navigate]);
 
   useEffect(() => {
-    fetchData();
+    fetchEntries();
+    // eslint-disable-next-line
   }, []);
 
-  async function fetchData() {
-    const { data, error } = await supabase
-      .from("visitor_registrations")
-      .select("*");
-    if (!error) setData(data || []);
+  async function fetchEntries() {
+    setLoading(true);
+    setError('');
+    const { data, error } = await supabase.from('entries').select('*');
+    if (error) {
+      setError(error.message);
+    } else if (data) {
+      setEntries(data);
+    }
+    setLoading(false);
   }
 
-  function handleEdit(row: any) {
-    setEditingId(row.id);
-    setEditForm(row);
+  function startEdit(entry: Entry) {
+    setEditingId(entry.id);
+    setEditForm(entry);
   }
 
-  async function handleSave() {
-    await supabase
-      .from("visitor_registrations")
-      .update(editForm)
-      .eq("id", editingId);
+  function cancelEdit() {
     setEditingId(null);
-    fetchData();
+    setEditForm({});
   }
 
-  // Filtering
-  const filtered = data.filter(row =>
-    row.visitorname?.toLowerCase().includes(search.toLowerCase())
-  );
+  function handleChange(e: React.ChangeEvent<HTMLInputElement>) {
+    setEditForm({ ...editForm, [e.target.name]: e.target.value });
+  }
+
+  async function saveEdit() {
+    if (!editingId) return;
+    setError('');
+    const { error } = await supabase
+      .from('entries')
+      .update(editForm)
+      .eq('id', editingId);
+
+    if (error) {
+      setError(error.message);
+    } else {
+      setEditingId(null);
+      setEditForm({});
+      fetchEntries();
+    }
+  }
+
+  if (loading) return <div>Loading entries...</div>;
 
   return (
     <div>
       <h2>Admin Dashboard</h2>
-      <input
-        placeholder="Search names..."
-        value={search}
-        onChange={e => setSearch(e.target.value)}
-        className="input input-bordered mb-4"
-      />
-      <table>
+      {error && <div style={{ color: 'red' }}>{error}</div>}
+      <table border={1} cellPadding={8}>
         <thead>
           <tr>
-            {data[0] &&
-              Object.keys(data[0]).map(key => <th key={key}>{key}</th>)}
+            <th>Name</th>
+            <th>Email</th>
+            {/* Add other column headers as per your Supabase table */}
             <th>Actions</th>
           </tr>
         </thead>
         <tbody>
-          {filtered.map(row =>
-            editingId === row.id ? (
-              <tr key={row.id}>
-                {Object.keys(row).map(k => (
-                  <td key={k}>
-                    <input
-                      value={editForm[k] || ""}
-                      onChange={e =>
-                        setEditForm({ ...editForm, [k]: e.target.value })
-                      }
-                    />
-                  </td>
-                ))}
+          {entries.map(entry =>
+            editingId === entry.id ? (
+              <tr key={entry.id}>
                 <td>
-                  <button onClick={handleSave}>Save</button>
-                  <button onClick={() => setEditingId(null)}>Cancel</button>
+                  <input
+                    name="name"
+                    value={editForm.name || ''}
+                    onChange={handleChange}
+                  />
+                </td>
+                <td>
+                  <input
+                    name="email"
+                    value={editForm.email || ''}
+                    onChange={handleChange}
+                  />
+                </td>
+                {/* Add other fields here */}
+                <td>
+                  <button onClick={saveEdit}>Save</button>
+                  <button onClick={cancelEdit}>Cancel</button>
                 </td>
               </tr>
             ) : (
-              <tr key={row.id}>
-                {Object.values(row).map((val, i) => (
-                  <td key={i}>{String(val)}</td>
-                ))}
+              <tr key={entry.id}>
+                <td>{entry.name}</td>
+                <td>{entry.email}</td>
+                {/* Add other fields here */}
                 <td>
-                  <button onClick={() => handleEdit(row)}>Edit</button>
+                  <button onClick={() => startEdit(entry)}>Edit</button>
                 </td>
               </tr>
             )
@@ -88,6 +130,4 @@ const AdminDashboard = () => {
       </table>
     </div>
   );
-};
-
-export default AdminDashboard;
+}
