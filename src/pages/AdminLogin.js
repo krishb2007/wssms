@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { supabase } from '../supabaseClient'; // Update path if needed
+import { supabase } from '../supabaseClient'; // adjust path if needed
 
 export default function AdminLogin() {
   const [email, setEmail] = useState('');
@@ -39,7 +39,6 @@ export default function AdminLogin() {
     navigate('/admin-dashboard');
   }
 
-  // This return must exist!
   return (
     <div>
       <h2>Admin Login</h2>
