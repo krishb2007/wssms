@@ -1,12 +1,12 @@
 
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { signIn } from '../services/authService';
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { toast } from "@/components/ui/use-toast";
-import { supabase } from "@/integrations/supabase/client";
 
 export default function AdminLogin() {
   const [email, setEmail] = useState('');
@@ -19,30 +19,19 @@ export default function AdminLogin() {
     setLoading(true);
 
     try {
-      // Sign in with Supabase
-      const { data, error } = await supabase.auth.signInWithPassword({
-        email,
-        password,
-      });
+      const { user, error } = await signIn({ email, password });
 
-      if (error || !data.user) {
+      if (error || !user) {
         toast({
           title: "Login Failed",
-          description: error?.message || "Invalid credentials",
+          description: error || "Invalid credentials",
           variant: "destructive",
         });
         setLoading(false);
         return;
       }
 
-      // Check if user is admin
-      const { data: adminUser, error: adminError } = await supabase
-        .from('admin_users')
-        .select('role')
-        .eq('user_id', data.user.id)
-        .single();
-
-      if (adminError || !adminUser || adminUser.role !== 'admin') {
+      if (user.role !== 'admin') {
         toast({
           title: "Access Denied",
           description: "You are not authorized as admin.",

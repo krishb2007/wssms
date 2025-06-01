@@ -13,9 +13,9 @@ const NavBar: React.FC = () => {
         <div className="flex items-center">
           <Link to="/admin-login">
             <Button 
-              variant="ghost" 
+              variant="outline" 
               size="sm"
-              className="text-gray-600 hover:text-gray-800 hover:bg-gray-100 transition-all duration-200 font-medium"
+              className="text-gray-700 border-gray-300 bg-gray-50 hover:bg-gray-200 hover:text-gray-900 hover:border-gray-400 transition-all duration-200 font-medium shadow-sm"
             >
               Admin Access
             </Button>
