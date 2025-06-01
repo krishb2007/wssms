@@ -1,3 +1,4 @@
+
 import React from "react";
 import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
@@ -8,7 +9,8 @@ import { useState, useEffect, createContext, useContext } from "react";
 import Index from "./pages/Index";
 import NotFound from "./pages/NotFound";
 import AdminDashboard from "./pages/AdminDashboard";
-import AdminLogin from "./pages/AdminLogin"; // <-- Add this import
+import AdminLogin from "./pages/AdminLogin";
+import NavBar from "./components/ui/navigation-menu";
 import { getCurrentUser, signOut, AuthUser } from "./services/authService";
 
 const queryClient = new QueryClient();
@@ -54,27 +56,26 @@ const App: React.FC = () => {
           <Toaster />
           <Sonner />
           <BrowserRouter>
-            {/* Navigation buttons can go here */}
-            <Routes>
-              <Route path="/" element={<Index />} />
-              {/* Admin Login Route */}
-              <Route path="/admin-login" element={<AdminLogin />} />
-              {/* Protected Admin Dashboard Route */}
-              <Route
-                path="/admin-dashboard"
-                element={
-                  user && user.role === "admin" ? (
-                    <AdminDashboard />
-                  ) : isLoading ? (
-                    <div>Loading...</div>
-                  ) : (
-                    // Redirect unauthorized users to admin login
-                    <Navigate to="/admin-login" replace />
-                  )
-                }
-              />
-              <Route path="*" element={<NotFound />} />
-            </Routes>
+            <div className="min-h-screen bg-gray-50">
+              <NavBar />
+              <Routes>
+                <Route path="/" element={<Index />} />
+                <Route path="/admin-login" element={<AdminLogin />} />
+                <Route
+                  path="/admin-dashboard"
+                  element={
+                    user && user.role === "admin" ? (
+                      <AdminDashboard />
+                    ) : isLoading ? (
+                      <div className="flex justify-center items-center min-h-screen">Loading...</div>
+                    ) : (
+                      <Navigate to="/admin-login" replace />
+                    )
+                  }
+                />
+                <Route path="*" element={<NotFound />} />
+              </Routes>
+            </div>
           </BrowserRouter>
         </TooltipProvider>
       </AuthContext.Provider>

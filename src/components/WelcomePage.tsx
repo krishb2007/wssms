@@ -1,5 +1,7 @@
+
 import React from "react";
 import { Button } from "@/components/ui/button";
+import { Link } from "react-router-dom";
 
 interface WelcomePageProps {
   nextStep: () => void;
@@ -12,13 +14,20 @@ const WelcomePage: React.FC<WelcomePageProps> = ({ nextStep }) => {
       <p className="text-gray-600">
         Thank you for visiting us. Please complete this registration form to continue.
       </p>
-      <div className="pt-4">
+      <div className="pt-4 space-y-4">
         <Button onClick={nextStep} className="w-full">
           Begin Registration
         </Button>
+        <div className="flex justify-center">
+          <Link to="/admin-login">
+            <Button variant="outline" className="w-full">
+              Admin Login
+            </Button>
+          </Link>
+        </div>
       </div>
     </div>
   );
 };
 
-export default WelcomePage; 
+export default WelcomePage;
