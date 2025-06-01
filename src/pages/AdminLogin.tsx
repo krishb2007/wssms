@@ -1,12 +1,12 @@
 
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { signIn } from '../services/authService';
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { toast } from "@/components/ui/use-toast";
+import { supabase } from "@/integrations/supabase/client";
 
 export default function AdminLogin() {
   const [email, setEmail] = useState('');
@@ -19,19 +19,30 @@ export default function AdminLogin() {
     setLoading(true);
 
     try {
-      const { user, error } = await signIn({ email, password });
+      // Sign in with Supabase
+      const { data, error } = await supabase.auth.signInWithPassword({
+        email,
+        password,
+      });
 
-      if (error || !user) {
+      if (error || !data.user) {
         toast({
           title: "Login Failed",
-          description: error || "Invalid credentials",
+          description: error?.message || "Invalid credentials",
           variant: "destructive",
         });
         setLoading(false);
         return;
       }
 
-      if (user.role !== 'admin') {
+      // Check if user is admin
+      const { data: adminUser, error: adminError } = await supabase
+        .from('admin_users')
+        .select('role')
+        .eq('user_id', data.user.id)
+        .single();
+
+      if (adminError || !adminUser || adminUser.role !== 'admin') {
         toast({
           title: "Access Denied",
           description: "You are not authorized as admin.",
@@ -59,38 +70,41 @@ export default function AdminLogin() {
 
   return (
     <div className="flex justify-center items-center min-h-screen bg-gray-50">
-      <Card className="w-full max-w-md">
-        <CardHeader>
-          <CardTitle className="text-2xl text-center">Admin Login</CardTitle>
+      <Card className="w-full max-w-md shadow-lg">
+        <CardHeader className="text-center pb-6">
+          <CardTitle className="text-2xl font-bold text-gray-800">Admin Login</CardTitle>
+          <p className="text-gray-600 text-sm mt-2">Access the administrative dashboard</p>
         </CardHeader>
         <CardContent>
           <form onSubmit={handleSubmit} className="space-y-4">
             <div className="space-y-2">
-              <Label htmlFor="email">Email</Label>
+              <Label htmlFor="email" className="text-gray-700">Email</Label>
               <Input
                 id="email"
                 type="email"
-                placeholder="Admin Email"
+                placeholder="admin@woodstockschool.com"
                 value={email}
                 onChange={e => setEmail(e.target.value)}
                 required
                 disabled={loading}
+                className="focus:ring-2 focus:ring-blue-500"
               />
             </div>
             <div className="space-y-2">
-              <Label htmlFor="password">Password</Label>
+              <Label htmlFor="password" className="text-gray-700">Password</Label>
               <Input
                 id="password"
                 type="password"
-                placeholder="Password"
+                placeholder="Enter your password"
                 value={password}
                 onChange={e => setPassword(e.target.value)}
                 required
                 disabled={loading}
+                className="focus:ring-2 focus:ring-blue-500"
               />
             </div>
-            <Button type="submit" disabled={loading} className="w-full">
-              {loading ? 'Logging in...' : 'Login'}
+            <Button type="submit" disabled={loading} className="w-full mt-6">
+              {loading ? 'Signing in...' : 'Sign In'}
             </Button>
           </form>
         </CardContent>
