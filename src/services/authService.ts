@@ -1,3 +1,4 @@
+
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "@/components/ui/use-toast";
 
@@ -50,10 +51,13 @@ export async function signUp(credentials: SignUpCredentials): Promise<{ user: Au
     }
 
     // Insert into admin_users
-    await supabase
-      .from('admin_users')
-      .insert([{ user_id: data.user.id, email: data.user.email, role: 'admin' }])
-      .catch((err) => console.error("Insert admin error:", err));
+    try {
+      await supabase
+        .from('admin_users')
+        .insert([{ user_id: data.user.id, email: data.user.email, role: 'admin' }]);
+    } catch (err) {
+      console.error("Insert admin error:", err);
+    }
 
     return {
       user: { id: data.user.id, email: data.user.email || '', role: 'admin' },
