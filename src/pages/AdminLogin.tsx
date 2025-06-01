@@ -18,10 +18,15 @@ export default function AdminLogin() {
     e.preventDefault();
     setLoading(true);
 
+    console.log("Form submitted with:", { email, password: "***" });
+
     try {
       const { user, error } = await signIn({ email, password });
 
+      console.log("Sign in result:", { user, error });
+
       if (error || !user) {
+        console.error("Login failed:", error);
         toast({
           title: "Login Failed",
           description: error || "Invalid credentials",
@@ -31,7 +36,10 @@ export default function AdminLogin() {
         return;
       }
 
+      console.log("User role:", user.role);
+
       if (user.role !== 'admin') {
+        console.error("User is not admin:", user.role);
         toast({
           title: "Access Denied",
           description: "You are not authorized as admin.",
@@ -46,8 +54,10 @@ export default function AdminLogin() {
         description: "Welcome to the admin dashboard",
       });
 
+      console.log("Navigating to admin dashboard...");
       navigate('/admin-dashboard');
     } catch (error) {
+      console.error("Unexpected error:", error);
       toast({
         title: "Login Error",
         description: "An unexpected error occurred",

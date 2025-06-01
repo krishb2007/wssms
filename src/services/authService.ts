@@ -70,33 +70,54 @@ export async function signUp(credentials: SignUpCredentials): Promise<{ user: Au
 
 export async function signIn(credentials: SignInCredentials): Promise<{ user: AuthUser | null; error: string | null }> {
   try {
+    console.log("Starting sign in process...", credentials.email);
+    
     cleanupAuthState();
     try {
       await supabase.auth.signOut({ scope: 'global' });
     } catch {}
 
-    const { data, error } = await supabase.auth.signInWithPassword(credentials);
+    const { data, error } = await supabase.auth.signInWithPassword({
+      email: credentials.email,
+      password: credentials.password,
+    });
+
+    console.log("Auth response:", { data, error });
+
     if (error || !data.user) {
+      console.error("Sign in failed:", error);
       return { user: null, error: error?.message || "Failed to sign in" };
     }
 
-    // Get role
+    console.log("User signed in successfully:", data.user.id);
+
+    // Get role from admin_users table
     let role = 'user';
-    const { data: adminUser } = await supabase
-      .from('admin_users')
-      .select('role')
-      .eq('user_id', data.user.id)
-      .single();
+    try {
+      const { data: adminUser, error: adminError } = await supabase
+        .from('admin_users')
+        .select('role')
+        .eq('user_id', data.user.id)
+        .single();
 
-    if (adminUser?.role) role = adminUser.role;
+      console.log("Admin user query result:", { adminUser, adminError });
 
-    toast({ title: "Authentication successful", description: "Redirecting to admin panel..." });
+      if (adminUser?.role) {
+        role = adminUser.role;
+        console.log("User role found:", role);
+      } else {
+        console.log("No admin role found for user");
+      }
+    } catch (err) {
+      console.error("Error checking admin role:", err);
+    }
 
     return {
       user: { id: data.user.id, email: data.user.email || '', role },
       error: null,
     };
-  } catch {
+  } catch (err) {
+    console.error("Unexpected error during sign in:", err);
     return { user: null, error: "Unexpected error during sign in" };
   }
 }
