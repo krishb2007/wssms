@@ -52,9 +52,13 @@ export async function signUp(credentials: SignUpCredentials): Promise<{ user: Au
 
     // Insert into admin_users
     try {
-      await supabase
+      const { error: insertError } = await supabase
         .from('admin_users')
         .insert([{ user_id: data.user.id, email: data.user.email, role: 'admin' }]);
+      
+      if (insertError) {
+        console.error("Insert admin error:", insertError);
+      }
     } catch (err) {
       console.error("Insert admin error:", err);
     }
@@ -102,7 +106,7 @@ export async function signIn(credentials: SignInCredentials): Promise<{ user: Au
 
       console.log("Admin user query result:", { adminUser, adminError });
 
-      if (adminUser?.role) {
+      if (adminUser && adminUser.role) {
         role = adminUser.role;
         console.log("User role found:", role);
       } else {
@@ -148,7 +152,9 @@ export async function getCurrentUser(): Promise<{ user: AuthUser | null; error: 
       .eq('user_id', data.session.user.id)
       .maybeSingle();
 
-    if (adminUser?.role) role = adminUser.role;
+    if (adminUser && adminUser.role) {
+      role = adminUser.role;
+    }
 
     return {
       user: { id: data.session.user.id, email: data.session.user.email || '', role },

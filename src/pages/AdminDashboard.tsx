@@ -19,7 +19,7 @@ interface VisitorRegistration {
   purpose: string;
   address: string;
   schoolname: string;
-  starttime: string;
+  starttime: string | null;
   endtime: string | null;
   created_at: string;
   picture_url: string | null;
@@ -115,7 +115,8 @@ export default function AdminDashboard() {
     navigate('/');
   };
 
-  const formatDate = (dateString: string) => {
+  const formatDate = (dateString: string | null) => {
+    if (!dateString) return 'N/A';
     return new Date(dateString).toLocaleString();
   };
 
@@ -181,7 +182,7 @@ export default function AdminDashboard() {
                     </TableCell>
                     <TableCell>{registration.purpose}</TableCell>
                     <TableCell className="max-w-xs truncate">{registration.address}</TableCell>
-                    <TableCell>{registration.starttime ? formatDate(registration.starttime) : 'N/A'}</TableCell>
+                    <TableCell>{formatDate(registration.starttime)}</TableCell>
                     <TableCell>
                       {editingId === registration.id ? (
                         <Input
