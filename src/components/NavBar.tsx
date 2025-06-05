@@ -15,7 +15,7 @@ const NavBar: React.FC = () => {
             <Button 
               variant="ghost" 
               size="sm"
-              className="text-white bg-blue-600 hover:bg-blue-700 hover:text-white border-0 transition-all duration-200 font-medium px-4 py-2 rounded-md shadow-sm"
+              className="text-gray-600 hover:text-gray-900 hover:bg-gray-100 transition-all duration-200 font-medium px-4 py-2 rounded-md"
             >
               Admin Access
             </Button>

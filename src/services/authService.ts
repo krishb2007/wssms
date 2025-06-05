@@ -98,7 +98,7 @@ export async function signIn(credentials: SignInCredentials): Promise<{ user: Au
         .from('admin_users')
         .select('role')
         .eq('user_id', data.user.id)
-        .single();
+        .maybeSingle();
 
       console.log("Admin user query result:", { adminUser, adminError });
 
@@ -146,7 +146,7 @@ export async function getCurrentUser(): Promise<{ user: AuthUser | null; error: 
       .from('admin_users')
       .select('role')
       .eq('user_id', data.session.user.id)
-      .single();
+      .maybeSingle();
 
     if (adminUser?.role) role = adminUser.role;
 
@@ -165,7 +165,7 @@ export async function isAdmin(userId: string): Promise<boolean> {
       .from('admin_users')
       .select('role')
       .eq('user_id', userId)
-      .single();
+      .maybeSingle();
 
     return data?.role === 'admin';
   } catch {
