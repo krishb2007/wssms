@@ -1,4 +1,3 @@
-
 import { saveVisitorRegistration, VisitorFormData } from './visitorService';
 
 export interface FormEntry {
@@ -46,7 +45,7 @@ export interface FormDataInput {
 
 export const saveFormData = async (formData: FormDataInput): Promise<FormEntry> => {
   try {
-    console.log("Saving form data to Supabase:", formData);
+    console.log("Starting form data save process:", formData);
 
     const purposeValue = formData.purpose === "other" ? formData.otherPurpose : formData.purpose;
 
@@ -63,13 +62,14 @@ export const saveFormData = async (formData: FormDataInput): Promise<FormEntry> 
       endtime: formData.endTime,
     };
 
+    console.log("Calling saveVisitorRegistration with:", visitorData);
     const savedData = await saveVisitorRegistration(visitorData);
 
     const savedEntry: FormEntry = {
       id: savedData.id,
       timestamp: savedData.created_at,
       visitorName: savedData.visitorname,
-      schoolName: savedData.schoolname,
+      schoolName: savedData.schoolname || "Woodstock School",
       numberOfPeople: savedData.numberofpeople,
       people: JSON.parse(savedData.people),
       purpose: savedData.purpose,
@@ -88,7 +88,13 @@ export const saveFormData = async (formData: FormDataInput): Promise<FormEntry> 
     return savedEntry;
   } catch (error) {
     console.error("Error saving form data:", error);
-    throw error;
+    
+    // Provide more specific error messages
+    if (error instanceof Error) {
+      throw new Error(`Registration failed: ${error.message}`);
+    } else {
+      throw new Error("Registration failed due to an unexpected error. Please try again.");
+    }
   }
 };
 

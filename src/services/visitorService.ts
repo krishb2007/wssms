@@ -21,6 +21,7 @@ export interface VisitorFormData {
 // Upload file to Supabase storage (placeholder for now)
 const uploadFile = async (file: File, bucket: string, path: string): Promise<string | null> => {
   try {
+    console.log("Uploading file:", file.name);
     // For now, we'll just return a placeholder URL
     // In production, you would upload to Supabase storage
     return URL.createObjectURL(file);
@@ -68,7 +69,7 @@ export const saveVisitorRegistration = async (formData: VisitorFormData) => {
       signature_url: signatureUrl,
     };
 
-    console.log("Inserting data:", insertData);
+    console.log("Inserting data into visitor_registrations:", insertData);
 
     const { data, error } = await supabase
       .from('visitor_registrations')
@@ -77,8 +78,8 @@ export const saveVisitorRegistration = async (formData: VisitorFormData) => {
       .single();
 
     if (error) {
-      console.error("Error saving visitor registration:", error);
-      throw error;
+      console.error("Supabase error:", error);
+      throw new Error(`Database error: ${error.message}`);
     }
 
     console.log("Visitor registration saved successfully:", data);
@@ -91,6 +92,8 @@ export const saveVisitorRegistration = async (formData: VisitorFormData) => {
 
 export const getVisitorRegistrations = async () => {
   try {
+    console.log("Fetching visitor registrations from database");
+    
     const { data, error } = await supabase
       .from('visitor_registrations')
       .select('*')
@@ -98,10 +101,11 @@ export const getVisitorRegistrations = async () => {
 
     if (error) {
       console.error("Error fetching visitor registrations:", error);
-      throw error;
+      throw new Error(`Failed to fetch registrations: ${error.message}`);
     }
 
-    return data;
+    console.log("Fetched visitor registrations:", data);
+    return data || [];
   } catch (error) {
     console.error("Error in getVisitorRegistrations:", error);
     throw error;
