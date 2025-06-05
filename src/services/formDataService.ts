@@ -1,4 +1,6 @@
 
+import { saveVisitorRegistration, VisitorFormData } from './visitorService';
+
 export interface FormEntry {
   id?: string;
   timestamp?: string;
@@ -42,61 +44,50 @@ export interface FormDataInput {
   acceptedPolicy?: boolean;
 }
 
-// Mock upload handler
-const uploadFileMock = async (file: File): Promise<string> => {
-  // Replace with real upload logic (e.g. S3, Supabase, or backend endpoint)
-  return Promise.resolve(URL.createObjectURL(file)); // for demo/testing purposes
-};
-
 export const saveFormData = async (formData: FormDataInput): Promise<FormEntry> => {
   try {
-    console.log("Saving form data (no Firebase)");
-
-    const formId = crypto.randomUUID(); // Simulated unique ID
-    const now = new Date().toISOString(); // Simulated timestamp
-
-    let pictureUrl: string | null = null;
-    let signatureUrl: string | null = null;
-
-    if (formData.picture && typeof formData.picture !== "string") {
-      pictureUrl = await uploadFileMock(formData.picture);
-    } else if (typeof formData.picture === "string") {
-      pictureUrl = formData.picture;
-    }
-
-    if (formData.signature && typeof formData.signature !== "string") {
-      signatureUrl = await uploadFileMock(formData.signature);
-    } else if (typeof formData.signature === "string") {
-      signatureUrl = formData.signature;
-    }
+    console.log("Saving form data to Supabase:", formData);
 
     const purposeValue = formData.purpose === "other" ? formData.otherPurpose : formData.purpose;
 
-    const savedEntry: FormEntry = {
-      id: formId,
-      timestamp: now,
-      visitorName: formData.visitorName,
-      schoolName: "Woodstock School",
-      numberOfPeople: formData.numberOfPeople,
+    const visitorData: VisitorFormData = {
+      visitorname: formData.visitorName,
+      phonenumber: formData.phoneNumber,
+      numberofpeople: formData.numberOfPeople,
       people: formData.people,
       purpose: purposeValue,
+      address: formData.address,
+      picture: formData.picture,
+      signature: formData.signature,
+      starttime: formData.startTime,
+      endtime: formData.endTime,
+    };
+
+    const savedData = await saveVisitorRegistration(visitorData);
+
+    const savedEntry: FormEntry = {
+      id: savedData.id,
+      timestamp: savedData.created_at,
+      visitorName: savedData.visitorname,
+      schoolName: savedData.schoolname,
+      numberOfPeople: savedData.numberofpeople,
+      people: JSON.parse(savedData.people),
+      purpose: savedData.purpose,
       otherPurpose: formData.purpose === "other" ? formData.otherPurpose : "",
       address: formData.address,
-      picture: pictureUrl,
-      signature: signatureUrl,
-      startTime: formData.startTime,
-      endTime: formData.endTime,
-      phoneNumber: formData.phoneNumber,
+      picture: savedData.picture_url,
+      signature: savedData.signature_url,
+      startTime: savedData.starttime,
+      endTime: savedData.endtime,
+      phoneNumber: savedData.phonenumber,
       acceptedPolicy: formData.acceptedPolicy ?? false,
       visitCount: 1
     };
 
-    // Replace this with a real API call to save the data to your backend
-    console.log("Form data would be sent to server:", savedEntry);
-
+    console.log("Form data saved successfully:", savedEntry);
     return savedEntry;
   } catch (error) {
-    console.error("Error saving form data (mock):", error);
+    console.error("Error saving form data:", error);
     throw error;
   }
 };

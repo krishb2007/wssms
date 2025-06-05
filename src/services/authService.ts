@@ -44,17 +44,24 @@ export async function signUp(credentials: SignUpCredentials): Promise<{ user: Au
     const { data, error } = await supabase.auth.signUp({
       email: credentials.email,
       password: credentials.password,
+      options: {
+        emailRedirectTo: `${window.location.origin}/admin-dashboard`
+      }
     });
 
     if (error || !data.user) {
       return { user: null, error: error?.message || "Failed to create user" };
     }
 
-    // Insert into admin_users
+    // Insert into admin_users table
     try {
       const { error: insertError } = await supabase
         .from('admin_users')
-        .insert([{ user_id: data.user.id, email: data.user.email, role: 'admin' }]);
+        .insert([{ 
+          user_id: data.user.id, 
+          email: data.user.email, 
+          role: 'admin' 
+        }]);
       
       if (insertError) {
         console.error("Insert admin error:", insertError);
@@ -68,6 +75,7 @@ export async function signUp(credentials: SignUpCredentials): Promise<{ user: Au
       error: null,
     };
   } catch (err) {
+    console.error("Sign up error:", err);
     return { user: null, error: "Unexpected error during sign up" };
   }
 }

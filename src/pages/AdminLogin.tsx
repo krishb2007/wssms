@@ -1,7 +1,7 @@
 
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { signIn } from '../services/authService';
+import { signIn, signUp } from '../services/authService';
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -12,23 +12,26 @@ export default function AdminLogin() {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [loading, setLoading] = useState(false);
+  const [isSignUp, setIsSignUp] = useState(false);
   const navigate = useNavigate();
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
     setLoading(true);
 
-    console.log("Form submitted with:", { email, password: "***" });
+    console.log("Form submitted with:", { email, password: "***", isSignUp });
 
     try {
-      const { user, error } = await signIn({ email, password });
+      const { user, error } = isSignUp 
+        ? await signUp({ email, password })
+        : await signIn({ email, password });
 
-      console.log("Sign in result:", { user, error });
+      console.log("Auth result:", { user, error });
 
       if (error || !user) {
-        console.error("Login failed:", error);
+        console.error("Auth failed:", error);
         toast({
-          title: "Login Failed",
+          title: isSignUp ? "Sign Up Failed" : "Login Failed",
           description: error || "Invalid credentials",
           variant: "destructive",
         });
@@ -50,8 +53,10 @@ export default function AdminLogin() {
       }
 
       toast({
-        title: "Login Successful",
-        description: "Welcome to the admin dashboard",
+        title: isSignUp ? "Account Created" : "Login Successful",
+        description: isSignUp 
+          ? "Admin account created successfully. You can now access the dashboard." 
+          : "Welcome to the admin dashboard",
       });
 
       console.log("Navigating to admin dashboard...");
@@ -59,7 +64,7 @@ export default function AdminLogin() {
     } catch (error) {
       console.error("Unexpected error:", error);
       toast({
-        title: "Login Error",
+        title: "Error",
         description: "An unexpected error occurred",
         variant: "destructive",
       });
@@ -71,8 +76,15 @@ export default function AdminLogin() {
     <div className="flex justify-center items-center min-h-screen bg-gray-50">
       <Card className="w-full max-w-md shadow-lg">
         <CardHeader className="text-center pb-6">
-          <CardTitle className="text-2xl font-bold text-gray-800">Admin Login</CardTitle>
-          <p className="text-gray-600 text-sm mt-2">Access the administrative dashboard</p>
+          <CardTitle className="text-2xl font-bold text-gray-800">
+            {isSignUp ? "Create Admin Account" : "Admin Login"}
+          </CardTitle>
+          <p className="text-gray-600 text-sm mt-2">
+            {isSignUp 
+              ? "Create your administrator account for Woodstock School" 
+              : "Access the administrative dashboard"
+            }
+          </p>
         </CardHeader>
         <CardContent>
           <form onSubmit={handleSubmit} className="space-y-4">
@@ -100,12 +112,30 @@ export default function AdminLogin() {
                 required
                 disabled={loading}
                 className="focus:ring-2 focus:ring-blue-500"
+                minLength={6}
               />
             </div>
             <Button type="submit" disabled={loading} className="w-full mt-6">
-              {loading ? 'Signing in...' : 'Sign In'}
+              {loading 
+                ? (isSignUp ? 'Creating Account...' : 'Signing in...') 
+                : (isSignUp ? 'Create Admin Account' : 'Sign In')
+              }
             </Button>
           </form>
+          
+          <div className="mt-4 text-center">
+            <Button 
+              variant="link" 
+              onClick={() => setIsSignUp(!isSignUp)}
+              disabled={loading}
+              className="text-blue-600 hover:text-blue-800"
+            >
+              {isSignUp 
+                ? "Already have an account? Sign in" 
+                : "Need to create an admin account? Sign up"
+              }
+            </Button>
+          </div>
         </CardContent>
       </Card>
     </div>
