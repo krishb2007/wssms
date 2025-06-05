@@ -9,180 +9,19 @@ export type Json =
 export type Database = {
   public: {
     Tables: {
-      admin_users: {
-        Row: {
-          created_at: string | null
-          email: string
-          role: string
-          user_id: string
-        }
-        Insert: {
-          created_at?: string | null
-          email: string
-          role?: string
-          user_id: string
-        }
-        Update: {
-          created_at?: string | null
-          email?: string
-          role?: string
-          user_id?: string
-        }
-        Relationships: []
-      }
-      visitor_registrations: {
-        Row: {
-          accepted_policy: boolean | null
-          address: string | null
-          created_at: string | null
-          endtime: string | null
-          id: string
-          numberofpeople: number
-          people: string
-          phonenumber: string
-          picture_url: string | null
-          purpose: string
-          schoolname: string | null
-          signature_url: string | null
-          starttime: string | null
-          user_id: string | null
-          visitcount: number | null
-          visitorname: string
-        }
-        Insert: {
-          accepted_policy?: boolean | null
-          address?: string | null
-          created_at?: string | null
-          endtime?: string | null
-          id?: string
-          numberofpeople: number
-          people: string
-          phonenumber: string
-          picture_url?: string | null
-          purpose: string
-          schoolname?: string | null
-          signature_url?: string | null
-          starttime?: string | null
-          user_id?: string | null
-          visitcount?: number | null
-          visitorname: string
-        }
-        Update: {
-          accepted_policy?: boolean | null
-          address?: string | null
-          created_at?: string | null
-          endtime?: string | null
-          id?: string
-          numberofpeople?: number
-          people?: string
-          phonenumber?: string
-          picture_url?: string | null
-          purpose?: string
-          schoolname?: string | null
-          signature_url?: string | null
-          starttime?: string | null
-          user_id?: string | null
-          visitcount?: number | null
-          visitorname?: string
-        }
-        Relationships: []
-      }
+      [_ in never]: never
     }
     Views: {
       [_ in never]: never
     }
     Functions: {
-      bytea_to_text: {
-        Args: { data: string }
-        Returns: string
-      }
-      get_user_tables: {
-        Args: Record<PropertyKey, never>
-        Returns: {
-          table_name: string
-        }[]
-      }
-      http: {
-        Args: { request: Database["public"]["CompositeTypes"]["http_request"] }
-        Returns: Database["public"]["CompositeTypes"]["http_response"]
-      }
-      http_delete: {
-        Args:
-          | { uri: string }
-          | { uri: string; content: string; content_type: string }
-        Returns: Database["public"]["CompositeTypes"]["http_response"]
-      }
-      http_get: {
-        Args: { uri: string } | { uri: string; data: Json }
-        Returns: Database["public"]["CompositeTypes"]["http_response"]
-      }
-      http_head: {
-        Args: { uri: string }
-        Returns: Database["public"]["CompositeTypes"]["http_response"]
-      }
-      http_header: {
-        Args: { field: string; value: string }
-        Returns: Database["public"]["CompositeTypes"]["http_header"]
-      }
-      http_list_curlopt: {
-        Args: Record<PropertyKey, never>
-        Returns: {
-          curlopt: string
-          value: string
-        }[]
-      }
-      http_patch: {
-        Args: { uri: string; content: string; content_type: string }
-        Returns: Database["public"]["CompositeTypes"]["http_response"]
-      }
-      http_post: {
-        Args:
-          | { uri: string; content: string; content_type: string }
-          | { uri: string; data: Json }
-        Returns: Database["public"]["CompositeTypes"]["http_response"]
-      }
-      http_put: {
-        Args: { uri: string; content: string; content_type: string }
-        Returns: Database["public"]["CompositeTypes"]["http_response"]
-      }
-      http_reset_curlopt: {
-        Args: Record<PropertyKey, never>
-        Returns: boolean
-      }
-      http_set_curlopt: {
-        Args: { curlopt: string; value: string }
-        Returns: boolean
-      }
-      text_to_bytea: {
-        Args: { data: string }
-        Returns: string
-      }
-      urlencode: {
-        Args: { data: Json } | { string: string } | { string: string }
-        Returns: string
-      }
+      [_ in never]: never
     }
     Enums: {
       [_ in never]: never
     }
     CompositeTypes: {
-      http_header: {
-        field: string | null
-        value: string | null
-      }
-      http_request: {
-        method: unknown | null
-        uri: string | null
-        headers: Database["public"]["CompositeTypes"]["http_header"][] | null
-        content_type: string | null
-        content: string | null
-      }
-      http_response: {
-        status: number | null
-        content_type: string | null
-        headers: Database["public"]["CompositeTypes"]["http_header"][] | null
-        content: string | null
-      }
+      [_ in never]: never
     }
   }
 }
