@@ -8,7 +8,7 @@ import { Input } from "@/components/ui/input";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { toast } from "@/components/ui/use-toast";
-import { Pencil, Save, X, LogOut } from "lucide-react";
+import { Pencil, Save, X, LogOut, Search } from "lucide-react";
 
 interface VisitorRegistration {
   id: string;
@@ -28,8 +28,10 @@ interface VisitorRegistration {
 
 export default function AdminDashboard() {
   const [registrations, setRegistrations] = useState<VisitorRegistration[]>([]);
+  const [filteredRegistrations, setFilteredRegistrations] = useState<VisitorRegistration[]>([]);
   const [editingId, setEditingId] = useState<string | null>(null);
   const [editEndTime, setEditEndTime] = useState<string>('');
+  const [searchTerm, setSearchTerm] = useState<string>('');
   const [loading, setLoading] = useState(true);
   const navigate = useNavigate();
   const { user, logout } = useAuth();
@@ -42,27 +44,49 @@ export default function AdminDashboard() {
     fetchRegistrations();
   }, [user, navigate]);
 
+  useEffect(() => {
+    if (searchTerm.trim() === '') {
+      setFilteredRegistrations(registrations);
+    } else {
+      const filtered = registrations.filter(registration =>
+        registration.visitorname.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        registration.phonenumber.includes(searchTerm) ||
+        registration.purpose.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        registration.address.toLowerCase().includes(searchTerm.toLowerCase())
+      );
+      setFilteredRegistrations(filtered);
+    }
+  }, [searchTerm, registrations]);
+
   async function fetchRegistrations() {
     setLoading(true);
     try {
+      console.log("Fetching visitor registrations...");
+      
       const { data, error } = await supabase
         .from('visitor_registrations')
         .select('*')
         .order('created_at', { ascending: false });
 
+      console.log("Fetch result:", { data, error });
+
       if (error) {
+        console.error("Database error:", error);
         toast({
           title: "Error",
           description: "Failed to fetch registrations: " + error.message,
           variant: "destructive",
         });
       } else if (data) {
+        console.log(`Successfully fetched ${data.length} registrations`);
         setRegistrations(data);
+        setFilteredRegistrations(data);
       }
     } catch (error) {
+      console.error("Unexpected error:", error);
       toast({
         title: "Error",
-        description: "An unexpected error occurred",
+        description: "An unexpected error occurred while fetching data",
         variant: "destructive",
       });
     }
@@ -71,7 +95,7 @@ export default function AdminDashboard() {
 
   function startEdit(registration: VisitorRegistration) {
     setEditingId(registration.id);
-    setEditEndTime(registration.endtime || '');
+    setEditEndTime(registration.endtime || new Date().toISOString().slice(0, 16));
   }
 
   function cancelEdit() {
@@ -81,30 +105,35 @@ export default function AdminDashboard() {
 
   async function saveEdit(id: string) {
     try {
+      console.log("Updating end time for registration:", id, "to:", editEndTime);
+      
       const { error } = await supabase
         .from('visitor_registrations')
         .update({ endtime: editEndTime || null })
         .eq('id', id);
 
       if (error) {
+        console.error("Update error:", error);
         toast({
           title: "Error",
           description: "Failed to update registration: " + error.message,
           variant: "destructive",
         });
       } else {
+        console.log("Successfully updated end time");
         toast({
           title: "Success",
           description: "End time updated successfully",
         });
         setEditingId(null);
         setEditEndTime('');
-        fetchRegistrations();
+        await fetchRegistrations(); // Refresh the data
       }
     } catch (error) {
+      console.error("Unexpected error during update:", error);
       toast({
         title: "Error",
-        description: "An unexpected error occurred",
+        description: "An unexpected error occurred while updating",
         variant: "destructive",
       });
     }
@@ -132,7 +161,7 @@ export default function AdminDashboard() {
   if (loading) {
     return (
       <div className="flex justify-center items-center min-h-screen">
-        <div>Loading registrations...</div>
+        <div className="text-lg">Loading registrations...</div>
       </div>
     );
   }
@@ -152,7 +181,23 @@ export default function AdminDashboard() {
 
       <Card>
         <CardHeader>
-          <CardTitle>Visitor Registrations ({registrations.length})</CardTitle>
+          <div className="flex justify-between items-center">
+            <CardTitle>Visitor Registrations ({filteredRegistrations.length})</CardTitle>
+            <div className="flex items-center space-x-2">
+              <div className="relative">
+                <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 h-4 w-4" />
+                <Input
+                  placeholder="Search by name, phone, purpose, or address..."
+                  value={searchTerm}
+                  onChange={(e) => setSearchTerm(e.target.value)}
+                  className="pl-10 w-80"
+                />
+              </div>
+              <Button onClick={fetchRegistrations} variant="outline" size="sm">
+                Refresh
+              </Button>
+            </div>
+          </div>
         </CardHeader>
         <CardContent>
           <div className="overflow-x-auto">
@@ -172,7 +217,7 @@ export default function AdminDashboard() {
                 </TableRow>
               </TableHeader>
               <TableBody>
-                {registrations.map((registration) => (
+                {filteredRegistrations.map((registration) => (
                   <TableRow key={registration.id}>
                     <TableCell className="font-medium">{registration.visitorname}</TableCell>
                     <TableCell>{registration.phonenumber}</TableCell>
@@ -189,10 +234,12 @@ export default function AdminDashboard() {
                           type="datetime-local"
                           value={editEndTime}
                           onChange={(e) => setEditEndTime(e.target.value)}
-                          className="w-40"
+                          className="w-44"
                         />
                       ) : (
-                        registration.endtime ? formatDate(registration.endtime) : 'Not set'
+                        <span className={registration.endtime ? '' : 'text-orange-600 font-medium'}>
+                          {registration.endtime ? formatDate(registration.endtime) : 'Not set'}
+                        </span>
                       )}
                     </TableCell>
                     <TableCell>{formatDate(registration.created_at)}</TableCell>
@@ -228,9 +275,9 @@ export default function AdminDashboard() {
               </TableBody>
             </Table>
           </div>
-          {registrations.length === 0 && (
+          {filteredRegistrations.length === 0 && !loading && (
             <div className="text-center py-8 text-gray-500">
-              No registrations found.
+              {searchTerm ? 'No registrations found matching your search.' : 'No registrations found.'}
             </div>
           )}
         </CardContent>
