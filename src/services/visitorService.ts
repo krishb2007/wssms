@@ -71,10 +71,10 @@ export const saveVisitorRegistration = async (formData: VisitorFormData) => {
 
     console.log("Attempting to insert into visitor_registrations table:", insertData);
 
-    // Test database connection first
-    const { data: testData, error: testError } = await supabase
+    // Test database connection with a simpler query
+    const { error: testError } = await supabase
       .from('visitor_registrations')
-      .select('count(*)')
+      .select('id')
       .limit(1);
 
     if (testError) {
