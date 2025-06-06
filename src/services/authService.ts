@@ -36,6 +36,8 @@ const cleanupAuthState = () => {
 
 export async function signUp(credentials: SignUpCredentials): Promise<{ user: AuthUser | null; error: string | null }> {
   try {
+    console.log("Starting sign up process for:", credentials.email);
+    
     cleanupAuthState();
     try {
       await supabase.auth.signOut({ scope: 'global' });
@@ -49,12 +51,16 @@ export async function signUp(credentials: SignUpCredentials): Promise<{ user: Au
       }
     });
 
+    console.log("Sign up response:", { data, error });
+
     if (error || !data.user) {
+      console.error("Sign up failed:", error);
       return { user: null, error: error?.message || "Failed to create user" };
     }
 
     // Insert into admin_users table
     try {
+      console.log("Creating admin user record for:", data.user.id);
       const { error: insertError } = await supabase
         .from('admin_users')
         .insert([{ 
@@ -65,6 +71,8 @@ export async function signUp(credentials: SignUpCredentials): Promise<{ user: Au
       
       if (insertError) {
         console.error("Insert admin error:", insertError);
+      } else {
+        console.log("Admin user record created successfully");
       }
     } catch (err) {
       console.error("Insert admin error:", err);
@@ -82,7 +90,7 @@ export async function signUp(credentials: SignUpCredentials): Promise<{ user: Au
 
 export async function signIn(credentials: SignInCredentials): Promise<{ user: AuthUser | null; error: string | null }> {
   try {
-    console.log("Starting sign in process...", credentials.email);
+    console.log("Starting sign in process for:", credentials.email);
     
     cleanupAuthState();
     try {
@@ -94,14 +102,14 @@ export async function signIn(credentials: SignInCredentials): Promise<{ user: Au
       password: credentials.password,
     });
 
-    console.log("Auth response:", { data, error });
+    console.log("Sign in response:", { data, error });
 
     if (error || !data.user) {
       console.error("Sign in failed:", error);
       return { user: null, error: error?.message || "Failed to sign in" };
     }
 
-    console.log("User signed in successfully:", data.user.id);
+    console.log("User signed in successfully, checking admin role...");
 
     // Get role from admin_users table
     let role = 'user';
@@ -118,10 +126,23 @@ export async function signIn(credentials: SignInCredentials): Promise<{ user: Au
         role = adminUser.role;
         console.log("User role found:", role);
       } else {
-        console.log("No admin role found for user");
+        console.log("No admin role found for user, creating admin record...");
+        // Create admin record if it doesn't exist
+        const { error: insertError } = await supabase
+          .from('admin_users')
+          .insert([{ 
+            user_id: data.user.id, 
+            email: data.user.email, 
+            role: 'admin' 
+          }]);
+        
+        if (!insertError) {
+          role = 'admin';
+          console.log("Admin record created successfully");
+        }
       }
     } catch (err) {
-      console.error("Error checking admin role:", err);
+      console.error("Error checking/creating admin role:", err);
     }
 
     return {
@@ -136,23 +157,33 @@ export async function signIn(credentials: SignInCredentials): Promise<{ user: Au
 
 export async function signOut(): Promise<{ error: string | null }> {
   try {
+    console.log("Signing out user...");
     cleanupAuthState();
     const { error } = await supabase.auth.signOut({ scope: 'global' });
-    if (error) return { error: error.message };
+    if (error) {
+      console.error("Sign out error:", error);
+      return { error: error.message };
+    }
+    console.log("User signed out successfully");
     window.location.href = '/';
     return { error: null };
-  } catch {
+  } catch (err) {
+    console.error("Unexpected sign out error:", err);
     return { error: "Unexpected error during sign out" };
   }
 }
 
 export async function getCurrentUser(): Promise<{ user: AuthUser | null; error: string | null }> {
   try {
+    console.log("Getting current user session...");
     const { data, error } = await supabase.auth.getSession();
+    
     if (error || !data.session?.user) {
+      console.log("No active session found");
       return { user: null, error: error?.message || null };
     }
 
+    console.log("Session found, checking admin role...");
     let role = 'user';
     const { data: adminUser } = await supabase
       .from('admin_users')
@@ -162,13 +193,15 @@ export async function getCurrentUser(): Promise<{ user: AuthUser | null; error: 
 
     if (adminUser && adminUser.role) {
       role = adminUser.role;
+      console.log("Current user role:", role);
     }
 
     return {
       user: { id: data.session.user.id, email: data.session.user.email || '', role },
       error: null,
     };
-  } catch {
+  } catch (err) {
+    console.error("Error getting current user:", err);
     return { user: null, error: "Unexpected error getting user" };
   }
 }

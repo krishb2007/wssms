@@ -33,7 +33,7 @@ const uploadFile = async (file: File, bucket: string, path: string): Promise<str
 
 export const saveVisitorRegistration = async (formData: VisitorFormData) => {
   try {
-    console.log("Saving visitor registration:", formData);
+    console.log("Saving visitor registration to database:", formData);
 
     // Handle file uploads
     let pictureUrl: string | null = null;
@@ -69,7 +69,20 @@ export const saveVisitorRegistration = async (formData: VisitorFormData) => {
       signature_url: signatureUrl,
     };
 
-    console.log("Inserting data into visitor_registrations:", insertData);
+    console.log("Attempting to insert into visitor_registrations table:", insertData);
+
+    // Test database connection first
+    const { data: testData, error: testError } = await supabase
+      .from('visitor_registrations')
+      .select('count(*)')
+      .limit(1);
+
+    if (testError) {
+      console.error("Database connection test failed:", testError);
+      throw new Error(`Database connection failed: ${testError.message}`);
+    }
+
+    console.log("Database connection successful, proceeding with insert...");
 
     const { data, error } = await supabase
       .from('visitor_registrations')
@@ -78,11 +91,17 @@ export const saveVisitorRegistration = async (formData: VisitorFormData) => {
       .single();
 
     if (error) {
-      console.error("Supabase error:", error);
-      throw new Error(`Database error: ${error.message}`);
+      console.error("Database insert error:", error);
+      console.error("Error details:", {
+        code: error.code,
+        message: error.message,
+        details: error.details,
+        hint: error.hint
+      });
+      throw new Error(`Failed to save registration: ${error.message}`);
     }
 
-    console.log("Visitor registration saved successfully:", data);
+    console.log("Visitor registration saved successfully to database:", data);
     return data;
   } catch (error) {
     console.error("Error in saveVisitorRegistration:", error);
