@@ -1,3 +1,4 @@
+
 import React, { useEffect, useState } from 'react';
 import { supabase } from '../integrations/supabase/client';
 import { useNavigate } from 'react-router-dom';
@@ -116,7 +117,8 @@ export default function AdminDashboard() {
         .from('visitor_registrations')
         .update({ endtime: editEndTime || null })
         .eq('id', id)
-        .select();
+        .select()
+        .single();
 
       if (error) {
         console.error("Update error:", error);
@@ -128,8 +130,8 @@ export default function AdminDashboard() {
         return;
       }
 
-      if (data && data.length > 0) {
-        console.log("Successfully updated end time:", data[0]);
+      if (data) {
+        console.log("Successfully updated end time:", data);
         toast({
           title: "Success",
           description: "End time updated successfully",
@@ -148,13 +150,6 @@ export default function AdminDashboard() {
             reg.id === id ? { ...reg, endtime: editEndTime || null } : reg
           )
         );
-      } else {
-        console.log("No rows were updated");
-        toast({
-          title: "Warning",
-          description: "No registration found to update",
-          variant: "destructive",
-        });
       }
     } catch (error) {
       console.error("Unexpected error during update:", error);
@@ -220,11 +215,6 @@ export default function AdminDashboard() {
                 🎛️ Admin Dashboard
               </h1>
               <p className="text-purple-100 text-lg">Manage visitor registrations and access controls</p>
-              <div className="mt-4 bg-white/10 backdrop-blur-sm rounded-lg p-4 inline-block">
-                <p className="text-sm text-purple-100">Monthly Capacity Information:</p>
-                <p className="font-semibold text-white">This system can handle <span className="text-yellow-300">unlimited registrations</span> per month</p>
-                <p className="text-xs text-purple-200">Supabase free tier: 500MB database, 2GB bandwidth/month</p>
-              </div>
             </div>
             <div className="flex items-center space-x-6">
               <div className="text-right bg-white/20 backdrop-blur-sm rounded-lg p-4">
@@ -437,6 +427,10 @@ export default function AdminDashboard() {
                                         src={registration.picture_url}
                                         alt="Visitor"
                                         className="h-80 w-auto object-cover rounded-xl border-4 border-purple-300 shadow-xl"
+                                        onError={(e) => {
+                                          console.log("Image failed to load:", registration.picture_url);
+                                          (e.target as HTMLImageElement).style.display = 'none';
+                                        }}
                                       />
                                     </div>
                                   ) : (
@@ -457,6 +451,10 @@ export default function AdminDashboard() {
                                         src={registration.signature_url}
                                         alt="Signature"
                                         className="h-40 w-auto object-contain rounded-xl border-4 border-orange-300 bg-white shadow-xl"
+                                        onError={(e) => {
+                                          console.log("Signature failed to load:", registration.signature_url);
+                                          (e.target as HTMLImageElement).style.display = 'none';
+                                        }}
                                       />
                                     </div>
                                   ) : (
