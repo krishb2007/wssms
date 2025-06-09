@@ -1,4 +1,3 @@
-
 import React, { useEffect, useState } from 'react';
 import { supabase } from '../integrations/supabase/client';
 import { useNavigate } from 'react-router-dom';
@@ -117,8 +116,7 @@ export default function AdminDashboard() {
         .from('visitor_registrations')
         .update({ endtime: editEndTime || null })
         .eq('id', id)
-        .select()
-        .single();
+        .select();
 
       if (error) {
         console.error("Update error:", error);
@@ -127,15 +125,36 @@ export default function AdminDashboard() {
           description: "Failed to update registration: " + error.message,
           variant: "destructive",
         });
-      } else {
-        console.log("Successfully updated end time:", data);
+        return;
+      }
+
+      if (data && data.length > 0) {
+        console.log("Successfully updated end time:", data[0]);
         toast({
           title: "Success",
           description: "End time updated successfully",
         });
         setEditingId(null);
         setEditEndTime('');
-        await fetchRegistrations(); // Refresh the data
+        
+        // Update the local state to reflect the change immediately
+        setRegistrations(prev => 
+          prev.map(reg => 
+            reg.id === id ? { ...reg, endtime: editEndTime || null } : reg
+          )
+        );
+        setFilteredRegistrations(prev => 
+          prev.map(reg => 
+            reg.id === id ? { ...reg, endtime: editEndTime || null } : reg
+          )
+        );
+      } else {
+        console.log("No rows were updated");
+        toast({
+          title: "Warning",
+          description: "No registration found to update",
+          variant: "destructive",
+        });
       }
     } catch (error) {
       console.error("Unexpected error during update:", error);
@@ -201,6 +220,11 @@ export default function AdminDashboard() {
                 🎛️ Admin Dashboard
               </h1>
               <p className="text-purple-100 text-lg">Manage visitor registrations and access controls</p>
+              <div className="mt-4 bg-white/10 backdrop-blur-sm rounded-lg p-4 inline-block">
+                <p className="text-sm text-purple-100">Monthly Capacity Information:</p>
+                <p className="font-semibold text-white">This system can handle <span className="text-yellow-300">unlimited registrations</span> per month</p>
+                <p className="text-xs text-purple-200">Supabase free tier: 500MB database, 2GB bandwidth/month</p>
+              </div>
             </div>
             <div className="flex items-center space-x-6">
               <div className="text-right bg-white/20 backdrop-blur-sm rounded-lg p-4">
