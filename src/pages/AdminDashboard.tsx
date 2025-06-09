@@ -37,13 +37,14 @@ export default function AdminDashboard() {
   const { user, logout } = useAuth();
 
   useEffect(() => {
-    console.log("AdminDashboard useEffect - checking user:", user);
+    // Fix: Only check user after it's loaded (prevents redirect if user is null before login check)
+    if (user === undefined) return; // If user is still loading, don't redirect
     if (!user || user.role !== 'admin') {
-      console.log("User not admin, redirecting to login");
-      navigate('/admin-login');
+      navigate('/admin-login', { replace: true });
       return;
     }
     fetchRegistrations();
+    // eslint-disable-next-line
   }, [user, navigate]);
 
   useEffect(() => {
@@ -64,29 +65,22 @@ export default function AdminDashboard() {
   async function fetchRegistrations() {
     setLoading(true);
     try {
-      console.log("Fetching visitor registrations...");
-      
       const { data, error } = await supabase
         .from('visitor_registrations')
         .select('*')
         .order('created_at', { ascending: false });
 
-      console.log("Fetch result:", { data, error });
-
       if (error) {
-        console.error("Database error:", error);
         toast({
           title: "Error",
           description: "Failed to fetch registrations: " + error.message,
           variant: "destructive",
         });
       } else if (data) {
-        console.log(`Successfully fetched ${data.length} registrations`);
         setRegistrations(data);
         setFilteredRegistrations(data);
       }
     } catch (error) {
-      console.error("Unexpected error:", error);
       toast({
         title: "Error",
         description: "An unexpected error occurred while fetching data",
@@ -97,29 +91,29 @@ export default function AdminDashboard() {
   }
 
   function startEdit(registration: VisitorRegistration) {
-    console.log("Starting edit for registration:", registration.id);
     setEditingId(registration.id);
-    setEditEndTime(registration.endtime || new Date().toISOString().slice(0, 16));
+    setEditEndTime(
+      registration.endtime
+        ? new Date(registration.endtime).toISOString().slice(0, 16)
+        : new Date().toISOString().slice(0, 16)
+    );
   }
 
   function cancelEdit() {
-    console.log("Cancelling edit");
     setEditingId(null);
     setEditEndTime('');
   }
 
   async function saveEdit(id: string) {
     try {
-      console.log("Saving end time for registration:", id, "to:", editEndTime);
-      
       const { data, error } = await supabase
         .from('visitor_registrations')
         .update({ endtime: editEndTime || null })
         .eq('id', id)
-        .select();
+        .select()
+        .single();
 
       if (error) {
-        console.error("Update error:", error);
         toast({
           title: "Error",
           description: "Failed to update registration: " + error.message,
@@ -128,16 +122,13 @@ export default function AdminDashboard() {
         return;
       }
 
-      if (data && data.length > 0) {
-        console.log("Successfully updated end time:", data[0]);
+      if (data) {
         toast({
           title: "Success",
           description: "End time updated successfully",
         });
         setEditingId(null);
         setEditEndTime('');
-        
-        // Update the local state to reflect the change immediately
         setRegistrations(prev => 
           prev.map(reg => 
             reg.id === id ? { ...reg, endtime: editEndTime || null } : reg
@@ -148,16 +139,8 @@ export default function AdminDashboard() {
             reg.id === id ? { ...reg, endtime: editEndTime || null } : reg
           )
         );
-      } else {
-        console.log("No rows were updated");
-        toast({
-          title: "Warning",
-          description: "No registration found to update",
-          variant: "destructive",
-        });
       }
     } catch (error) {
-      console.error("Unexpected error during update:", error);
       toast({
         title: "Error",
         description: "An unexpected error occurred while updating",
@@ -173,13 +156,19 @@ export default function AdminDashboard() {
 
   const formatDate = (dateString: string | null) => {
     if (!dateString) return 'N/A';
-    return new Date(dateString).toLocaleString();
+    // Fix: Handle ISO string for datetime-local input
+    const d = typeof dateString === 'string' && dateString.length > 16 && dateString.includes('T')
+      ? new Date(dateString)
+      : new Date(dateString);
+    return d.toLocaleString();
   };
 
   const parsePeople = (peopleString: string) => {
     try {
       const people = JSON.parse(peopleString);
-      return people.map((person: any) => `${person.name} (${person.role})`).join(', ');
+      return Array.isArray(people)
+        ? people.map((person: any) => `${person.name} (${person.role})`).join(', ')
+        : peopleString;
     } catch {
       return peopleString;
     }
@@ -212,7 +201,7 @@ export default function AdminDashboard() {
   return (
     <div className="min-h-screen bg-gradient-to-br from-purple-50 via-blue-50 to-indigo-100">
       <div className="container mx-auto p-6">
-        {/* Header Section with vibrant colors */}
+        {/* Header Section */}
         <div className="bg-gradient-to-r from-purple-600 to-blue-600 rounded-xl shadow-2xl p-8 mb-8 text-white">
           <div className="flex justify-between items-center">
             <div>
@@ -220,11 +209,6 @@ export default function AdminDashboard() {
                 🎛️ Admin Dashboard
               </h1>
               <p className="text-purple-100 text-lg">Manage visitor registrations and access controls</p>
-              <div className="mt-4 bg-white/10 backdrop-blur-sm rounded-lg p-4 inline-block">
-                <p className="text-sm text-purple-100">Monthly Capacity Information:</p>
-                <p className="font-semibold text-white">This system can handle <span className="text-yellow-300">unlimited registrations</span> per month</p>
-                <p className="text-xs text-purple-200">Supabase free tier: 500MB database, 2GB bandwidth/month</p>
-              </div>
             </div>
             <div className="flex items-center space-x-6">
               <div className="text-right bg-white/20 backdrop-blur-sm rounded-lg p-4">
@@ -244,7 +228,7 @@ export default function AdminDashboard() {
           </div>
         </div>
 
-        {/* Stats Cards with vibrant colors */}
+        {/* Stats Cards */}
         <div className="grid grid-cols-1 md:grid-cols-3 gap-8 mb-8">
           <Card className="bg-gradient-to-br from-green-400 to-emerald-600 text-white border-0 shadow-xl transform hover:scale-105 transition-transform">
             <CardContent className="p-8">
@@ -257,7 +241,6 @@ export default function AdminDashboard() {
               </div>
             </CardContent>
           </Card>
-          
           <Card className="bg-gradient-to-br from-orange-400 to-red-500 text-white border-0 shadow-xl transform hover:scale-105 transition-transform">
             <CardContent className="p-8">
               <div className="flex items-center justify-between">
@@ -271,7 +254,6 @@ export default function AdminDashboard() {
               </div>
             </CardContent>
           </Card>
-          
           <Card className="bg-gradient-to-br from-blue-400 to-purple-600 text-white border-0 shadow-xl transform hover:scale-105 transition-transform">
             <CardContent className="p-8">
               <div className="flex items-center justify-between">
@@ -437,6 +419,9 @@ export default function AdminDashboard() {
                                         src={registration.picture_url}
                                         alt="Visitor"
                                         className="h-80 w-auto object-cover rounded-xl border-4 border-purple-300 shadow-xl"
+                                        onError={(e) => {
+                                          (e.target as HTMLImageElement).style.display = 'none';
+                                        }}
                                       />
                                     </div>
                                   ) : (
@@ -457,6 +442,9 @@ export default function AdminDashboard() {
                                         src={registration.signature_url}
                                         alt="Signature"
                                         className="h-40 w-auto object-contain rounded-xl border-4 border-orange-300 bg-white shadow-xl"
+                                        onError={(e) => {
+                                          (e.target as HTMLImageElement).style.display = 'none';
+                                        }}
                                       />
                                     </div>
                                   ) : (
