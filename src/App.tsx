@@ -36,7 +36,9 @@ const App: React.FC = () => {
 
   useEffect(() => {
     const checkAuth = async () => {
+      console.log("Checking authentication...");
       const { user } = await getCurrentUser();
+      console.log("Auth check result:", user);
       setUser(user);
       setIsLoading(false);
     };
@@ -45,6 +47,7 @@ const App: React.FC = () => {
   }, []);
 
   const logout = async () => {
+    console.log("Logging out...");
     await signOut();
     setUser(null);
   };

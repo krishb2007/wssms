@@ -34,7 +34,6 @@ export default function AdminDashboard() {
   const [editEndTime, setEditEndTime] = useState<string>('');
   const [searchTerm, setSearchTerm] = useState<string>('');
   const [loading, setLoading] = useState(true);
-  const [viewingImages, setViewingImages] = useState<VisitorRegistration | null>(null);
   const navigate = useNavigate();
   const { user, logout } = useAuth();
 
@@ -54,7 +53,7 @@ export default function AdminDashboard() {
         registration.visitorname.toLowerCase().includes(searchTerm.toLowerCase()) ||
         registration.phonenumber.toLowerCase().includes(searchTerm.toLowerCase()) ||
         registration.purpose.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        registration.address.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        registration.address?.toLowerCase().includes(searchTerm.toLowerCase()) ||
         registration.schoolname?.toLowerCase().includes(searchTerm.toLowerCase())
       );
       setFilteredRegistrations(filtered);
@@ -266,7 +265,6 @@ export default function AdminDashboard() {
                           <Button
                             size="sm"
                             variant="outline"
-                            onClick={() => setViewingImages(registration)}
                           >
                             <Eye className="h-4 w-4" />
                           </Button>

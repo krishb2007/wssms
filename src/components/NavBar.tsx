@@ -5,9 +5,9 @@ import { Button } from "@/components/ui/button";
 
 const NavBar: React.FC = () => {
   return (
-    <nav className="bg-amber-900 border-b border-amber-800 px-4 py-3 shadow-lg">
+    <nav className="px-4 py-3">
       <div className="container mx-auto flex justify-between items-center">
-        <Link to="/" className="text-xl font-bold text-white hover:text-amber-200 transition-colors">
+        <Link to="/" className="text-xl font-bold text-gray-800 hover:text-gray-600 transition-colors">
           Woodstock School
         </Link>
         <div className="flex items-center">
