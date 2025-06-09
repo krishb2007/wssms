@@ -38,7 +38,9 @@ export default function AdminDashboard() {
   const { user, logout } = useAuth();
 
   useEffect(() => {
+    console.log("AdminDashboard useEffect - checking user:", user);
     if (!user || user.role !== 'admin') {
+      console.log("User not admin, redirecting to login");
       navigate('/admin-login');
       return;
     }
@@ -96,23 +98,27 @@ export default function AdminDashboard() {
   }
 
   function startEdit(registration: VisitorRegistration) {
+    console.log("Starting edit for registration:", registration.id);
     setEditingId(registration.id);
     setEditEndTime(registration.endtime || new Date().toISOString().slice(0, 16));
   }
 
   function cancelEdit() {
+    console.log("Cancelling edit");
     setEditingId(null);
     setEditEndTime('');
   }
 
   async function saveEdit(id: string) {
     try {
-      console.log("Updating end time for registration:", id, "to:", editEndTime);
+      console.log("Saving end time for registration:", id, "to:", editEndTime);
       
-      const { error } = await supabase
+      const { data, error } = await supabase
         .from('visitor_registrations')
         .update({ endtime: editEndTime || null })
-        .eq('id', id);
+        .eq('id', id)
+        .select()
+        .single();
 
       if (error) {
         console.error("Update error:", error);
@@ -122,7 +128,7 @@ export default function AdminDashboard() {
           variant: "destructive",
         });
       } else {
-        console.log("Successfully updated end time");
+        console.log("Successfully updated end time:", data);
         toast({
           title: "Success",
           description: "End time updated successfully",
@@ -175,7 +181,7 @@ export default function AdminDashboard() {
 
   if (loading) {
     return (
-      <div className="flex justify-center items-center min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100">
+      <div className="flex justify-center items-center min-h-screen bg-gradient-to-br from-purple-50 via-blue-50 to-indigo-100">
         <div className="text-lg text-indigo-700 flex items-center">
           <RefreshCw className="mr-2 h-6 w-6 animate-spin" />
           Loading registrations...
@@ -185,104 +191,104 @@ export default function AdminDashboard() {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-50 via-indigo-50 to-purple-50">
+    <div className="min-h-screen bg-gradient-to-br from-purple-50 via-blue-50 to-indigo-100">
       <div className="container mx-auto p-6">
-        {/* Header Section */}
-        <div className="bg-white rounded-xl shadow-lg p-6 mb-6 border border-indigo-100">
+        {/* Header Section with vibrant colors */}
+        <div className="bg-gradient-to-r from-purple-600 to-blue-600 rounded-xl shadow-2xl p-8 mb-8 text-white">
           <div className="flex justify-between items-center">
             <div>
-              <h1 className="text-4xl font-bold bg-gradient-to-r from-indigo-600 to-purple-600 bg-clip-text text-transparent">
-                Admin Dashboard
+              <h1 className="text-5xl font-bold mb-3">
+                🎛️ Admin Dashboard
               </h1>
-              <p className="text-gray-600 mt-2">Manage visitor registrations and access controls</p>
+              <p className="text-purple-100 text-lg">Manage visitor registrations and access controls</p>
             </div>
-            <div className="flex items-center space-x-4">
-              <div className="text-right">
-                <p className="text-sm text-gray-500">Welcome back,</p>
-                <p className="font-semibold text-indigo-700">{user?.email}</p>
+            <div className="flex items-center space-x-6">
+              <div className="text-right bg-white/20 backdrop-blur-sm rounded-lg p-4">
+                <p className="text-sm text-purple-100">Welcome back,</p>
+                <p className="font-semibold text-white text-lg">{user?.email}</p>
               </div>
               <Button 
                 onClick={handleLogout} 
                 variant="outline" 
-                size="sm"
-                className="border-red-200 text-red-600 hover:bg-red-50 hover:border-red-300"
+                size="lg"
+                className="border-white/30 text-white hover:bg-white/20 hover:border-white/50 bg-white/10"
               >
-                <LogOut className="mr-2 h-4 w-4" />
+                <LogOut className="mr-2 h-5 w-5" />
                 Logout
               </Button>
             </div>
           </div>
         </div>
 
-        {/* Stats Cards */}
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-6">
-          <Card className="bg-gradient-to-r from-blue-500 to-blue-600 text-white border-0">
-            <CardContent className="p-6">
+        {/* Stats Cards with vibrant colors */}
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-8 mb-8">
+          <Card className="bg-gradient-to-br from-green-400 to-emerald-600 text-white border-0 shadow-xl transform hover:scale-105 transition-transform">
+            <CardContent className="p-8">
               <div className="flex items-center justify-between">
                 <div>
-                  <p className="text-blue-100">Total Visitors</p>
-                  <p className="text-3xl font-bold">{registrations.length}</p>
+                  <p className="text-green-100 text-lg">Total Visitors</p>
+                  <p className="text-4xl font-bold">{registrations.length}</p>
                 </div>
-                <Users className="h-12 w-12 text-blue-200" />
+                <Users className="h-16 w-16 text-green-200" />
               </div>
             </CardContent>
           </Card>
           
-          <Card className="bg-gradient-to-r from-green-500 to-green-600 text-white border-0">
-            <CardContent className="p-6">
+          <Card className="bg-gradient-to-br from-orange-400 to-red-500 text-white border-0 shadow-xl transform hover:scale-105 transition-transform">
+            <CardContent className="p-8">
               <div className="flex items-center justify-between">
                 <div>
-                  <p className="text-green-100">Active Visits</p>
-                  <p className="text-3xl font-bold">
+                  <p className="text-orange-100 text-lg">Active Visits</p>
+                  <p className="text-4xl font-bold">
                     {registrations.filter(r => !r.endtime).length}
                   </p>
                 </div>
-                <Clock className="h-12 w-12 text-green-200" />
+                <Clock className="h-16 w-16 text-orange-200" />
               </div>
             </CardContent>
           </Card>
           
-          <Card className="bg-gradient-to-r from-purple-500 to-purple-600 text-white border-0">
-            <CardContent className="p-6">
+          <Card className="bg-gradient-to-br from-blue-400 to-purple-600 text-white border-0 shadow-xl transform hover:scale-105 transition-transform">
+            <CardContent className="p-8">
               <div className="flex items-center justify-between">
                 <div>
-                  <p className="text-purple-100">Today's Visits</p>
-                  <p className="text-3xl font-bold">
+                  <p className="text-blue-100 text-lg">Today's Visits</p>
+                  <p className="text-4xl font-bold">
                     {registrations.filter(r => 
                       new Date(r.created_at).toDateString() === new Date().toDateString()
                     ).length}
                   </p>
                 </div>
-                <Eye className="h-12 w-12 text-purple-200" />
+                <Eye className="h-16 w-16 text-blue-200" />
               </div>
             </CardContent>
           </Card>
         </div>
 
         {/* Main Content */}
-        <Card className="bg-white/80 backdrop-blur-sm border border-indigo-100 shadow-xl">
-          <CardHeader className="bg-gradient-to-r from-indigo-500 to-purple-600 text-white rounded-t-lg">
+        <Card className="bg-white/90 backdrop-blur-sm border-0 shadow-2xl rounded-2xl overflow-hidden">
+          <CardHeader className="bg-gradient-to-r from-indigo-600 via-purple-600 to-pink-600 text-white p-8">
             <div className="flex justify-between items-center">
-              <CardTitle className="text-2xl font-semibold">
-                Visitor Registrations ({filteredRegistrations.length})
+              <CardTitle className="text-3xl font-bold flex items-center">
+                📊 Visitor Registrations ({filteredRegistrations.length})
               </CardTitle>
-              <div className="flex items-center space-x-3">
+              <div className="flex items-center space-x-4">
                 <div className="relative">
-                  <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 h-4 w-4" />
+                  <Search className="absolute left-4 top-1/2 transform -translate-y-1/2 text-white/70 h-5 w-5" />
                   <Input
                     placeholder="Search visitors..."
                     value={searchTerm}
                     onChange={(e) => setSearchTerm(e.target.value)}
-                    className="pl-10 w-80 bg-white/10 border-white/20 text-white placeholder-white/70"
+                    className="pl-12 w-80 bg-white/20 border-white/30 text-white placeholder-white/70 text-lg py-3 rounded-xl"
                   />
                 </div>
                 <Button 
                   onClick={fetchRegistrations} 
                   variant="secondary" 
-                  size="sm"
-                  className="bg-white/20 hover:bg-white/30 text-white border-white/30"
+                  size="lg"
+                  className="bg-white/20 hover:bg-white/30 text-white border-white/30 rounded-xl"
                 >
-                  <RefreshCw className="mr-2 h-4 w-4" />
+                  <RefreshCw className="mr-2 h-5 w-5" />
                   Refresh
                 </Button>
               </div>
@@ -292,131 +298,146 @@ export default function AdminDashboard() {
             <div className="overflow-x-auto">
               <Table>
                 <TableHeader>
-                  <TableRow className="bg-gray-50">
-                    <TableHead className="font-semibold text-gray-700">Visitor Name</TableHead>
-                    <TableHead className="font-semibold text-gray-700">Phone</TableHead>
-                    <TableHead className="font-semibold text-gray-700">People Count</TableHead>
-                    <TableHead className="font-semibold text-gray-700">People Details</TableHead>
-                    <TableHead className="font-semibold text-gray-700">Purpose</TableHead>
-                    <TableHead className="font-semibold text-gray-700">Address</TableHead>
-                    <TableHead className="font-semibold text-gray-700">Start Time</TableHead>
-                    <TableHead className="font-semibold text-gray-700">End Time</TableHead>
-                    <TableHead className="font-semibold text-gray-700">Registration Date</TableHead>
-                    <TableHead className="font-semibold text-gray-700">Media</TableHead>
-                    <TableHead className="font-semibold text-gray-700">Actions</TableHead>
+                  <TableRow className="bg-gradient-to-r from-gray-50 to-gray-100 border-b-2 border-indigo-200">
+                    <TableHead className="font-bold text-gray-800 text-base p-4">👤 Visitor Name</TableHead>
+                    <TableHead className="font-bold text-gray-800 text-base p-4">📞 Phone</TableHead>
+                    <TableHead className="font-bold text-gray-800 text-base p-4">👥 Count</TableHead>
+                    <TableHead className="font-bold text-gray-800 text-base p-4">📝 People Details</TableHead>
+                    <TableHead className="font-bold text-gray-800 text-base p-4">🎯 Purpose</TableHead>
+                    <TableHead className="font-bold text-gray-800 text-base p-4">📍 Address</TableHead>
+                    <TableHead className="font-bold text-gray-800 text-base p-4">⏰ Start Time</TableHead>
+                    <TableHead className="font-bold text-gray-800 text-base p-4">⏹️ End Time</TableHead>
+                    <TableHead className="font-bold text-gray-800 text-base p-4">📅 Registration</TableHead>
+                    <TableHead className="font-bold text-gray-800 text-base p-4">📷 Media</TableHead>
+                    <TableHead className="font-bold text-gray-800 text-base p-4">⚙️ Actions</TableHead>
                   </TableRow>
                 </TableHeader>
                 <TableBody>
-                  {filteredRegistrations.map((registration) => (
-                    <TableRow key={registration.id} className="hover:bg-indigo-50 transition-colors">
-                      <TableCell className="font-medium text-indigo-700">{registration.visitorname}</TableCell>
-                      <TableCell>{registration.phonenumber}</TableCell>
-                      <TableCell>
-                        <span className="bg-blue-100 text-blue-800 px-2 py-1 rounded-full text-sm font-medium">
+                  {filteredRegistrations.map((registration, index) => (
+                    <TableRow 
+                      key={registration.id} 
+                      className={`hover:bg-gradient-to-r hover:from-blue-50 hover:to-purple-50 transition-all duration-200 ${
+                        index % 2 === 0 ? 'bg-white' : 'bg-gray-50/50'
+                      }`}
+                    >
+                      <TableCell className="font-semibold text-indigo-700 p-4 text-base">
+                        {registration.visitorname}
+                      </TableCell>
+                      <TableCell className="p-4 text-base">{registration.phonenumber}</TableCell>
+                      <TableCell className="p-4">
+                        <span className="bg-gradient-to-r from-blue-500 to-purple-500 text-white px-3 py-2 rounded-full text-sm font-bold shadow-md">
                           {registration.numberofpeople}
                         </span>
                       </TableCell>
-                      <TableCell className="max-w-xs truncate">
+                      <TableCell className="max-w-xs truncate p-4 text-sm">
                         {parsePeople(registration.people)}
                       </TableCell>
-                      <TableCell>
-                        <span className="bg-green-100 text-green-800 px-2 py-1 rounded-full text-sm font-medium">
+                      <TableCell className="p-4">
+                        <span className="bg-gradient-to-r from-green-500 to-emerald-500 text-white px-3 py-2 rounded-full text-sm font-bold shadow-md">
                           {formatPurpose(registration.purpose)}
                         </span>
                       </TableCell>
-                      <TableCell className="max-w-xs truncate">{registration.address}</TableCell>
-                      <TableCell>{formatDate(registration.starttime)}</TableCell>
-                      <TableCell>
+                      <TableCell className="max-w-xs truncate p-4 text-sm">{registration.address}</TableCell>
+                      <TableCell className="p-4 text-sm">{formatDate(registration.starttime)}</TableCell>
+                      <TableCell className="p-4">
                         {editingId === registration.id ? (
                           <Input
                             type="datetime-local"
                             value={editEndTime}
                             onChange={(e) => setEditEndTime(e.target.value)}
-                            className="w-44 border-indigo-300 focus:border-indigo-500"
+                            className="w-48 border-2 border-indigo-300 focus:border-indigo-500 rounded-lg"
                           />
                         ) : (
-                          <span className={registration.endtime ? 'text-gray-700' : 'text-orange-600 font-medium bg-orange-100 px-2 py-1 rounded'}>
-                            {registration.endtime ? formatDate(registration.endtime) : 'Not set'}
+                          <span className={`text-sm px-3 py-2 rounded-full font-medium ${
+                            registration.endtime 
+                              ? 'text-gray-700 bg-gray-100' 
+                              : 'text-orange-700 bg-gradient-to-r from-orange-100 to-yellow-100 border border-orange-200'
+                          }`}>
+                            {registration.endtime ? formatDate(registration.endtime) : '🔄 Active'}
                           </span>
                         )}
                       </TableCell>
-                      <TableCell className="text-gray-600">{formatDate(registration.created_at)}</TableCell>
-                      <TableCell>
+                      <TableCell className="text-gray-600 p-4 text-sm">{formatDate(registration.created_at)}</TableCell>
+                      <TableCell className="p-4">
                         <Dialog>
                           <DialogTrigger asChild>
                             <Button
                               size="sm"
-                              variant="outline"
-                              className="border-purple-200 text-purple-600 hover:bg-purple-50"
+                              className="bg-gradient-to-r from-purple-500 to-pink-500 hover:from-purple-600 hover:to-pink-600 text-white border-0 rounded-lg shadow-md"
                             >
-                              <Eye className="h-4 w-4" />
+                              <Eye className="h-4 w-4 mr-1" />
+                              View
                             </Button>
                           </DialogTrigger>
-                          <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
+                          <DialogContent className="max-w-5xl max-h-[90vh] overflow-y-auto bg-gradient-to-br from-blue-50 to-purple-50">
                             <DialogHeader>
-                              <DialogTitle className="text-2xl text-indigo-700">
-                                Visitor Information - {registration.visitorname}
+                              <DialogTitle className="text-3xl text-transparent bg-clip-text bg-gradient-to-r from-purple-600 to-blue-600 font-bold">
+                                📋 Visitor Information - {registration.visitorname}
                               </DialogTitle>
                             </DialogHeader>
-                            <div className="space-y-6">
-                              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                                <div className="bg-blue-50 p-4 rounded-lg">
-                                  <h4 className="font-semibold mb-3 text-blue-800 text-lg">Visitor Information</h4>
-                                  <div className="space-y-2">
-                                    <p className="text-sm"><strong className="text-blue-700">Name:</strong> {registration.visitorname}</p>
-                                    <p className="text-sm"><strong className="text-blue-700">Phone:</strong> {registration.phonenumber}</p>
-                                    <p className="text-sm"><strong className="text-blue-700">Purpose:</strong> {formatPurpose(registration.purpose)}</p>
-                                    <p className="text-sm"><strong className="text-blue-700">Address:</strong> {registration.address}</p>
+                            <div className="space-y-8">
+                              <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+                                <div className="bg-gradient-to-br from-blue-100 to-blue-200 p-6 rounded-xl shadow-lg">
+                                  <h4 className="font-bold mb-4 text-blue-800 text-xl flex items-center">
+                                    👤 Visitor Information
+                                  </h4>
+                                  <div className="space-y-3">
+                                    <p className="text-base"><strong className="text-blue-700">Name:</strong> {registration.visitorname}</p>
+                                    <p className="text-base"><strong className="text-blue-700">Phone:</strong> {registration.phonenumber}</p>
+                                    <p className="text-base"><strong className="text-blue-700">Purpose:</strong> {formatPurpose(registration.purpose)}</p>
+                                    <p className="text-base"><strong className="text-blue-700">Address:</strong> {registration.address}</p>
                                   </div>
                                 </div>
-                                <div className="bg-green-50 p-4 rounded-lg">
-                                  <h4 className="font-semibold mb-3 text-green-800 text-lg">Visit Details</h4>
-                                  <div className="space-y-2">
-                                    <p className="text-sm"><strong className="text-green-700">People ({registration.numberofpeople}):</strong></p>
-                                    <p className="text-sm pl-4 bg-white p-2 rounded border">{parsePeople(registration.people)}</p>
-                                    <p className="text-sm"><strong className="text-green-700">Start Time:</strong> {formatDate(registration.starttime)}</p>
-                                    <p className="text-sm"><strong className="text-green-700">End Time:</strong> {formatDate(registration.endtime)}</p>
+                                <div className="bg-gradient-to-br from-green-100 to-green-200 p-6 rounded-xl shadow-lg">
+                                  <h4 className="font-bold mb-4 text-green-800 text-xl flex items-center">
+                                    📅 Visit Details
+                                  </h4>
+                                  <div className="space-y-3">
+                                    <p className="text-base"><strong className="text-green-700">People ({registration.numberofpeople}):</strong></p>
+                                    <p className="text-sm pl-4 bg-white p-3 rounded-lg border-2 border-green-200 shadow-sm">{parsePeople(registration.people)}</p>
+                                    <p className="text-base"><strong className="text-green-700">Start Time:</strong> {formatDate(registration.starttime)}</p>
+                                    <p className="text-base"><strong className="text-green-700">End Time:</strong> {formatDate(registration.endtime)}</p>
                                   </div>
                                 </div>
                               </div>
                               
-                              <div className="space-y-6">
-                                <div className="bg-purple-50 p-4 rounded-lg">
-                                  <h4 className="font-semibold mb-3 flex items-center text-purple-800 text-lg">
-                                    <Image className="mr-2 h-5 w-5" />
-                                    Photograph
+                              <div className="space-y-8">
+                                <div className="bg-gradient-to-br from-purple-100 to-purple-200 p-6 rounded-xl shadow-lg">
+                                  <h4 className="font-bold mb-4 flex items-center text-purple-800 text-xl">
+                                    <Image className="mr-3 h-6 w-6" />
+                                    📸 Photograph
                                   </h4>
                                   {registration.picture_url ? (
                                     <div className="flex justify-center">
                                       <img
                                         src={registration.picture_url}
                                         alt="Visitor"
-                                        className="h-64 w-auto object-cover rounded-lg border-2 border-purple-200 shadow-md"
+                                        className="h-80 w-auto object-cover rounded-xl border-4 border-purple-300 shadow-xl"
                                       />
                                     </div>
                                   ) : (
-                                    <p className="text-sm text-gray-500 text-center py-8 bg-white rounded border-2 border-dashed border-gray-300">
-                                      No photograph provided
+                                    <p className="text-base text-gray-500 text-center py-12 bg-white rounded-xl border-2 border-dashed border-gray-300">
+                                      📷 No photograph provided
                                     </p>
                                   )}
                                 </div>
                                 
-                                <div className="bg-orange-50 p-4 rounded-lg">
-                                  <h4 className="font-semibold mb-3 flex items-center text-orange-800 text-lg">
-                                    <FileSignature className="mr-2 h-5 w-5" />
-                                    Signature
+                                <div className="bg-gradient-to-br from-orange-100 to-orange-200 p-6 rounded-xl shadow-lg">
+                                  <h4 className="font-bold mb-4 flex items-center text-orange-800 text-xl">
+                                    <FileSignature className="mr-3 h-6 w-6" />
+                                    ✍️ Signature
                                   </h4>
                                   {registration.signature_url ? (
                                     <div className="flex justify-center">
                                       <img
                                         src={registration.signature_url}
                                         alt="Signature"
-                                        className="h-32 w-auto object-contain rounded-lg border-2 border-orange-200 bg-white shadow-md"
+                                        className="h-40 w-auto object-contain rounded-xl border-4 border-orange-300 bg-white shadow-xl"
                                       />
                                     </div>
                                   ) : (
-                                    <p className="text-sm text-gray-500 text-center py-8 bg-white rounded border-2 border-dashed border-gray-300">
-                                      No signature provided
+                                    <p className="text-base text-gray-500 text-center py-12 bg-white rounded-xl border-2 border-dashed border-gray-300">
+                                      ✍️ No signature provided
                                     </p>
                                   )}
                                 </div>
@@ -425,21 +446,22 @@ export default function AdminDashboard() {
                           </DialogContent>
                         </Dialog>
                       </TableCell>
-                      <TableCell>
+                      <TableCell className="p-4">
                         {editingId === registration.id ? (
                           <div className="flex space-x-2">
                             <Button
                               size="sm"
                               onClick={() => saveEdit(registration.id)}
-                              className="bg-green-600 hover:bg-green-700"
+                              className="bg-gradient-to-r from-green-500 to-emerald-500 hover:from-green-600 hover:to-emerald-600 text-white border-0 rounded-lg shadow-md"
                             >
-                              <Save className="h-4 w-4" />
+                              <Save className="h-4 w-4 mr-1" />
+                              Save
                             </Button>
                             <Button
                               size="sm"
                               variant="outline"
                               onClick={cancelEdit}
-                              className="border-red-200 text-red-600 hover:bg-red-50"
+                              className="border-2 border-red-300 text-red-600 hover:bg-red-50 hover:border-red-400 rounded-lg"
                             >
                               <X className="h-4 w-4" />
                             </Button>
@@ -449,9 +471,10 @@ export default function AdminDashboard() {
                             size="sm"
                             variant="outline"
                             onClick={() => startEdit(registration)}
-                            className="border-indigo-200 text-indigo-600 hover:bg-indigo-50"
+                            className="border-2 border-indigo-300 text-indigo-600 hover:bg-indigo-50 hover:border-indigo-400 rounded-lg"
                           >
-                            <Pencil className="h-4 w-4" />
+                            <Pencil className="h-4 w-4 mr-1" />
+                            Edit
                           </Button>
                         )}
                       </TableCell>
@@ -461,12 +484,12 @@ export default function AdminDashboard() {
               </Table>
             </div>
             {filteredRegistrations.length === 0 && !loading && (
-              <div className="text-center py-12">
-                <div className="bg-gray-100 rounded-full w-16 h-16 flex items-center justify-center mx-auto mb-4">
-                  <Search className="h-8 w-8 text-gray-400" />
+              <div className="text-center py-16">
+                <div className="bg-gradient-to-br from-gray-100 to-gray-200 rounded-full w-20 h-20 flex items-center justify-center mx-auto mb-6 shadow-lg">
+                  <Search className="h-10 w-10 text-gray-400" />
                 </div>
-                <p className="text-gray-500 text-lg">
-                  {searchTerm ? 'No registrations found matching your search.' : 'No registrations found.'}
+                <p className="text-gray-500 text-xl font-medium">
+                  {searchTerm ? '🔍 No registrations found matching your search.' : '📝 No registrations found.'}
                 </p>
               </div>
             )}
