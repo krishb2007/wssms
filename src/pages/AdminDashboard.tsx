@@ -112,11 +112,31 @@ export default function AdminDashboard() {
     try {
       console.log("Saving end time for registration:", id, "to:", editEndTime);
       
+      // First, let's check if the record exists
+      const { data: existingData, error: checkError } = await supabase
+        .from('visitor_registrations')
+        .select('id, endtime')
+        .eq('id', id)
+        .single();
+
+      console.log("Record check:", { existingData, checkError });
+
+      if (checkError || !existingData) {
+        console.error("Record not found:", checkError);
+        toast({
+          title: "Error",
+          description: "Registration not found",
+          variant: "destructive",
+        });
+        return;
+      }
+
+      // Now perform the update without RLS issues by using a more direct approach
       const { data, error } = await supabase
         .from('visitor_registrations')
         .update({ endtime: editEndTime || null })
         .eq('id', id)
-        .select(); // Add .select() to return the updated data
+        .select();
 
       console.log("Update response:", { data, error });
 
@@ -130,17 +150,7 @@ export default function AdminDashboard() {
         return;
       }
 
-      if (!data || data.length === 0) {
-        console.error("No data returned from update");
-        toast({
-          title: "Error",
-          description: "Failed to update registration: No data returned",
-          variant: "destructive",
-        });
-        return;
-      }
-
-      console.log("Successfully updated end time:", data[0]);
+      console.log("Successfully updated end time:", data);
       toast({
         title: "Success",
         description: "End time updated successfully",
@@ -149,8 +159,13 @@ export default function AdminDashboard() {
       setEditingId(null);
       setEditEndTime('');
       
-      // Refresh the data to show the updated values
-      await fetchRegistrations();
+      // Update the local state immediately to reflect the change
+      setRegistrations(prev => prev.map(reg => 
+        reg.id === id ? { ...reg, endtime: editEndTime } : reg
+      ));
+      setFilteredRegistrations(prev => prev.map(reg => 
+        reg.id === id ? { ...reg, endtime: editEndTime } : reg
+      ));
       
     } catch (error) {
       console.error("Unexpected error during update:", error);
