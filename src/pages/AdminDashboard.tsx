@@ -1,3 +1,4 @@
+
 import React, { useEffect, useState } from 'react';
 import { supabase } from '../integrations/supabase/client';
 import { useNavigate } from 'react-router-dom';
@@ -112,31 +113,16 @@ export default function AdminDashboard() {
     try {
       console.log("Saving end time for registration:", id, "to:", editEndTime);
       
-      // First, let's check if the record exists
-      const { data: existingData, error: checkError } = await supabase
-        .from('visitor_registrations')
-        .select('id, endtime')
-        .eq('id', id)
-        .single();
+      // Convert the datetime-local input to ISO string for the database
+      const endTimeToSave = editEndTime ? new Date(editEndTime).toISOString() : null;
+      console.log("Converted end time:", endTimeToSave);
 
-      console.log("Record check:", { existingData, checkError });
-
-      if (checkError || !existingData) {
-        console.error("Record not found:", checkError);
-        toast({
-          title: "Error",
-          description: "Registration not found",
-          variant: "destructive",
-        });
-        return;
-      }
-
-      // Now perform the update without RLS issues by using a more direct approach
       const { data, error } = await supabase
         .from('visitor_registrations')
-        .update({ endtime: editEndTime || null })
+        .update({ endtime: endTimeToSave })
         .eq('id', id)
-        .select();
+        .select('*')
+        .single();
 
       console.log("Update response:", { data, error });
 
@@ -159,13 +145,8 @@ export default function AdminDashboard() {
       setEditingId(null);
       setEditEndTime('');
       
-      // Update the local state immediately to reflect the change
-      setRegistrations(prev => prev.map(reg => 
-        reg.id === id ? { ...reg, endtime: editEndTime } : reg
-      ));
-      setFilteredRegistrations(prev => prev.map(reg => 
-        reg.id === id ? { ...reg, endtime: editEndTime } : reg
-      ));
+      // Refresh the data from the server to ensure consistency
+      await fetchRegistrations();
       
     } catch (error) {
       console.error("Unexpected error during update:", error);
@@ -207,6 +188,15 @@ export default function AdminDashboard() {
       student_visit: "Student Visit"
     };
     return purposeMap[purpose] || (purpose.charAt(0).toUpperCase() + purpose.slice(1));
+  };
+
+  // Function to get full URL for images
+  const getImageUrl = (url: string | null) => {
+    if (!url) return null;
+    // If it's already a full URL, return as is
+    if (url.startsWith('http')) return url;
+    // If it's a relative path, construct the full URL
+    return `https://efxeohyxpnwewhqwlahw.supabase.co/storage/v1/object/public/${url}`;
   };
 
   if (loading) {
@@ -440,14 +430,20 @@ export default function AdminDashboard() {
                                   {registration.picture_url ? (
                                     <div className="flex justify-center">
                                       <img
-                                        src={registration.picture_url}
+                                        src={getImageUrl(registration.picture_url)}
                                         alt="Visitor"
                                         className="h-80 w-auto object-cover rounded-xl border-4 border-purple-300 shadow-xl"
                                         onError={(e) => {
                                           console.log("Image failed to load:", registration.picture_url);
-                                          (e.target as HTMLImageElement).style.display = 'none';
+                                          const target = e.target as HTMLImageElement;
+                                          target.style.display = 'none';
+                                          target.nextElementSibling?.classList.remove('hidden');
                                         }}
                                       />
+                                      <div className="hidden text-center py-12 bg-white rounded-xl border-2 border-dashed border-gray-300">
+                                        <p className="text-base text-red-500">📷 Failed to load image</p>
+                                        <p className="text-sm text-gray-500 mt-2">URL: {registration.picture_url}</p>
+                                      </div>
                                     </div>
                                   ) : (
                                     <p className="text-base text-gray-500 text-center py-12 bg-white rounded-xl border-2 border-dashed border-gray-300">
@@ -464,14 +460,20 @@ export default function AdminDashboard() {
                                   {registration.signature_url ? (
                                     <div className="flex justify-center">
                                       <img
-                                        src={registration.signature_url}
+                                        src={getImageUrl(registration.signature_url)}
                                         alt="Signature"
                                         className="h-40 w-auto object-contain rounded-xl border-4 border-orange-300 bg-white shadow-xl"
                                         onError={(e) => {
                                           console.log("Signature failed to load:", registration.signature_url);
-                                          (e.target as HTMLImageElement).style.display = 'none';
+                                          const target = e.target as HTMLImageElement;
+                                          target.style.display = 'none';
+                                          target.nextElementSibling?.classList.remove('hidden');
                                         }}
                                       />
+                                      <div className="hidden text-center py-12 bg-white rounded-xl border-2 border-dashed border-gray-300">
+                                        <p className="text-base text-red-500">✍️ Failed to load signature</p>
+                                        <p className="text-sm text-gray-500 mt-2">URL: {registration.signature_url}</p>
+                                      </div>
                                     </div>
                                   ) : (
                                     <p className="text-base text-gray-500 text-center py-12 bg-white rounded-xl border-2 border-dashed border-gray-300">
