@@ -1,4 +1,3 @@
-
 import React, { useEffect, useState } from 'react';
 import { supabase } from '../integrations/supabase/client';
 import { useNavigate } from 'react-router-dom';
@@ -121,8 +120,7 @@ export default function AdminDashboard() {
         .from('visitor_registrations')
         .update({ endtime: endTimeToSave })
         .eq('id', id)
-        .select('*')
-        .single();
+        .select();
 
       console.log("Update response:", { data, error });
 
@@ -136,7 +134,27 @@ export default function AdminDashboard() {
         return;
       }
 
-      console.log("Successfully updated end time:", data);
+      if (!data || data.length === 0) {
+        console.error("No data returned from update");
+        toast({
+          title: "Error",
+          description: "No registration found with that ID",
+          variant: "destructive",
+        });
+        return;
+      }
+
+      console.log("Successfully updated end time:", data[0]);
+      
+      // Update the local state immediately
+      setRegistrations(prev => 
+        prev.map(reg => 
+          reg.id === id 
+            ? { ...reg, endtime: endTimeToSave }
+            : reg
+        )
+      );
+      
       toast({
         title: "Success",
         description: "End time updated successfully",
@@ -144,9 +162,6 @@ export default function AdminDashboard() {
       
       setEditingId(null);
       setEditEndTime('');
-      
-      // Refresh the data from the server to ensure consistency
-      await fetchRegistrations();
       
     } catch (error) {
       console.error("Unexpected error during update:", error);
@@ -190,12 +205,14 @@ export default function AdminDashboard() {
     return purposeMap[purpose] || (purpose.charAt(0).toUpperCase() + purpose.slice(1));
   };
 
-  // Function to get full URL for images
+  // Function to get full URL for images - improved to handle both blob and storage URLs
   const getImageUrl = (url: string | null) => {
     if (!url) return null;
-    // If it's already a full URL, return as is
-    if (url.startsWith('http')) return url;
-    // If it's a relative path, construct the full URL
+    
+    // If it's already a full URL (including blob URLs), return as is
+    if (url.startsWith('http') || url.startsWith('blob:')) return url;
+    
+    // If it's a relative path, construct the full Supabase storage URL
     return `https://efxeohyxpnwewhqwlahw.supabase.co/storage/v1/object/public/${url}`;
   };
 
@@ -437,7 +454,8 @@ export default function AdminDashboard() {
                                           console.log("Image failed to load:", registration.picture_url);
                                           const target = e.target as HTMLImageElement;
                                           target.style.display = 'none';
-                                          target.nextElementSibling?.classList.remove('hidden');
+                                          const errorDiv = target.nextElementSibling as HTMLElement;
+                                          if (errorDiv) errorDiv.classList.remove('hidden');
                                         }}
                                       />
                                       <div className="hidden text-center py-12 bg-white rounded-xl border-2 border-dashed border-gray-300">
@@ -467,7 +485,8 @@ export default function AdminDashboard() {
                                           console.log("Signature failed to load:", registration.signature_url);
                                           const target = e.target as HTMLImageElement;
                                           target.style.display = 'none';
-                                          target.nextElementSibling?.classList.remove('hidden');
+                                          const errorDiv = target.nextElementSibling as HTMLElement;
+                                          if (errorDiv) errorDiv.classList.remove('hidden');
                                         }}
                                       />
                                       <div className="hidden text-center py-12 bg-white rounded-xl border-2 border-dashed border-gray-300">
