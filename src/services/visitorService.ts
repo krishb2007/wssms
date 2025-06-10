@@ -1,3 +1,4 @@
+
 import { supabase } from "@/integrations/supabase/client";
 
 export interface VisitorFormData {
@@ -17,30 +18,13 @@ export interface VisitorFormData {
   endtime?: string | null;
 }
 
-// Upload file to Supabase storage
+// Upload file to Supabase storage (placeholder for now)
 const uploadFile = async (file: File, bucket: string, path: string): Promise<string | null> => {
   try {
-    console.log("Uploading file to Supabase storage:", file.name);
-    
-    const { data, error } = await supabase.storage
-      .from(bucket)
-      .upload(path, file, {
-        cacheControl: '3600',
-        upsert: false
-      });
-
-    if (error) {
-      console.error("Storage upload error:", error);
-      return null;
-    }
-
-    // Return the public URL
-    const { data: { publicUrl } } = supabase.storage
-      .from(bucket)
-      .getPublicUrl(data.path);
-
-    console.log("File uploaded successfully, public URL:", publicUrl);
-    return publicUrl;
+    console.log("Uploading file:", file.name);
+    // For now, we'll just return a placeholder URL
+    // In production, you would upload to Supabase storage
+    return URL.createObjectURL(file);
   } catch (error) {
     console.error("Error uploading file:", error);
     return null;
@@ -56,23 +40,13 @@ export const saveVisitorRegistration = async (formData: VisitorFormData) => {
     let signatureUrl: string | null = null;
 
     if (formData.picture && typeof formData.picture !== "string") {
-      const timestamp = Date.now();
-      pictureUrl = await uploadFile(
-        formData.picture, 
-        "visitor-pictures", 
-        `${timestamp}-picture.png`
-      );
+      pictureUrl = await uploadFile(formData.picture, "pictures", `picture_${Date.now()}`);
     } else if (typeof formData.picture === "string") {
       pictureUrl = formData.picture;
     }
 
     if (formData.signature && typeof formData.signature !== "string") {
-      const timestamp = Date.now();
-      signatureUrl = await uploadFile(
-        formData.signature, 
-        "visitor-signatures", 
-        `${timestamp}-signature.png`
-      );
+      signatureUrl = await uploadFile(formData.signature, "signatures", `signature_${Date.now()}`);
     } else if (typeof formData.signature === "string") {
       signatureUrl = formData.signature;
     }
@@ -97,6 +71,19 @@ export const saveVisitorRegistration = async (formData: VisitorFormData) => {
 
     console.log("Attempting to insert into visitor_registrations table:", insertData);
 
+    // Test database connection with a simpler query
+    const { error: testError } = await supabase
+      .from('visitor_registrations')
+      .select('id')
+      .limit(1);
+
+    if (testError) {
+      console.error("Database connection test failed:", testError);
+      throw new Error(`Database connection failed: ${testError.message}`);
+    }
+
+    console.log("Database connection successful, proceeding with insert...");
+
     const { data, error } = await supabase
       .from('visitor_registrations')
       .insert([insertData])
@@ -105,6 +92,12 @@ export const saveVisitorRegistration = async (formData: VisitorFormData) => {
 
     if (error) {
       console.error("Database insert error:", error);
+      console.error("Error details:", {
+        code: error.code,
+        message: error.message,
+        details: error.details,
+        hint: error.hint
+      });
       throw new Error(`Failed to save registration: ${error.message}`);
     }
 
