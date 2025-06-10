@@ -20,12 +20,14 @@ interface AuthContextType {
   user: AuthUser | null;
   isLoading: boolean;
   logout: () => Promise<void>;
+  refreshAuth: () => Promise<void>;
 }
 
 const AuthContext = createContext<AuthContextType>({
   user: null,
   isLoading: true,
   logout: async () => {},
+  refreshAuth: async () => {},
 });
 
 export const useAuth = () => useContext(AuthContext);
@@ -33,6 +35,13 @@ export const useAuth = () => useContext(AuthContext);
 const App: React.FC = () => {
   const [user, setUser] = useState<AuthUser | null>(null);
   const [isLoading, setIsLoading] = useState(true);
+
+  const refreshAuth = async () => {
+    console.log("Refreshing authentication...");
+    const { user } = await getCurrentUser();
+    console.log("Auth refresh result:", user);
+    setUser(user);
+  };
 
   useEffect(() => {
     const checkAuth = async () => {
@@ -54,7 +63,7 @@ const App: React.FC = () => {
 
   return (
     <QueryClientProvider client={queryClient}>
-      <AuthContext.Provider value={{ user, isLoading, logout }}>
+      <AuthContext.Provider value={{ user, isLoading, logout, refreshAuth }}>
         <TooltipProvider>
           <Toaster />
           <Sonner />

@@ -1,4 +1,3 @@
-
 import React, { useEffect, useState } from 'react';
 import { supabase } from '../integrations/supabase/client';
 import { useNavigate } from 'react-router-dom';
@@ -116,9 +115,7 @@ export default function AdminDashboard() {
       const { data, error } = await supabase
         .from('visitor_registrations')
         .update({ endtime: editEndTime || null })
-        .eq('id', id)
-        .select()
-        .single();
+        .eq('id', id);
 
       if (error) {
         console.error("Update error:", error);
@@ -130,27 +127,18 @@ export default function AdminDashboard() {
         return;
       }
 
-      if (data) {
-        console.log("Successfully updated end time:", data);
-        toast({
-          title: "Success",
-          description: "End time updated successfully",
-        });
-        setEditingId(null);
-        setEditEndTime('');
-        
-        // Update the local state to reflect the change immediately
-        setRegistrations(prev => 
-          prev.map(reg => 
-            reg.id === id ? { ...reg, endtime: editEndTime || null } : reg
-          )
-        );
-        setFilteredRegistrations(prev => 
-          prev.map(reg => 
-            reg.id === id ? { ...reg, endtime: editEndTime || null } : reg
-          )
-        );
-      }
+      console.log("Successfully updated end time");
+      toast({
+        title: "Success",
+        description: "End time updated successfully",
+      });
+      
+      setEditingId(null);
+      setEditEndTime('');
+      
+      // Refresh the data to show the updated values
+      await fetchRegistrations();
+      
     } catch (error) {
       console.error("Unexpected error during update:", error);
       toast({

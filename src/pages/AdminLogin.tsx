@@ -1,7 +1,8 @@
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { signIn, signUp } from '../services/authService';
+import { useAuth } from '../App';
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -14,6 +15,15 @@ export default function AdminLogin() {
   const [loading, setLoading] = useState(false);
   const [isSignUp, setIsSignUp] = useState(false);
   const navigate = useNavigate();
+  const { user, refreshAuth } = useAuth();
+
+  // Redirect if already logged in as admin
+  useEffect(() => {
+    if (user && user.role === 'admin') {
+      console.log("User already logged in as admin, redirecting...");
+      navigate('/admin-dashboard');
+    }
+  }, [user, navigate]);
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
@@ -22,13 +32,13 @@ export default function AdminLogin() {
     console.log("Form submitted with:", { email, password: "***", isSignUp });
 
     try {
-      const { user, error } = isSignUp 
+      const { user: authUser, error } = isSignUp 
         ? await signUp({ email, password })
         : await signIn({ email, password });
 
-      console.log("Auth result:", { user, error });
+      console.log("Auth result:", { user: authUser, error });
 
-      if (error || !user) {
+      if (error || !authUser) {
         console.error("Auth failed:", error);
         toast({
           title: isSignUp ? "Sign Up Failed" : "Login Failed",
@@ -39,10 +49,10 @@ export default function AdminLogin() {
         return;
       }
 
-      console.log("User role:", user.role);
+      console.log("User role:", authUser.role);
 
-      if (user.role !== 'admin') {
-        console.error("User is not admin:", user.role);
+      if (authUser.role !== 'admin') {
+        console.error("User is not admin:", authUser.role);
         toast({
           title: "Access Denied",
           description: "You are not authorized as admin.",
@@ -55,12 +65,15 @@ export default function AdminLogin() {
       toast({
         title: isSignUp ? "Account Created" : "Login Successful",
         description: isSignUp 
-          ? "Admin account created successfully. You can now access the dashboard." 
+          ? "Admin account created successfully. Redirecting to dashboard..." 
           : "Welcome to the admin dashboard",
       });
 
+      // Refresh auth context and navigate
+      await refreshAuth();
       console.log("Navigating to admin dashboard...");
       navigate('/admin-dashboard');
+      
     } catch (error) {
       console.error("Unexpected error:", error);
       toast({
@@ -68,6 +81,7 @@ export default function AdminLogin() {
         description: "An unexpected error occurred",
         variant: "destructive",
       });
+    } finally {
       setLoading(false);
     }
   }
