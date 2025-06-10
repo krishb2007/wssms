@@ -115,7 +115,10 @@ export default function AdminDashboard() {
       const { data, error } = await supabase
         .from('visitor_registrations')
         .update({ endtime: editEndTime || null })
-        .eq('id', id);
+        .eq('id', id)
+        .select(); // Add .select() to return the updated data
+
+      console.log("Update response:", { data, error });
 
       if (error) {
         console.error("Update error:", error);
@@ -127,7 +130,17 @@ export default function AdminDashboard() {
         return;
       }
 
-      console.log("Successfully updated end time");
+      if (!data || data.length === 0) {
+        console.error("No data returned from update");
+        toast({
+          title: "Error",
+          description: "Failed to update registration: No data returned",
+          variant: "destructive",
+        });
+        return;
+      }
+
+      console.log("Successfully updated end time:", data[0]);
       toast({
         title: "Success",
         description: "End time updated successfully",
