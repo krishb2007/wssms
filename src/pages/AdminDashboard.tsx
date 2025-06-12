@@ -7,9 +7,9 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger, DialogDescription } from "@/components/ui/dialog";
 import { toast } from "@/components/ui/use-toast";
-import { Pencil, Save, X, LogOut, Search, Eye, Image, FileSignature, Users, Clock, RefreshCw } from "lucide-react";
+import { Pencil, Save, X, LogOut, Search, Eye, Image, FileSignature, Users, Clock, RefreshCw, Calendar, MapPin, Phone, User, Building, Target, ChevronDown } from "lucide-react";
 
 interface VisitorRegistration {
   id: string;
@@ -100,7 +100,6 @@ export default function AdminDashboard() {
   function startEdit(registration: VisitorRegistration) {
     console.log("Starting edit for registration:", registration.id);
     setEditingId(registration.id);
-    // Format current end time for datetime-local input or use current time
     const currentEndTime = registration.endtime 
       ? new Date(registration.endtime).toISOString().slice(0, 16)
       : new Date().toISOString().slice(0, 16);
@@ -126,16 +125,15 @@ export default function AdminDashboard() {
         return;
       }
 
-      // Convert datetime-local to ISO string for database
       const endTimeISO = new Date(editEndTime).toISOString();
       console.log("Converted to ISO string:", endTimeISO);
 
+      // Fix: Remove .single() to avoid "no rows returned" error
       const { data, error } = await supabase
         .from('visitor_registrations')
         .update({ endtime: endTimeISO })
         .eq('id', id)
-        .select()
-        .single();
+        .select();
 
       console.log("Update response:", { data, error });
 
@@ -149,22 +147,23 @@ export default function AdminDashboard() {
         return;
       }
 
-      console.log("Successfully updated end time:", data);
-      
-      // Update local state with the new data
-      setRegistrations(prev => 
-        prev.map(reg => 
-          reg.id === id ? { ...reg, endtime: endTimeISO } : reg
-        )
-      );
-      
-      toast({
-        title: "Success",
-        description: "End time updated successfully",
-      });
-      
-      setEditingId(null);
-      setEditEndTime('');
+      if (data && data.length > 0) {
+        console.log("Successfully updated end time:", data[0]);
+        
+        setRegistrations(prev => 
+          prev.map(reg => 
+            reg.id === id ? { ...reg, endtime: endTimeISO } : reg
+          )
+        );
+        
+        toast({
+          title: "Success",
+          description: "End time updated successfully",
+        });
+        
+        setEditingId(null);
+        setEditEndTime('');
+      }
       
     } catch (error) {
       console.error("Unexpected error during update:", error);
@@ -183,7 +182,13 @@ export default function AdminDashboard() {
 
   const formatDate = (dateString: string | null) => {
     if (!dateString) return 'N/A';
-    return new Date(dateString).toLocaleString();
+    return new Date(dateString).toLocaleString('en-US', {
+      month: 'short',
+      day: 'numeric',
+      year: 'numeric',
+      hour: '2-digit',
+      minute: '2-digit'
+    });
   };
 
   const parsePeople = (peopleString: string) => {
@@ -208,128 +213,160 @@ export default function AdminDashboard() {
     return purposeMap[purpose] || (purpose.charAt(0).toUpperCase() + purpose.slice(1));
   };
 
-  // Function to get full URL for images
   const getImageUrl = (url: string | null) => {
     if (!url) return null;
-    
-    // If it's already a full URL, return as is
     if (url.startsWith('http') || url.startsWith('blob:')) return url;
-    
-    // If it's a relative path, construct the full Supabase storage URL
     return `https://efxeohyxpnwewhqwlahw.supabase.co/storage/v1/object/public/${url}`;
+  };
+
+  const getStatusBadge = (registration: VisitorRegistration) => {
+    if (registration.endtime) {
+      return (
+        <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-gray-100 text-gray-800">
+          <div className="w-1.5 h-1.5 bg-gray-400 rounded-full mr-1.5"></div>
+          Completed
+        </span>
+      );
+    }
+    return (
+      <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800">
+        <div className="w-1.5 h-1.5 bg-green-400 rounded-full mr-1.5 animate-pulse"></div>
+        Active
+      </span>
+    );
   };
 
   if (loading) {
     return (
-      <div className="flex justify-center items-center min-h-screen bg-gradient-to-br from-purple-50 via-blue-50 to-indigo-100">
-        <div className="text-lg text-indigo-700 flex items-center">
-          <RefreshCw className="mr-2 h-6 w-6 animate-spin" />
-          Loading registrations...
+      <div className="flex justify-center items-center min-h-screen bg-gray-50">
+        <div className="text-center">
+          <RefreshCw className="mx-auto h-8 w-8 animate-spin text-blue-600 mb-4" />
+          <p className="text-gray-600 font-medium">Loading registrations...</p>
         </div>
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-purple-50 via-blue-50 to-indigo-100">
-      <div className="container mx-auto p-6">
-        {/* Header Section with vibrant colors */}
-        <div className="bg-gradient-to-r from-purple-600 to-blue-600 rounded-xl shadow-2xl p-8 mb-8 text-white">
+    <div className="min-h-screen bg-gray-50">
+      <div className="max-w-7xl mx-auto p-6">
+        {/* Header */}
+        <div className="bg-white shadow-sm border border-gray-200 rounded-lg p-6 mb-6">
           <div className="flex justify-between items-center">
             <div>
-              <h1 className="text-5xl font-bold mb-3">
-                🎛️ Admin Dashboard
+              <h1 className="text-2xl font-bold text-gray-900 mb-1">
+                Visitor Management System
               </h1>
-              <p className="text-purple-100 text-lg">Manage visitor registrations and access controls</p>
+              <p className="text-gray-600">Monitor and manage visitor registrations</p>
             </div>
-            <div className="flex items-center space-x-6">
-              <div className="text-right bg-white/20 backdrop-blur-sm rounded-lg p-4">
-                <p className="text-sm text-purple-100">Welcome back,</p>
-                <p className="font-semibold text-white text-lg">{user?.email}</p>
+            <div className="flex items-center space-x-4">
+              <div className="text-right">
+                <p className="text-sm text-gray-500">Signed in as</p>
+                <p className="font-semibold text-gray-900">{user?.email}</p>
               </div>
               <Button 
                 onClick={handleLogout} 
-                variant="outline" 
-                size="lg"
-                className="border-white/30 text-white hover:bg-white/20 hover:border-white/50 bg-white/10"
+                variant="outline"
+                className="flex items-center space-x-2"
               >
-                <LogOut className="mr-2 h-5 w-5" />
-                Logout
+                <LogOut className="h-4 w-4" />
+                <span>Sign Out</span>
               </Button>
             </div>
           </div>
         </div>
 
-        {/* Stats Cards with vibrant colors */}
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-8 mb-8">
-          <Card className="bg-gradient-to-br from-green-400 to-emerald-600 text-white border-0 shadow-xl transform hover:scale-105 transition-transform">
-            <CardContent className="p-8">
-              <div className="flex items-center justify-between">
-                <div>
-                  <p className="text-green-100 text-lg">Total Visitors</p>
-                  <p className="text-4xl font-bold">{registrations.length}</p>
+        {/* Stats Cards */}
+        <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-6">
+          <Card className="border-0 shadow-sm">
+            <CardContent className="p-6">
+              <div className="flex items-center">
+                <div className="p-2 bg-blue-100 rounded-lg">
+                  <Users className="h-6 w-6 text-blue-600" />
                 </div>
-                <Users className="h-16 w-16 text-green-200" />
+                <div className="ml-4">
+                  <p className="text-sm font-medium text-gray-600">Total Visitors</p>
+                  <p className="text-2xl font-bold text-gray-900">{registrations.length}</p>
+                </div>
               </div>
             </CardContent>
           </Card>
           
-          <Card className="bg-gradient-to-br from-orange-400 to-red-500 text-white border-0 shadow-xl transform hover:scale-105 transition-transform">
-            <CardContent className="p-8">
-              <div className="flex items-center justify-between">
-                <div>
-                  <p className="text-orange-100 text-lg">Active Visits</p>
-                  <p className="text-4xl font-bold">
+          <Card className="border-0 shadow-sm">
+            <CardContent className="p-6">
+              <div className="flex items-center">
+                <div className="p-2 bg-green-100 rounded-lg">
+                  <Clock className="h-6 w-6 text-green-600" />
+                </div>
+                <div className="ml-4">
+                  <p className="text-sm font-medium text-gray-600">Active Visits</p>
+                  <p className="text-2xl font-bold text-gray-900">
                     {registrations.filter(r => !r.endtime).length}
                   </p>
                 </div>
-                <Clock className="h-16 w-16 text-orange-200" />
               </div>
             </CardContent>
           </Card>
           
-          <Card className="bg-gradient-to-br from-blue-400 to-purple-600 text-white border-0 shadow-xl transform hover:scale-105 transition-transform">
-            <CardContent className="p-8">
-              <div className="flex items-center justify-between">
-                <div>
-                  <p className="text-blue-100 text-lg">Today's Visits</p>
-                  <p className="text-4xl font-bold">
+          <Card className="border-0 shadow-sm">
+            <CardContent className="p-6">
+              <div className="flex items-center">
+                <div className="p-2 bg-purple-100 rounded-lg">
+                  <Calendar className="h-6 w-6 text-purple-600" />
+                </div>
+                <div className="ml-4">
+                  <p className="text-sm font-medium text-gray-600">Today's Visits</p>
+                  <p className="text-2xl font-bold text-gray-900">
                     {registrations.filter(r => 
                       new Date(r.created_at).toDateString() === new Date().toDateString()
                     ).length}
                   </p>
                 </div>
-                <Eye className="h-16 w-16 text-blue-200" />
+              </div>
+            </CardContent>
+          </Card>
+
+          <Card className="border-0 shadow-sm">
+            <CardContent className="p-6">
+              <div className="flex items-center">
+                <div className="p-2 bg-orange-100 rounded-lg">
+                  <Target className="h-6 w-6 text-orange-600" />
+                </div>
+                <div className="ml-4">
+                  <p className="text-sm font-medium text-gray-600">Completed</p>
+                  <p className="text-2xl font-bold text-gray-900">
+                    {registrations.filter(r => r.endtime).length}
+                  </p>
+                </div>
               </div>
             </CardContent>
           </Card>
         </div>
 
         {/* Main Content */}
-        <Card className="bg-white/90 backdrop-blur-sm border-0 shadow-2xl rounded-2xl overflow-hidden">
-          <CardHeader className="bg-gradient-to-r from-indigo-600 via-purple-600 to-pink-600 text-white p-8">
+        <Card className="border-0 shadow-sm">
+          <CardHeader className="border-b border-gray-200 bg-white">
             <div className="flex justify-between items-center">
-              <CardTitle className="text-3xl font-bold flex items-center">
-                📊 Visitor Registrations ({filteredRegistrations.length})
+              <CardTitle className="text-lg font-semibold text-gray-900">
+                Visitor Registrations ({filteredRegistrations.length})
               </CardTitle>
-              <div className="flex items-center space-x-4">
+              <div className="flex items-center space-x-3">
                 <div className="relative">
-                  <Search className="absolute left-4 top-1/2 transform -translate-y-1/2 text-white/70 h-5 w-5" />
+                  <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 h-4 w-4" />
                   <Input
                     placeholder="Search visitors..."
                     value={searchTerm}
                     onChange={(e) => setSearchTerm(e.target.value)}
-                    className="pl-12 w-80 bg-white/20 border-white/30 text-white placeholder-white/70 text-lg py-3 rounded-xl"
+                    className="pl-10 w-64 border-gray-300 focus:border-blue-500 focus:ring-blue-500"
                   />
                 </div>
                 <Button 
                   onClick={fetchRegistrations} 
-                  variant="secondary" 
-                  size="lg"
-                  className="bg-white/20 hover:bg-white/30 text-white border-white/30 rounded-xl"
+                  variant="outline"
+                  className="flex items-center space-x-2"
                 >
-                  <RefreshCw className="mr-2 h-5 w-5" />
-                  Refresh
+                  <RefreshCw className="h-4 w-4" />
+                  <span>Refresh</span>
                 </Button>
               </div>
             </div>
@@ -338,207 +375,216 @@ export default function AdminDashboard() {
             <div className="overflow-x-auto">
               <Table>
                 <TableHeader>
-                  <TableRow className="bg-gradient-to-r from-gray-50 to-gray-100 border-b-2 border-indigo-200">
-                    <TableHead className="font-bold text-gray-800 text-base p-4">👤 Visitor Name</TableHead>
-                    <TableHead className="font-bold text-gray-800 text-base p-4">📞 Phone</TableHead>
-                    <TableHead className="font-bold text-gray-800 text-base p-4">👥 Count</TableHead>
-                    <TableHead className="font-bold text-gray-800 text-base p-4">📝 People Details</TableHead>
-                    <TableHead className="font-bold text-gray-800 text-base p-4">🎯 Purpose</TableHead>
-                    <TableHead className="font-bold text-gray-800 text-base p-4">📍 Address</TableHead>
-                    <TableHead className="font-bold text-gray-800 text-base p-4">⏰ Start Time</TableHead>
-                    <TableHead className="font-bold text-gray-800 text-base p-4">⏹️ End Time</TableHead>
-                    <TableHead className="font-bold text-gray-800 text-base p-4">📅 Registration</TableHead>
-                    <TableHead className="font-bold text-gray-800 text-base p-4">📷 Media</TableHead>
-                    <TableHead className="font-bold text-gray-800 text-base p-4">⚙️ Actions</TableHead>
+                  <TableRow className="bg-gray-50">
+                    <TableHead className="font-semibold text-gray-900">Visitor</TableHead>
+                    <TableHead className="font-semibold text-gray-900">Contact</TableHead>
+                    <TableHead className="font-semibold text-gray-900">Purpose</TableHead>
+                    <TableHead className="font-semibold text-gray-900">People</TableHead>
+                    <TableHead className="font-semibold text-gray-900">Visit Duration</TableHead>
+                    <TableHead className="font-semibold text-gray-900">Status</TableHead>
+                    <TableHead className="font-semibold text-gray-900">Actions</TableHead>
                   </TableRow>
                 </TableHeader>
                 <TableBody>
-                  {filteredRegistrations.map((registration, index) => (
+                  {filteredRegistrations.map((registration) => (
                     <TableRow 
                       key={registration.id} 
-                      className={`hover:bg-gradient-to-r hover:from-blue-50 hover:to-purple-50 transition-all duration-200 ${
-                        index % 2 === 0 ? 'bg-white' : 'bg-gray-50/50'
-                      }`}
+                      className="hover:bg-gray-50 transition-colors"
                     >
-                      <TableCell className="font-semibold text-indigo-700 p-4 text-base">
-                        {registration.visitorname}
+                      <TableCell>
+                        <div className="flex items-center space-x-3">
+                          <div className="flex-shrink-0">
+                            <div className="h-10 w-10 bg-blue-100 rounded-full flex items-center justify-center">
+                              <User className="h-5 w-5 text-blue-600" />
+                            </div>
+                          </div>
+                          <div>
+                            <div className="text-sm font-medium text-gray-900">
+                              {registration.visitorname}
+                            </div>
+                            <div className="text-sm text-gray-500 flex items-center">
+                              <Building className="h-3 w-3 mr-1" />
+                              {registration.schoolname}
+                            </div>
+                          </div>
+                        </div>
                       </TableCell>
-                      <TableCell className="p-4 text-base">{registration.phonenumber}</TableCell>
-                      <TableCell className="p-4">
-                        <span className="bg-gradient-to-r from-blue-500 to-purple-500 text-white px-3 py-2 rounded-full text-sm font-bold shadow-md">
-                          {registration.numberofpeople}
-                        </span>
+                      <TableCell>
+                        <div className="text-sm text-gray-900 flex items-center">
+                          <Phone className="h-3 w-3 mr-1 text-gray-400" />
+                          {registration.phonenumber}
+                        </div>
+                        <div className="text-sm text-gray-500 flex items-center mt-1">
+                          <MapPin className="h-3 w-3 mr-1 text-gray-400" />
+                          {registration.address?.slice(0, 30)}...
+                        </div>
                       </TableCell>
-                      <TableCell className="max-w-xs truncate p-4 text-sm">
-                        {parsePeople(registration.people)}
-                      </TableCell>
-                      <TableCell className="p-4">
-                        <span className="bg-gradient-to-r from-green-500 to-emerald-500 text-white px-3 py-2 rounded-full text-sm font-bold shadow-md">
+                      <TableCell>
+                        <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800">
                           {formatPurpose(registration.purpose)}
                         </span>
                       </TableCell>
-                      <TableCell className="max-w-xs truncate p-4 text-sm">{registration.address}</TableCell>
-                      <TableCell className="p-4 text-sm">{formatDate(registration.starttime)}</TableCell>
-                      <TableCell className="p-4">
-                        {editingId === registration.id ? (
-                          <Input
-                            type="datetime-local"
-                            value={editEndTime}
-                            onChange={(e) => setEditEndTime(e.target.value)}
-                            className="w-48 border-2 border-indigo-300 focus:border-indigo-500 rounded-lg"
-                          />
-                        ) : (
-                          <span className={`text-sm px-3 py-2 rounded-full font-medium ${
-                            registration.endtime 
-                              ? 'text-gray-700 bg-gray-100' 
-                              : 'text-orange-700 bg-gradient-to-r from-orange-100 to-yellow-100 border border-orange-200'
-                          }`}>
-                            {registration.endtime ? formatDate(registration.endtime) : '🔄 Active'}
-                          </span>
-                        )}
+                      <TableCell>
+                        <div className="text-sm text-gray-900">
+                          {registration.numberofpeople} {registration.numberofpeople === 1 ? 'person' : 'people'}
+                        </div>
+                        <div className="text-xs text-gray-500 max-w-xs truncate">
+                          {parsePeople(registration.people)}
+                        </div>
                       </TableCell>
-                      <TableCell className="text-gray-600 p-4 text-sm">{formatDate(registration.created_at)}</TableCell>
-                      <TableCell className="p-4">
-                        <Dialog>
-                          <DialogTrigger asChild>
-                            <Button
-                              size="sm"
-                              className="bg-gradient-to-r from-purple-500 to-pink-500 hover:from-purple-600 hover:to-pink-600 text-white border-0 rounded-lg shadow-md"
-                            >
-                              <Eye className="h-4 w-4 mr-1" />
-                              View
-                            </Button>
-                          </DialogTrigger>
-                          <DialogContent className="max-w-5xl max-h-[90vh] overflow-y-auto bg-gradient-to-br from-blue-50 to-purple-50">
-                            <DialogHeader>
-                              <DialogTitle className="text-3xl text-transparent bg-clip-text bg-gradient-to-r from-purple-600 to-blue-600 font-bold">
-                                📋 Visitor Information - {registration.visitorname}
-                              </DialogTitle>
-                            </DialogHeader>
-                            <div className="space-y-8">
-                              <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-                                <div className="bg-gradient-to-br from-blue-100 to-blue-200 p-6 rounded-xl shadow-lg">
-                                  <h4 className="font-bold mb-4 text-blue-800 text-xl flex items-center">
-                                    👤 Visitor Information
-                                  </h4>
-                                  <div className="space-y-3">
-                                    <p className="text-base"><strong className="text-blue-700">Name:</strong> {registration.visitorname}</p>
-                                    <p className="text-base"><strong className="text-blue-700">Phone:</strong> {registration.phonenumber}</p>
-                                    <p className="text-base"><strong className="text-blue-700">Purpose:</strong> {formatPurpose(registration.purpose)}</p>
-                                    <p className="text-base"><strong className="text-blue-700">Address:</strong> {registration.address}</p>
+                      <TableCell>
+                        <div className="text-sm text-gray-900">
+                          <div className="flex items-center text-xs text-gray-500 mb-1">
+                            <Clock className="h-3 w-3 mr-1" />
+                            Started: {formatDate(registration.starttime)}
+                          </div>
+                          {editingId === registration.id ? (
+                            <Input
+                              type="datetime-local"
+                              value={editEndTime}
+                              onChange={(e) => setEditEndTime(e.target.value)}
+                              className="w-40 text-xs"
+                            />
+                          ) : (
+                            <div className="text-xs text-gray-500">
+                              Ended: {registration.endtime ? formatDate(registration.endtime) : 'Active'}
+                            </div>
+                          )}
+                        </div>
+                      </TableCell>
+                      <TableCell>
+                        {getStatusBadge(registration)}
+                      </TableCell>
+                      <TableCell>
+                        <div className="flex items-center space-x-2">
+                          <Dialog>
+                            <DialogTrigger asChild>
+                              <Button
+                                size="sm"
+                                variant="outline"
+                                className="h-8 w-8 p-0"
+                              >
+                                <Eye className="h-4 w-4" />
+                              </Button>
+                            </DialogTrigger>
+                            <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
+                              <DialogHeader>
+                                <DialogTitle className="text-xl font-semibold">
+                                  Visitor Details - {registration.visitorname}
+                                </DialogTitle>
+                                <DialogDescription>
+                                  Complete information about the visitor registration
+                                </DialogDescription>
+                              </DialogHeader>
+                              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                                <div className="space-y-4">
+                                  <div className="bg-gray-50 p-4 rounded-lg">
+                                    <h4 className="font-semibold mb-3 flex items-center">
+                                      <User className="h-4 w-4 mr-2" />
+                                      Visitor Information
+                                    </h4>
+                                    <div className="space-y-2 text-sm">
+                                      <p><strong>Name:</strong> {registration.visitorname}</p>
+                                      <p><strong>Phone:</strong> {registration.phonenumber}</p>
+                                      <p><strong>Purpose:</strong> {formatPurpose(registration.purpose)}</p>
+                                      <p><strong>Address:</strong> {registration.address}</p>
+                                      <p><strong>School:</strong> {registration.schoolname}</p>
+                                    </div>
+                                  </div>
+                                  
+                                  <div className="bg-gray-50 p-4 rounded-lg">
+                                    <h4 className="font-semibold mb-3 flex items-center">
+                                      <Clock className="h-4 w-4 mr-2" />
+                                      Visit Details
+                                    </h4>
+                                    <div className="space-y-2 text-sm">
+                                      <p><strong>People ({registration.numberofpeople}):</strong></p>
+                                      <p className="text-xs bg-white p-2 rounded border">{parsePeople(registration.people)}</p>
+                                      <p><strong>Start Time:</strong> {formatDate(registration.starttime)}</p>
+                                      <p><strong>End Time:</strong> {formatDate(registration.endtime)}</p>
+                                      <p><strong>Registered:</strong> {formatDate(registration.created_at)}</p>
+                                    </div>
                                   </div>
                                 </div>
-                                <div className="bg-gradient-to-br from-green-100 to-green-200 p-6 rounded-xl shadow-lg">
-                                  <h4 className="font-bold mb-4 text-green-800 text-xl flex items-center">
-                                    📅 Visit Details
-                                  </h4>
-                                  <div className="space-y-3">
-                                    <p className="text-base"><strong className="text-green-700">People ({registration.numberofpeople}):</strong></p>
-                                    <p className="text-sm pl-4 bg-white p-3 rounded-lg border-2 border-green-200 shadow-sm">{parsePeople(registration.people)}</p>
-                                    <p className="text-base"><strong className="text-green-700">Start Time:</strong> {formatDate(registration.starttime)}</p>
-                                    <p className="text-base"><strong className="text-green-700">End Time:</strong> {formatDate(registration.endtime)}</p>
-                                  </div>
-                                </div>
-                              </div>
-                              
-                              <div className="space-y-8">
-                                <div className="bg-gradient-to-br from-purple-100 to-purple-200 p-6 rounded-xl shadow-lg">
-                                  <h4 className="font-bold mb-4 flex items-center text-purple-800 text-xl">
-                                    <Image className="mr-3 h-6 w-6" />
-                                    📸 Photograph
-                                  </h4>
-                                  {registration.picture_url ? (
-                                    <div className="flex justify-center">
+                                
+                                <div className="space-y-4">
+                                  <div className="bg-gray-50 p-4 rounded-lg">
+                                    <h4 className="font-semibold mb-3 flex items-center">
+                                      <Image className="h-4 w-4 mr-2" />
+                                      Photograph
+                                    </h4>
+                                    {registration.picture_url ? (
                                       <img
                                         src={getImageUrl(registration.picture_url)}
                                         alt="Visitor"
-                                        className="h-80 w-auto object-cover rounded-xl border-4 border-purple-300 shadow-xl"
+                                        className="w-full h-48 object-cover rounded-lg border"
                                         onError={(e) => {
-                                          console.log("Image failed to load:", registration.picture_url);
                                           const target = e.target as HTMLImageElement;
-                                          target.style.display = 'none';
-                                          const errorDiv = target.nextElementSibling as HTMLElement;
-                                          if (errorDiv) errorDiv.classList.remove('hidden');
+                                          target.src = 'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMjAwIiBoZWlnaHQ9IjIwMCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48cmVjdCB3aWR0aD0iMTAwJSIgaGVpZ2h0PSIxMDAlIiBmaWxsPSIjZjNmNGY2Ii8+PHRleHQgeD0iNTAlIiB5PSI1MCUiIGZvbnQtZmFtaWx5PSJBcmlhbCwgc2Fucy1zZXJpZiIgZm9udC1zaXplPSIxNCIgZmlsbD0iIzllYTNhOCIgdGV4dC1hbmNob3I9Im1pZGRsZSIgZHk9Ii4zZW0iPkltYWdlIG5vdCBhdmFpbGFibGU8L3RleHQ+PC9zdmc+';
                                         }}
                                       />
-                                      <div className="hidden text-center py-12 bg-white rounded-xl border-2 border-dashed border-gray-300">
-                                        <p className="text-base text-red-500">📷 Failed to load image</p>
-                                        <p className="text-sm text-gray-500 mt-2">URL: {registration.picture_url}</p>
+                                    ) : (
+                                      <div className="w-full h-48 bg-gray-200 rounded-lg flex items-center justify-center">
+                                        <p className="text-gray-500">No photograph provided</p>
                                       </div>
-                                    </div>
-                                  ) : (
-                                    <p className="text-base text-gray-500 text-center py-12 bg-white rounded-xl border-2 border-dashed border-gray-300">
-                                      📷 No photograph provided
-                                    </p>
-                                  )}
-                                </div>
-                                
-                                <div className="bg-gradient-to-br from-orange-100 to-orange-200 p-6 rounded-xl shadow-lg">
-                                  <h4 className="font-bold mb-4 flex items-center text-orange-800 text-xl">
-                                    <FileSignature className="mr-3 h-6 w-6" />
-                                    ✍️ Signature
-                                  </h4>
-                                  {registration.signature_url ? (
-                                    <div className="flex justify-center">
+                                    )}
+                                  </div>
+                                  
+                                  <div className="bg-gray-50 p-4 rounded-lg">
+                                    <h4 className="font-semibold mb-3 flex items-center">
+                                      <FileSignature className="h-4 w-4 mr-2" />
+                                      Signature
+                                    </h4>
+                                    {registration.signature_url ? (
                                       <img
                                         src={getImageUrl(registration.signature_url)}
                                         alt="Signature"
-                                        className="h-40 w-auto object-contain rounded-xl border-4 border-orange-300 bg-white shadow-xl"
+                                        className="w-full h-24 object-contain bg-white rounded-lg border"
                                         onError={(e) => {
-                                          console.log("Signature failed to load:", registration.signature_url);
                                           const target = e.target as HTMLImageElement;
-                                          target.style.display = 'none';
-                                          const errorDiv = target.nextElementSibling as HTMLElement;
-                                          if (errorDiv) errorDiv.classList.remove('hidden');
+                                          target.src = 'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMjAwIiBoZWlnaHQ9IjEwMCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48cmVjdCB3aWR0aD0iMTAwJSIgaGVpZ2h0PSIxMDAlIiBmaWxsPSIjZjNmNGY2Ii8+PHRleHQgeD0iNTAlIiB5PSI1MCUiIGZvbnQtZmFtaWx5PSJBcmlhbCwgc2Fucy1zZXJpZiIgZm9udC1zaXplPSIxNCIgZmlsbD0iIzllYTNhOCIgdGV4dC1hbmNob3I9Im1pZGRsZSIgZHk9Ii4zZW0iPlNpZ25hdHVyZSBub3QgYXZhaWxhYmxlPC90ZXh0Pjwvc3ZnPg==';
                                         }}
                                       />
-                                      <div className="hidden text-center py-12 bg-white rounded-xl border-2 border-dashed border-gray-300">
-                                        <p className="text-base text-red-500">✍️ Failed to load signature</p>
-                                        <p className="text-sm text-gray-500 mt-2">URL: {registration.signature_url}</p>
+                                    ) : (
+                                      <div className="w-full h-24 bg-gray-200 rounded-lg flex items-center justify-center">
+                                        <p className="text-gray-500">No signature provided</p>
                                       </div>
-                                    </div>
-                                  ) : (
-                                    <p className="text-base text-gray-500 text-center py-12 bg-white rounded-xl border-2 border-dashed border-gray-300">
-                                      ✍️ No signature provided
-                                    </p>
-                                  )}
+                                    )}
+                                  </div>
                                 </div>
                               </div>
+                            </DialogContent>
+                          </Dialog>
+                          
+                          {editingId === registration.id ? (
+                            <div className="flex space-x-1">
+                              <Button
+                                size="sm"
+                                onClick={() => saveEdit(registration.id)}
+                                className="h-8 w-8 p-0 bg-green-600 hover:bg-green-700"
+                              >
+                                <Save className="h-4 w-4" />
+                              </Button>
+                              <Button
+                                size="sm"
+                                variant="outline"
+                                onClick={cancelEdit}
+                                className="h-8 w-8 p-0"
+                              >
+                                <X className="h-4 w-4" />
+                              </Button>
                             </div>
-                          </DialogContent>
-                        </Dialog>
-                      </TableCell>
-                      <TableCell className="p-4">
-                        {editingId === registration.id ? (
-                          <div className="flex space-x-2">
-                            <Button
-                              size="sm"
-                              onClick={() => saveEdit(registration.id)}
-                              className="bg-gradient-to-r from-green-500 to-emerald-500 hover:from-green-600 hover:to-emerald-600 text-white border-0 rounded-lg shadow-md"
-                            >
-                              <Save className="h-4 w-4 mr-1" />
-                              Save
-                            </Button>
+                          ) : (
                             <Button
                               size="sm"
                               variant="outline"
-                              onClick={cancelEdit}
-                              className="border-2 border-red-300 text-red-600 hover:bg-red-50 hover:border-red-400 rounded-lg"
+                              onClick={() => startEdit(registration)}
+                              className="h-8 w-8 p-0"
                             >
-                              <X className="h-4 w-4" />
+                              <Pencil className="h-4 w-4" />
                             </Button>
-                          </div>
-                        ) : (
-                          <Button
-                            size="sm"
-                            variant="outline"
-                            onClick={() => startEdit(registration)}
-                            className="border-2 border-indigo-300 text-indigo-600 hover:bg-indigo-50 hover:border-indigo-400 rounded-lg"
-                          >
-                            <Pencil className="h-4 w-4 mr-1" />
-                            Edit
-                          </Button>
-                        )}
+                          )}
+                        </div>
                       </TableCell>
                     </TableRow>
                   ))}
@@ -546,12 +592,10 @@ export default function AdminDashboard() {
               </Table>
             </div>
             {filteredRegistrations.length === 0 && !loading && (
-              <div className="text-center py-16">
-                <div className="bg-gradient-to-br from-gray-100 to-gray-200 rounded-full w-20 h-20 flex items-center justify-center mx-auto mb-6 shadow-lg">
-                  <Search className="h-10 w-10 text-gray-400" />
-                </div>
-                <p className="text-gray-500 text-xl font-medium">
-                  {searchTerm ? '🔍 No registrations found matching your search.' : '📝 No registrations found.'}
+              <div className="text-center py-12">
+                <Search className="mx-auto h-12 w-12 text-gray-400 mb-4" />
+                <p className="text-gray-500 text-lg font-medium">
+                  {searchTerm ? 'No registrations found matching your search.' : 'No registrations found.'}
                 </p>
               </div>
             )}
