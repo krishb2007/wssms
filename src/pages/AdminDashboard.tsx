@@ -125,10 +125,10 @@ export default function AdminDashboard() {
         return;
       }
 
+      // Convert the datetime-local value to ISO string
       const endTimeISO = new Date(editEndTime).toISOString();
       console.log("Converted to ISO string:", endTimeISO);
 
-      // Fix: Remove .single() to avoid "no rows returned" error
       const { data, error } = await supabase
         .from('visitor_registrations')
         .update({ endtime: endTimeISO })
@@ -150,6 +150,7 @@ export default function AdminDashboard() {
       if (data && data.length > 0) {
         console.log("Successfully updated end time:", data[0]);
         
+        // Update local state
         setRegistrations(prev => 
           prev.map(reg => 
             reg.id === id ? { ...reg, endtime: endTimeISO } : reg
@@ -163,13 +164,23 @@ export default function AdminDashboard() {
         
         setEditingId(null);
         setEditEndTime('');
+        
+        // Refresh data to ensure sync
+        await fetchRegistrations();
+      } else {
+        console.warn("No data returned from update");
+        toast({
+          title: "Warning",
+          description: "Update may not have been saved",
+          variant: "destructive",
+        });
       }
       
     } catch (error) {
       console.error("Unexpected error during update:", error);
       toast({
         title: "Error",
-        description: "An unexpected error occurred while updating",
+        description: "An unexpected error occurred while updating: " + (error as Error).message,
         variant: "destructive",
       });
     }
@@ -222,15 +233,15 @@ export default function AdminDashboard() {
   const getStatusBadge = (registration: VisitorRegistration) => {
     if (registration.endtime) {
       return (
-        <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-gray-100 text-gray-800">
-          <div className="w-1.5 h-1.5 bg-gray-400 rounded-full mr-1.5"></div>
+        <span className="inline-flex items-center px-3 py-1 rounded-full text-sm font-semibold bg-gray-200 text-gray-800">
+          <div className="w-2 h-2 bg-gray-500 rounded-full mr-2"></div>
           Completed
         </span>
       );
     }
     return (
-      <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800">
-        <div className="w-1.5 h-1.5 bg-green-400 rounded-full mr-1.5 animate-pulse"></div>
+      <span className="inline-flex items-center px-3 py-1 rounded-full text-sm font-semibold bg-emerald-100 text-emerald-800">
+        <div className="w-2 h-2 bg-emerald-500 rounded-full mr-2 animate-pulse"></div>
         Active
       </span>
     );
@@ -238,38 +249,38 @@ export default function AdminDashboard() {
 
   if (loading) {
     return (
-      <div className="flex justify-center items-center min-h-screen bg-gray-50">
+      <div className="flex justify-center items-center min-h-screen bg-gradient-to-br from-slate-50 to-blue-50">
         <div className="text-center">
-          <RefreshCw className="mx-auto h-8 w-8 animate-spin text-blue-600 mb-4" />
-          <p className="text-gray-600 font-medium">Loading registrations...</p>
+          <RefreshCw className="mx-auto h-10 w-10 animate-spin text-blue-600 mb-4" />
+          <p className="text-gray-700 font-semibold text-lg">Loading registrations...</p>
         </div>
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-h-screen bg-gradient-to-br from-slate-50 to-blue-50">
       <div className="max-w-7xl mx-auto p-6">
         {/* Header */}
-        <div className="bg-white shadow-sm border border-gray-200 rounded-lg p-6 mb-6">
+        <div className="bg-gradient-to-r from-blue-600 to-indigo-700 shadow-xl border border-blue-200 rounded-xl p-8 mb-8">
           <div className="flex justify-between items-center">
             <div>
-              <h1 className="text-2xl font-bold text-gray-900 mb-1">
+              <h1 className="text-3xl font-bold text-white mb-2">
                 Visitor Management System
               </h1>
-              <p className="text-gray-600">Monitor and manage visitor registrations</p>
+              <p className="text-blue-100 text-lg">Monitor and manage visitor registrations</p>
             </div>
-            <div className="flex items-center space-x-4">
+            <div className="flex items-center space-x-6">
               <div className="text-right">
-                <p className="text-sm text-gray-500">Signed in as</p>
-                <p className="font-semibold text-gray-900">{user?.email}</p>
+                <p className="text-sm text-blue-200">Signed in as</p>
+                <p className="font-semibold text-white text-lg">{user?.email}</p>
               </div>
               <Button 
                 onClick={handleLogout} 
                 variant="outline"
-                className="flex items-center space-x-2"
+                className="flex items-center space-x-2 bg-white text-blue-600 hover:bg-blue-50 border-2 border-white font-semibold"
               >
-                <LogOut className="h-4 w-4" />
+                <LogOut className="h-5 w-5" />
                 <span>Sign Out</span>
               </Button>
             </div>
@@ -277,30 +288,30 @@ export default function AdminDashboard() {
         </div>
 
         {/* Stats Cards */}
-        <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-6">
-          <Card className="border-0 shadow-sm">
+        <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
+          <Card className="border-0 shadow-lg bg-gradient-to-br from-blue-500 to-blue-600 text-white">
             <CardContent className="p-6">
               <div className="flex items-center">
-                <div className="p-2 bg-blue-100 rounded-lg">
-                  <Users className="h-6 w-6 text-blue-600" />
+                <div className="p-3 bg-white/20 rounded-xl">
+                  <Users className="h-8 w-8 text-white" />
                 </div>
                 <div className="ml-4">
-                  <p className="text-sm font-medium text-gray-600">Total Visitors</p>
-                  <p className="text-2xl font-bold text-gray-900">{registrations.length}</p>
+                  <p className="text-sm font-medium text-blue-100">Total Visitors</p>
+                  <p className="text-3xl font-bold text-white">{registrations.length}</p>
                 </div>
               </div>
             </CardContent>
           </Card>
           
-          <Card className="border-0 shadow-sm">
+          <Card className="border-0 shadow-lg bg-gradient-to-br from-emerald-500 to-emerald-600 text-white">
             <CardContent className="p-6">
               <div className="flex items-center">
-                <div className="p-2 bg-green-100 rounded-lg">
-                  <Clock className="h-6 w-6 text-green-600" />
+                <div className="p-3 bg-white/20 rounded-xl">
+                  <Clock className="h-8 w-8 text-white" />
                 </div>
                 <div className="ml-4">
-                  <p className="text-sm font-medium text-gray-600">Active Visits</p>
-                  <p className="text-2xl font-bold text-gray-900">
+                  <p className="text-sm font-medium text-emerald-100">Active Visits</p>
+                  <p className="text-3xl font-bold text-white">
                     {registrations.filter(r => !r.endtime).length}
                   </p>
                 </div>
@@ -308,15 +319,15 @@ export default function AdminDashboard() {
             </CardContent>
           </Card>
           
-          <Card className="border-0 shadow-sm">
+          <Card className="border-0 shadow-lg bg-gradient-to-br from-purple-500 to-purple-600 text-white">
             <CardContent className="p-6">
               <div className="flex items-center">
-                <div className="p-2 bg-purple-100 rounded-lg">
-                  <Calendar className="h-6 w-6 text-purple-600" />
+                <div className="p-3 bg-white/20 rounded-xl">
+                  <Calendar className="h-8 w-8 text-white" />
                 </div>
                 <div className="ml-4">
-                  <p className="text-sm font-medium text-gray-600">Today's Visits</p>
-                  <p className="text-2xl font-bold text-gray-900">
+                  <p className="text-sm font-medium text-purple-100">Today's Visits</p>
+                  <p className="text-3xl font-bold text-white">
                     {registrations.filter(r => 
                       new Date(r.created_at).toDateString() === new Date().toDateString()
                     ).length}
@@ -326,15 +337,15 @@ export default function AdminDashboard() {
             </CardContent>
           </Card>
 
-          <Card className="border-0 shadow-sm">
+          <Card className="border-0 shadow-lg bg-gradient-to-br from-orange-500 to-orange-600 text-white">
             <CardContent className="p-6">
               <div className="flex items-center">
-                <div className="p-2 bg-orange-100 rounded-lg">
-                  <Target className="h-6 w-6 text-orange-600" />
+                <div className="p-3 bg-white/20 rounded-xl">
+                  <Target className="h-8 w-8 text-white" />
                 </div>
                 <div className="ml-4">
-                  <p className="text-sm font-medium text-gray-600">Completed</p>
-                  <p className="text-2xl font-bold text-gray-900">
+                  <p className="text-sm font-medium text-orange-100">Completed</p>
+                  <p className="text-3xl font-bold text-white">
                     {registrations.filter(r => r.endtime).length}
                   </p>
                 </div>
@@ -344,28 +355,28 @@ export default function AdminDashboard() {
         </div>
 
         {/* Main Content */}
-        <Card className="border-0 shadow-sm">
-          <CardHeader className="border-b border-gray-200 bg-white">
+        <Card className="border-0 shadow-xl bg-white">
+          <CardHeader className="border-b border-gray-200 bg-gradient-to-r from-gray-50 to-slate-100">
             <div className="flex justify-between items-center">
-              <CardTitle className="text-lg font-semibold text-gray-900">
+              <CardTitle className="text-2xl font-bold text-gray-800">
                 Visitor Registrations ({filteredRegistrations.length})
               </CardTitle>
-              <div className="flex items-center space-x-3">
+              <div className="flex items-center space-x-4">
                 <div className="relative">
-                  <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 h-4 w-4" />
+                  <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 h-5 w-5" />
                   <Input
                     placeholder="Search visitors..."
                     value={searchTerm}
                     onChange={(e) => setSearchTerm(e.target.value)}
-                    className="pl-10 w-64 border-gray-300 focus:border-blue-500 focus:ring-blue-500"
+                    className="pl-11 w-72 border-gray-300 focus:border-blue-500 focus:ring-blue-500 text-base"
                   />
                 </div>
                 <Button 
                   onClick={fetchRegistrations} 
                   variant="outline"
-                  className="flex items-center space-x-2"
+                  className="flex items-center space-x-2 border-2 border-blue-500 text-blue-600 hover:bg-blue-50 font-semibold"
                 >
-                  <RefreshCw className="h-4 w-4" />
+                  <RefreshCw className="h-5 w-5" />
                   <span>Refresh</span>
                 </Button>
               </div>
@@ -375,67 +386,67 @@ export default function AdminDashboard() {
             <div className="overflow-x-auto">
               <Table>
                 <TableHeader>
-                  <TableRow className="bg-gray-50">
-                    <TableHead className="font-semibold text-gray-900">Visitor</TableHead>
-                    <TableHead className="font-semibold text-gray-900">Contact</TableHead>
-                    <TableHead className="font-semibold text-gray-900">Purpose</TableHead>
-                    <TableHead className="font-semibold text-gray-900">People</TableHead>
-                    <TableHead className="font-semibold text-gray-900">Visit Duration</TableHead>
-                    <TableHead className="font-semibold text-gray-900">Status</TableHead>
-                    <TableHead className="font-semibold text-gray-900">Actions</TableHead>
+                  <TableRow className="bg-gradient-to-r from-gray-100 to-slate-200">
+                    <TableHead className="font-bold text-gray-900 text-base">Visitor</TableHead>
+                    <TableHead className="font-bold text-gray-900 text-base">Contact</TableHead>
+                    <TableHead className="font-bold text-gray-900 text-base">Purpose</TableHead>
+                    <TableHead className="font-bold text-gray-900 text-base">People</TableHead>
+                    <TableHead className="font-bold text-gray-900 text-base">Visit Duration</TableHead>
+                    <TableHead className="font-bold text-gray-900 text-base">Status</TableHead>
+                    <TableHead className="font-bold text-gray-900 text-base">Actions</TableHead>
                   </TableRow>
                 </TableHeader>
                 <TableBody>
                   {filteredRegistrations.map((registration) => (
                     <TableRow 
                       key={registration.id} 
-                      className="hover:bg-gray-50 transition-colors"
+                      className="hover:bg-gradient-to-r hover:from-blue-50 hover:to-indigo-50 transition-all duration-200 border-b border-gray-100"
                     >
-                      <TableCell>
-                        <div className="flex items-center space-x-3">
+                      <TableCell className="py-4">
+                        <div className="flex items-center space-x-4">
                           <div className="flex-shrink-0">
-                            <div className="h-10 w-10 bg-blue-100 rounded-full flex items-center justify-center">
-                              <User className="h-5 w-5 text-blue-600" />
+                            <div className="h-12 w-12 bg-gradient-to-br from-blue-500 to-indigo-600 rounded-full flex items-center justify-center">
+                              <User className="h-6 w-6 text-white" />
                             </div>
                           </div>
                           <div>
-                            <div className="text-sm font-medium text-gray-900">
+                            <div className="text-base font-semibold text-gray-900">
                               {registration.visitorname}
                             </div>
-                            <div className="text-sm text-gray-500 flex items-center">
-                              <Building className="h-3 w-3 mr-1" />
+                            <div className="text-sm text-gray-600 flex items-center">
+                              <Building className="h-4 w-4 mr-1" />
                               {registration.schoolname}
                             </div>
                           </div>
                         </div>
                       </TableCell>
-                      <TableCell>
-                        <div className="text-sm text-gray-900 flex items-center">
-                          <Phone className="h-3 w-3 mr-1 text-gray-400" />
+                      <TableCell className="py-4">
+                        <div className="text-base text-gray-900 flex items-center">
+                          <Phone className="h-4 w-4 mr-2 text-gray-500" />
                           {registration.phonenumber}
                         </div>
-                        <div className="text-sm text-gray-500 flex items-center mt-1">
-                          <MapPin className="h-3 w-3 mr-1 text-gray-400" />
-                          {registration.address?.slice(0, 30)}...
+                        <div className="text-sm text-gray-600 flex items-center mt-1">
+                          <MapPin className="h-4 w-4 mr-1 text-gray-500" />
+                          {registration.address?.slice(0, 35)}...
                         </div>
                       </TableCell>
-                      <TableCell>
-                        <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800">
+                      <TableCell className="py-4">
+                        <span className="inline-flex items-center px-3 py-1 rounded-full text-sm font-semibold bg-blue-100 text-blue-800">
                           {formatPurpose(registration.purpose)}
                         </span>
                       </TableCell>
-                      <TableCell>
-                        <div className="text-sm text-gray-900">
+                      <TableCell className="py-4">
+                        <div className="text-base font-semibold text-gray-900">
                           {registration.numberofpeople} {registration.numberofpeople === 1 ? 'person' : 'people'}
                         </div>
-                        <div className="text-xs text-gray-500 max-w-xs truncate">
+                        <div className="text-sm text-gray-600 max-w-xs truncate">
                           {parsePeople(registration.people)}
                         </div>
                       </TableCell>
-                      <TableCell>
-                        <div className="text-sm text-gray-900">
-                          <div className="flex items-center text-xs text-gray-500 mb-1">
-                            <Clock className="h-3 w-3 mr-1" />
+                      <TableCell className="py-4">
+                        <div className="text-base text-gray-900">
+                          <div className="flex items-center text-sm text-gray-600 mb-2">
+                            <Clock className="h-4 w-4 mr-1" />
                             Started: {formatDate(registration.starttime)}
                           </div>
                           {editingId === registration.id ? (
@@ -443,111 +454,115 @@ export default function AdminDashboard() {
                               type="datetime-local"
                               value={editEndTime}
                               onChange={(e) => setEditEndTime(e.target.value)}
-                              className="w-40 text-xs"
+                              className="w-48 text-sm border-2 border-blue-300 focus:border-blue-500"
                             />
                           ) : (
-                            <div className="text-xs text-gray-500">
+                            <div className="text-sm text-gray-600">
                               Ended: {registration.endtime ? formatDate(registration.endtime) : 'Active'}
                             </div>
                           )}
                         </div>
                       </TableCell>
-                      <TableCell>
+                      <TableCell className="py-4">
                         {getStatusBadge(registration)}
                       </TableCell>
-                      <TableCell>
+                      <TableCell className="py-4">
                         <div className="flex items-center space-x-2">
                           <Dialog>
                             <DialogTrigger asChild>
                               <Button
                                 size="sm"
                                 variant="outline"
-                                className="h-8 w-8 p-0"
+                                className="h-10 w-10 p-0 border-2 border-blue-500 text-blue-600 hover:bg-blue-50"
                               >
-                                <Eye className="h-4 w-4" />
+                                <Eye className="h-5 w-5" />
                               </Button>
                             </DialogTrigger>
-                            <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
+                            <DialogContent className="max-w-6xl max-h-[95vh] overflow-y-auto">
                               <DialogHeader>
-                                <DialogTitle className="text-xl font-semibold">
+                                <DialogTitle className="text-2xl font-bold text-gray-800">
                                   Visitor Details - {registration.visitorname}
                                 </DialogTitle>
-                                <DialogDescription>
+                                <DialogDescription className="text-base text-gray-600">
                                   Complete information about the visitor registration
                                 </DialogDescription>
                               </DialogHeader>
-                              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                                <div className="space-y-4">
-                                  <div className="bg-gray-50 p-4 rounded-lg">
-                                    <h4 className="font-semibold mb-3 flex items-center">
-                                      <User className="h-4 w-4 mr-2" />
+                              <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+                                <div className="space-y-6">
+                                  <div className="bg-gradient-to-br from-blue-50 to-indigo-50 p-6 rounded-xl border border-blue-200">
+                                    <h4 className="font-bold text-lg mb-4 flex items-center text-blue-800">
+                                      <User className="h-5 w-5 mr-2" />
                                       Visitor Information
                                     </h4>
-                                    <div className="space-y-2 text-sm">
-                                      <p><strong>Name:</strong> {registration.visitorname}</p>
-                                      <p><strong>Phone:</strong> {registration.phonenumber}</p>
-                                      <p><strong>Purpose:</strong> {formatPurpose(registration.purpose)}</p>
-                                      <p><strong>Address:</strong> {registration.address}</p>
-                                      <p><strong>School:</strong> {registration.schoolname}</p>
+                                    <div className="space-y-3 text-base">
+                                      <p><strong className="text-gray-700">Name:</strong> <span className="text-gray-900">{registration.visitorname}</span></p>
+                                      <p><strong className="text-gray-700">Phone:</strong> <span className="text-gray-900">{registration.phonenumber}</span></p>
+                                      <p><strong className="text-gray-700">Purpose:</strong> <span className="text-gray-900">{formatPurpose(registration.purpose)}</span></p>
+                                      <p><strong className="text-gray-700">Address:</strong> <span className="text-gray-900">{registration.address}</span></p>
+                                      <p><strong className="text-gray-700">School:</strong> <span className="text-gray-900">{registration.schoolname}</span></p>
                                     </div>
                                   </div>
                                   
-                                  <div className="bg-gray-50 p-4 rounded-lg">
-                                    <h4 className="font-semibold mb-3 flex items-center">
-                                      <Clock className="h-4 w-4 mr-2" />
+                                  <div className="bg-gradient-to-br from-emerald-50 to-green-50 p-6 rounded-xl border border-emerald-200">
+                                    <h4 className="font-bold text-lg mb-4 flex items-center text-emerald-800">
+                                      <Clock className="h-5 w-5 mr-2" />
                                       Visit Details
                                     </h4>
-                                    <div className="space-y-2 text-sm">
-                                      <p><strong>People ({registration.numberofpeople}):</strong></p>
-                                      <p className="text-xs bg-white p-2 rounded border">{parsePeople(registration.people)}</p>
-                                      <p><strong>Start Time:</strong> {formatDate(registration.starttime)}</p>
-                                      <p><strong>End Time:</strong> {formatDate(registration.endtime)}</p>
-                                      <p><strong>Registered:</strong> {formatDate(registration.created_at)}</p>
+                                    <div className="space-y-3 text-base">
+                                      <p><strong className="text-gray-700">People ({registration.numberofpeople}):</strong></p>
+                                      <p className="text-sm bg-white p-3 rounded-lg border border-emerald-200">{parsePeople(registration.people)}</p>
+                                      <p><strong className="text-gray-700">Start Time:</strong> <span className="text-gray-900">{formatDate(registration.starttime)}</span></p>
+                                      <p><strong className="text-gray-700">End Time:</strong> <span className="text-gray-900">{formatDate(registration.endtime)}</span></p>
+                                      <p><strong className="text-gray-700">Registered:</strong> <span className="text-gray-900">{formatDate(registration.created_at)}</span></p>
                                     </div>
                                   </div>
                                 </div>
                                 
-                                <div className="space-y-4">
-                                  <div className="bg-gray-50 p-4 rounded-lg">
-                                    <h4 className="font-semibold mb-3 flex items-center">
-                                      <Image className="h-4 w-4 mr-2" />
+                                <div className="space-y-6">
+                                  <div className="bg-gradient-to-br from-purple-50 to-pink-50 p-6 rounded-xl border border-purple-200">
+                                    <h4 className="font-bold text-lg mb-4 flex items-center text-purple-800">
+                                      <Image className="h-5 w-5 mr-2" />
                                       Photograph
                                     </h4>
                                     {registration.picture_url ? (
-                                      <img
-                                        src={getImageUrl(registration.picture_url)}
-                                        alt="Visitor"
-                                        className="w-full h-48 object-cover rounded-lg border"
-                                        onError={(e) => {
-                                          const target = e.target as HTMLImageElement;
-                                          target.src = 'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMjAwIiBoZWlnaHQ9IjIwMCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48cmVjdCB3aWR0aD0iMTAwJSIgaGVpZ2h0PSIxMDAlIiBmaWxsPSIjZjNmNGY2Ii8+PHRleHQgeD0iNTAlIiB5PSI1MCUiIGZvbnQtZmFtaWx5PSJBcmlhbCwgc2Fucy1zZXJpZiIgZm9udC1zaXplPSIxNCIgZmlsbD0iIzllYTNhOCIgdGV4dC1hbmNob3I9Im1pZGRsZSIgZHk9Ii4zZW0iPkltYWdlIG5vdCBhdmFpbGFibGU8L3RleHQ+PC9zdmc+';
-                                        }}
-                                      />
+                                      <div className="w-full">
+                                        <img
+                                          src={getImageUrl(registration.picture_url)}
+                                          alt="Visitor"
+                                          className="w-full h-64 object-cover rounded-lg border-2 border-purple-200 shadow-md"
+                                          onError={(e) => {
+                                            const target = e.target as HTMLImageElement;
+                                            target.src = 'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMzAwIiBoZWlnaHQ9IjI1NiIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48cmVjdCB3aWR0aD0iMTAwJSIgaGVpZ2h0PSIxMDAlIiBmaWxsPSIjZjNmNGY2Ii8+PHRleHQgeD0iNTAlIiB5PSI1MCUiIGZvbnQtZmFtaWx5PSJBcmlhbCwgc2Fucy1zZXJpZiIgZm9udC1zaXplPSIxNiIgZmlsbD0iIzllYTNhOCIgdGV4dC1hbmNob3I9Im1pZGRsZSIgZHk9Ii4zZW0iPkltYWdlIG5vdCBhdmFpbGFibGU8L3RleHQ+PC9zdmc+';
+                                          }}
+                                        />
+                                      </div>
                                     ) : (
-                                      <div className="w-full h-48 bg-gray-200 rounded-lg flex items-center justify-center">
-                                        <p className="text-gray-500">No photograph provided</p>
+                                      <div className="w-full h-64 bg-gray-200 rounded-lg flex items-center justify-center border-2 border-purple-200">
+                                        <p className="text-gray-500 text-lg">No photograph provided</p>
                                       </div>
                                     )}
                                   </div>
                                   
-                                  <div className="bg-gray-50 p-4 rounded-lg">
-                                    <h4 className="font-semibold mb-3 flex items-center">
-                                      <FileSignature className="h-4 w-4 mr-2" />
+                                  <div className="bg-gradient-to-br from-orange-50 to-yellow-50 p-6 rounded-xl border border-orange-200">
+                                    <h4 className="font-bold text-lg mb-4 flex items-center text-orange-800">
+                                      <FileSignature className="h-5 w-5 mr-2" />
                                       Signature
                                     </h4>
                                     {registration.signature_url ? (
-                                      <img
-                                        src={getImageUrl(registration.signature_url)}
-                                        alt="Signature"
-                                        className="w-full h-24 object-contain bg-white rounded-lg border"
-                                        onError={(e) => {
-                                          const target = e.target as HTMLImageElement;
-                                          target.src = 'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMjAwIiBoZWlnaHQ9IjEwMCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48cmVjdCB3aWR0aD0iMTAwJSIgaGVpZ2h0PSIxMDAlIiBmaWxsPSIjZjNmNGY2Ii8+PHRleHQgeD0iNTAlIiB5PSI1MCUiIGZvbnQtZmFtaWx5PSJBcmlhbCwgc2Fucy1zZXJpZiIgZm9udC1zaXplPSIxNCIgZmlsbD0iIzllYTNhOCIgdGV4dC1hbmNob3I9Im1pZGRsZSIgZHk9Ii4zZW0iPlNpZ25hdHVyZSBub3QgYXZhaWxhYmxlPC90ZXh0Pjwvc3ZnPg==';
-                                        }}
-                                      />
+                                      <div className="w-full">
+                                        <img
+                                          src={getImageUrl(registration.signature_url)}
+                                          alt="Signature"
+                                          className="w-full h-32 object-contain bg-white rounded-lg border-2 border-orange-200 shadow-md"
+                                          onError={(e) => {
+                                            const target = e.target as HTMLImageElement;
+                                            target.src = 'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMzAwIiBoZWlnaHQ9IjEyOCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48cmVjdCB3aWR0aD0iMTAwJSIgaGVpZ2h0PSIxMDAlIiBmaWxsPSIjZjNmNGY2Ii8+PHRleHQgeD0iNTAlIiB5PSI1MCUiIGZvbnQtZmFtaWx5PSJBcmlhbCwgc2Fucy1zZXJpZiIgZm9udC1zaXplPSIxNiIgZmlsbD0iIzllYTNhOCIgdGV4dC1hbmNob3I9Im1pZGRsZSIgZHk9Ii4zZW0iPlNpZ25hdHVyZSBub3QgYXZhaWxhYmxlPC90ZXh0Pjwvc3ZnPg==';
+                                          }}
+                                        />
+                                      </div>
                                     ) : (
-                                      <div className="w-full h-24 bg-gray-200 rounded-lg flex items-center justify-center">
-                                        <p className="text-gray-500">No signature provided</p>
+                                      <div className="w-full h-32 bg-gray-200 rounded-lg flex items-center justify-center border-2 border-orange-200">
+                                        <p className="text-gray-500 text-lg">No signature provided</p>
                                       </div>
                                     )}
                                   </div>
@@ -557,21 +572,21 @@ export default function AdminDashboard() {
                           </Dialog>
                           
                           {editingId === registration.id ? (
-                            <div className="flex space-x-1">
+                            <div className="flex space-x-2">
                               <Button
                                 size="sm"
                                 onClick={() => saveEdit(registration.id)}
-                                className="h-8 w-8 p-0 bg-green-600 hover:bg-green-700"
+                                className="h-10 w-10 p-0 bg-emerald-600 hover:bg-emerald-700 text-white"
                               >
-                                <Save className="h-4 w-4" />
+                                <Save className="h-5 w-5" />
                               </Button>
                               <Button
                                 size="sm"
                                 variant="outline"
                                 onClick={cancelEdit}
-                                className="h-8 w-8 p-0"
+                                className="h-10 w-10 p-0 border-2 border-gray-400 text-gray-600 hover:bg-gray-50"
                               >
-                                <X className="h-4 w-4" />
+                                <X className="h-5 w-5" />
                               </Button>
                             </div>
                           ) : (
@@ -579,9 +594,9 @@ export default function AdminDashboard() {
                               size="sm"
                               variant="outline"
                               onClick={() => startEdit(registration)}
-                              className="h-8 w-8 p-0"
+                              className="h-10 w-10 p-0 border-2 border-orange-500 text-orange-600 hover:bg-orange-50"
                             >
-                              <Pencil className="h-4 w-4" />
+                              <Pencil className="h-5 w-5" />
                             </Button>
                           )}
                         </div>
@@ -592,9 +607,9 @@ export default function AdminDashboard() {
               </Table>
             </div>
             {filteredRegistrations.length === 0 && !loading && (
-              <div className="text-center py-12">
-                <Search className="mx-auto h-12 w-12 text-gray-400 mb-4" />
-                <p className="text-gray-500 text-lg font-medium">
+              <div className="text-center py-16">
+                <Search className="mx-auto h-16 w-16 text-gray-400 mb-6" />
+                <p className="text-gray-500 text-xl font-semibold">
                   {searchTerm ? 'No registrations found matching your search.' : 'No registrations found.'}
                 </p>
               </div>
