@@ -1,3 +1,4 @@
+
 import React, { useEffect, useState } from 'react';
 import { supabase } from '../integrations/supabase/client';
 import { useNavigate } from 'react-router-dom';
@@ -99,7 +100,11 @@ export default function AdminDashboard() {
   function startEdit(registration: VisitorRegistration) {
     console.log("Starting edit for registration:", registration.id);
     setEditingId(registration.id);
-    setEditEndTime(registration.endtime || new Date().toISOString().slice(0, 16));
+    // Format current end time for datetime-local input or use current time
+    const currentEndTime = registration.endtime 
+      ? new Date(registration.endtime).toISOString().slice(0, 16)
+      : new Date().toISOString().slice(0, 16);
+    setEditEndTime(currentEndTime);
   }
 
   function cancelEdit() {
@@ -110,17 +115,27 @@ export default function AdminDashboard() {
 
   async function saveEdit(id: string) {
     try {
-      console.log("Saving end time for registration:", id, "to:", editEndTime);
+      console.log("Saving end time for registration:", id, "datetime-local value:", editEndTime);
       
-      // Convert the datetime-local input to ISO string for the database
-      const endTimeToSave = editEndTime ? new Date(editEndTime).toISOString() : null;
-      console.log("Converted end time:", endTimeToSave);
+      if (!editEndTime) {
+        toast({
+          title: "Error",
+          description: "Please select an end time",
+          variant: "destructive",
+        });
+        return;
+      }
+
+      // Convert datetime-local to ISO string for database
+      const endTimeISO = new Date(editEndTime).toISOString();
+      console.log("Converted to ISO string:", endTimeISO);
 
       const { data, error } = await supabase
         .from('visitor_registrations')
-        .update({ endtime: endTimeToSave })
+        .update({ endtime: endTimeISO })
         .eq('id', id)
-        .select();
+        .select()
+        .single();
 
       console.log("Update response:", { data, error });
 
@@ -128,30 +143,18 @@ export default function AdminDashboard() {
         console.error("Update error:", error);
         toast({
           title: "Error",
-          description: "Failed to update registration: " + error.message,
+          description: "Failed to update end time: " + error.message,
           variant: "destructive",
         });
         return;
       }
 
-      if (!data || data.length === 0) {
-        console.error("No data returned from update");
-        toast({
-          title: "Error",
-          description: "No registration found with that ID",
-          variant: "destructive",
-        });
-        return;
-      }
-
-      console.log("Successfully updated end time:", data[0]);
+      console.log("Successfully updated end time:", data);
       
-      // Update the local state immediately
+      // Update local state with the new data
       setRegistrations(prev => 
         prev.map(reg => 
-          reg.id === id 
-            ? { ...reg, endtime: endTimeToSave }
-            : reg
+          reg.id === id ? { ...reg, endtime: endTimeISO } : reg
         )
       );
       
@@ -205,11 +208,11 @@ export default function AdminDashboard() {
     return purposeMap[purpose] || (purpose.charAt(0).toUpperCase() + purpose.slice(1));
   };
 
-  // Function to get full URL for images - improved to handle both blob and storage URLs
+  // Function to get full URL for images
   const getImageUrl = (url: string | null) => {
     if (!url) return null;
     
-    // If it's already a full URL (including blob URLs), return as is
+    // If it's already a full URL, return as is
     if (url.startsWith('http') || url.startsWith('blob:')) return url;
     
     // If it's a relative path, construct the full Supabase storage URL
