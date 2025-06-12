@@ -1,4 +1,3 @@
-
 import React, { useEffect, useState } from 'react';
 import { supabase } from '../integrations/supabase/client';
 import { useNavigate } from 'react-router-dom';
@@ -39,13 +38,12 @@ export default function AdminDashboard() {
   const { user, logout } = useAuth();
 
   useEffect(() => {
-    console.log("AdminDashboard useEffect - checking user:", user);
     if (!user || user.role !== 'admin') {
-      console.log("User not admin, redirecting to login");
       navigate('/admin-login');
       return;
     }
     fetchRegistrations();
+    // eslint-disable-next-line
   }, [user, navigate]);
 
   useEffect(() => {
@@ -63,43 +61,29 @@ export default function AdminDashboard() {
     }
   }, [searchTerm, registrations]);
 
+  // Fetch all registrations
   async function fetchRegistrations() {
     setLoading(true);
-    try {
-      console.log("Fetching visitor registrations...");
-      
-      const { data, error } = await supabase
-        .from('visitor_registrations')
-        .select('*')
-        .order('created_at', { ascending: false });
+    const { data, error } = await supabase
+      .from('visitor_registration') // Correct table name
+      .select('*')
+      .order('created_at', { ascending: false });
 
-      console.log("Fetch result:", { data, error });
-
-      if (error) {
-        console.error("Database error:", error);
-        toast({
-          title: "Error",
-          description: "Failed to fetch registrations: " + error.message,
-          variant: "destructive",
-        });
-      } else if (data) {
-        console.log(`Successfully fetched ${data.length} registrations`);
-        setRegistrations(data);
-        setFilteredRegistrations(data);
-      }
-    } catch (error) {
-      console.error("Unexpected error:", error);
+    if (error) {
       toast({
         title: "Error",
-        description: "An unexpected error occurred while fetching data",
+        description: "Failed to fetch registrations: " + error.message,
         variant: "destructive",
       });
+    } else if (data) {
+      setRegistrations(data);
+      setFilteredRegistrations(data);
     }
     setLoading(false);
   }
 
+  // Start editing end time
   function startEdit(registration: VisitorRegistration) {
-    console.log("Starting edit for registration:", registration.id);
     setEditingId(registration.id);
     const currentEndTime = registration.endtime 
       ? new Date(registration.endtime).toISOString().slice(0, 16)
@@ -107,124 +91,55 @@ export default function AdminDashboard() {
     setEditEndTime(currentEndTime);
   }
 
+  // Cancel editing
   function cancelEdit() {
-    console.log("Cancelling edit");
     setEditingId(null);
     setEditEndTime('');
   }
 
+  // Save edited end time
   async function saveEdit(id: string) {
-    if (saving) return; // Prevent multiple saves
-    
-    try {
-      setSaving(true);
-      console.log("Saving end time for registration:", id, "datetime-local value:", editEndTime);
-      
-      if (!editEndTime) {
-        toast({
-          title: "Error",
-          description: "Please select an end time",
-          variant: "destructive",
-        });
-        return;
-      }
-
-      // Convert the datetime-local value to ISO string
-      const endTimeISO = new Date(editEndTime).toISOString();
-      console.log("Converted to ISO string:", endTimeISO);
-
-      // First, let's check if the record exists
-      const { data: existingRecord, error: checkError } = await supabase
-        .from('visitor_registrations')
-        .select('id, endtime')
-        .eq('id', id)
-        .limit(1);
-
-      console.log("Existing record check:", { existingRecord, checkError });
-
-      if (checkError) {
-        console.error("Error checking existing record:", checkError);
-        toast({
-          title: "Error",
-          description: "Failed to verify record exists: " + checkError.message,
-          variant: "destructive",
-        });
-        return;
-      }
-
-      if (!existingRecord || existingRecord.length === 0) {
-        console.error("Record not found for ID:", id);
-        toast({
-          title: "Error",
-          description: "Registration record not found",
-          variant: "destructive",
-        });
-        return;
-      }
-
-      // Now perform the update
-      const { data, error } = await supabase
-        .from('visitor_registrations')
-        .update({ endtime: endTimeISO })
-        .eq('id', id)
-        .select('*');
-
-      console.log("Update response:", { data, error });
-
-      if (error) {
-        console.error("Update error:", error);
-        toast({
-          title: "Error",
-          description: "Failed to update end time: " + error.message,
-          variant: "destructive",
-        });
-        return;
-      }
-
-      if (data && data.length > 0) {
-        console.log("Successfully updated end time:", data[0]);
-        
-        // Update local state immediately
-        setRegistrations(prev => 
-          prev.map(reg => 
-            reg.id === id ? { ...reg, endtime: endTimeISO } : reg
-          )
-        );
-        
-        toast({
-          title: "Success",
-          description: "End time updated successfully",
-        });
-        
-        setEditingId(null);
-        setEditEndTime('');
-        
-        // Refresh data to ensure sync
-        setTimeout(() => {
-          fetchRegistrations();
-        }, 500);
-      } else {
-        console.warn("Update successful but no data returned");
-        toast({
-          title: "Success",
-          description: "End time updated successfully",
-        });
-        
-        setEditingId(null);
-        setEditEndTime('');
-        fetchRegistrations();
-      }
-      
-    } catch (error) {
-      console.error("Unexpected error during update:", error);
+    if (saving) return;
+    if (!editEndTime) {
       toast({
         title: "Error",
-        description: "An unexpected error occurred while updating: " + (error as Error).message,
+        description: "Please select an end time",
         variant: "destructive",
       });
-    } finally {
-      setSaving(false);
+      return;
     }
+    setSaving(true);
+    const endTimeISO = new Date(editEndTime).toISOString();
+
+    const { data, error } = await supabase
+      .from('visitor_registration') // Correct table name
+      .update({ endtime: endTimeISO }) // Correct column name
+      .eq('id', id)
+      .select("*");
+
+    if (error) {
+      toast({
+        title: "Error",
+        description: "Failed to update end time: " + error.message,
+        variant: "destructive",
+      });
+    } else {
+      toast({
+        title: "Success",
+        description: "End time updated successfully",
+      });
+      // Update local state
+      setRegistrations(prev => 
+        prev.map(reg => 
+          reg.id === id ? { ...reg, endtime: endTimeISO } : reg
+        )
+      );
+      setEditingId(null);
+      setEditEndTime('');
+      // Optionally re-fetch registrations for sync
+      fetchRegistrations();
+    }
+    setSaving(false);
   }
 
   const handleLogout = async () => {
