@@ -45,6 +45,37 @@ export default function AdminDashboard() {
       return;
     }
     fetchRegistrations();
+    
+    // Set up real-time subscription
+    const channel = supabase
+      .channel('visitor-registrations-changes')
+      .on(
+        'postgres_changes',
+        {
+          event: '*',
+          schema: 'public',
+          table: 'visitor_registrations'
+        },
+        (payload) => {
+          console.log('Real-time update received:', payload);
+          if (payload.eventType === 'UPDATE') {
+            setRegistrations(prev => 
+              prev.map(reg => 
+                reg.id === payload.new.id ? { ...reg, ...payload.new } : reg
+              )
+            );
+          } else if (payload.eventType === 'INSERT') {
+            setRegistrations(prev => [payload.new as VisitorRegistration, ...prev]);
+          } else if (payload.eventType === 'DELETE') {
+            setRegistrations(prev => prev.filter(reg => reg.id !== payload.old.id));
+          }
+        }
+      )
+      .subscribe();
+
+    return () => {
+      supabase.removeChannel(channel);
+    };
   }, [user, navigate]);
 
   useEffect(() => {
@@ -131,12 +162,14 @@ export default function AdminDashboard() {
       const endTimeISO = new Date(editEndTime).toISOString();
       console.log("Converted to ISO string:", endTimeISO);
 
-      const { error } = await supabase
+      const { data, error } = await supabase
         .from('visitor_registrations')
         .update({ endtime: endTimeISO })
-        .eq('id', id);
+        .eq('id', id)
+        .select()
+        .single();
 
-      console.log("Update response:", { error });
+      console.log("Update response:", { data, error });
 
       if (error) {
         console.error("Update error:", error);
@@ -148,14 +181,17 @@ export default function AdminDashboard() {
         return;
       }
 
-      console.log("Successfully updated end time");
+      console.log("Successfully updated end time, updated record:", data);
       
-      // Update local state
+      // Force update local state with the returned data
       setRegistrations(prev => 
         prev.map(reg => 
           reg.id === id ? { ...reg, endtime: endTimeISO } : reg
         )
       );
+      
+      // Also refresh from database to ensure sync
+      await fetchRegistrations();
       
       toast({
         title: "Success",
