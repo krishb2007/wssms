@@ -347,26 +347,26 @@ export default function AdminDashboard() {
         </div>
 
         {/* Main Content */}
-        <Card className="border-0 shadow-xl bg-gradient-to-br from-white to-purple-50 border border-purple-200">
-          <CardHeader className="border-b border-purple-200 bg-gradient-to-r from-purple-50 to-blue-50 py-3">
+        <Card className="border-0 shadow-xl bg-white">
+          <CardHeader className="border-b border-gray-200 bg-gradient-to-r from-gray-50 to-gray-100 py-3">
             <div className="flex justify-between items-center">
-              <CardTitle className="text-xl font-bold text-purple-800">
+              <CardTitle className="text-xl font-bold text-gray-800">
                 Visitor Registrations ({filteredRegistrations.length})
               </CardTitle>
               <div className="flex items-center space-x-3">
                 <div className="relative">
-                  <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-purple-400 h-4 w-4" />
+                  <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 h-4 w-4" />
                   <Input
                     placeholder="Search visitors..."
                     value={searchTerm}
                     onChange={(e) => setSearchTerm(e.target.value)}
-                    className="pl-9 w-56 border-purple-300 focus:border-purple-500 focus:ring-purple-500 text-sm font-medium"
+                    className="pl-9 w-56 border-gray-300 focus:border-blue-500 focus:ring-blue-500 text-sm font-medium"
                   />
                 </div>
                 <Button 
                   onClick={fetchRegistrations} 
                   variant="outline"
-                  className="flex items-center space-x-2 border-2 border-purple-500 text-purple-600 hover:bg-purple-50 font-bold text-sm px-3 py-2"
+                  className="flex items-center space-x-2 border-2 border-blue-500 text-blue-600 hover:bg-blue-50 font-bold text-sm px-3 py-2"
                 >
                   <RefreshCw className="h-4 w-4" />
                   <span>Refresh</span>
@@ -378,27 +378,35 @@ export default function AdminDashboard() {
             <div className="overflow-x-auto">
               <Table>
                 <TableHeader>
-                  <TableRow className="bg-gradient-to-r from-purple-100 to-blue-100">
-                    <TableHead className="font-bold text-purple-900 text-sm">Visitor</TableHead>
-                    <TableHead className="font-bold text-purple-900 text-sm">Contact</TableHead>
-                    <TableHead className="font-bold text-purple-900 text-sm">Purpose</TableHead>
-                    <TableHead className="font-bold text-purple-900 text-sm">People</TableHead>
-                    <TableHead className="font-bold text-purple-900 text-sm">Visit Duration</TableHead>
-                    <TableHead className="font-bold text-purple-900 text-sm">Status</TableHead>
-                    <TableHead className="font-bold text-purple-900 text-sm">Actions</TableHead>
+                  <TableRow className="bg-gradient-to-r from-blue-50 to-indigo-50 border-b-2 border-blue-200">
+                    <TableHead className="font-bold text-blue-900 text-sm border-r border-blue-100">Visitor</TableHead>
+                    <TableHead className="font-bold text-blue-900 text-sm border-r border-blue-100">Contact</TableHead>
+                    <TableHead className="font-bold text-blue-900 text-sm border-r border-blue-100">Purpose</TableHead>
+                    <TableHead className="font-bold text-blue-900 text-sm border-r border-blue-100">People</TableHead>
+                    <TableHead className="font-bold text-blue-900 text-sm border-r border-blue-100">Visit Duration</TableHead>
+                    <TableHead className="font-bold text-blue-900 text-sm border-r border-blue-100">Status</TableHead>
+                    <TableHead className="font-bold text-blue-900 text-sm">Actions</TableHead>
                   </TableRow>
                 </TableHeader>
                 <TableBody>
-                  {filteredRegistrations.map((registration) => (
+                  {filteredRegistrations.map((registration, index) => (
                     <TableRow 
                       key={registration.id} 
-                      className="hover:bg-gradient-to-r hover:from-purple-50 hover:to-blue-50 transition-all duration-200 border-b border-purple-100"
+                      className={`transition-all duration-200 border-b border-gray-100 ${
+                        index % 2 === 0 
+                          ? 'bg-gradient-to-r from-blue-25 to-indigo-25 hover:from-blue-50 hover:to-indigo-50' 
+                          : 'bg-gradient-to-r from-purple-25 to-pink-25 hover:from-purple-50 hover:to-pink-50'
+                      }`}
                     >
-                      <TableCell className="py-3">
+                      <TableCell className="py-4 border-r border-gray-100">
                         <div className="flex items-center space-x-3">
                           <div className="flex-shrink-0">
-                            <div className="h-8 w-8 bg-gradient-to-br from-purple-500 to-blue-600 rounded-full flex items-center justify-center">
-                              <User className="h-4 w-4 text-white" />
+                            <div className={`h-10 w-10 rounded-full flex items-center justify-center ${
+                              index % 2 === 0 
+                                ? 'bg-gradient-to-br from-blue-500 to-indigo-600' 
+                                : 'bg-gradient-to-br from-purple-500 to-pink-600'
+                            }`}>
+                              <User className="h-5 w-5 text-white" />
                             </div>
                           </div>
                           <div>
@@ -412,7 +420,7 @@ export default function AdminDashboard() {
                           </div>
                         </div>
                       </TableCell>
-                      <TableCell className="py-3">
+                      <TableCell className="py-4 border-r border-gray-100">
                         <div className="space-y-1">
                           <div className="text-sm text-gray-900 flex items-center font-medium">
                             <Phone className="h-3 w-3 mr-1 text-gray-500" />
@@ -424,12 +432,16 @@ export default function AdminDashboard() {
                           </div>
                         </div>
                       </TableCell>
-                      <TableCell className="py-3">
-                        <span className="inline-flex items-center px-2 py-1 rounded-full text-xs font-bold bg-purple-100 text-purple-800 border border-purple-200">
+                      <TableCell className="py-4 border-r border-gray-100">
+                        <span className={`inline-flex items-center px-3 py-1 rounded-full text-xs font-bold border ${
+                          index % 2 === 0 
+                            ? 'bg-blue-100 text-blue-800 border-blue-200' 
+                            : 'bg-purple-100 text-purple-800 border-purple-200'
+                        }`}>
                           {formatPurpose(registration.purpose)}
                         </span>
                       </TableCell>
-                      <TableCell className="py-3">
+                      <TableCell className="py-4 border-r border-gray-100">
                         <div>
                           <div className="text-sm font-bold text-gray-900">
                             {registration.numberofpeople} {registration.numberofpeople === 1 ? 'person' : 'people'}
@@ -439,7 +451,7 @@ export default function AdminDashboard() {
                           </div>
                         </div>
                       </TableCell>
-                      <TableCell className="py-3">
+                      <TableCell className="py-4 border-r border-gray-100">
                         <div className="space-y-1">
                           <div className="flex items-center text-xs text-gray-600 font-medium">
                             <Clock className="h-3 w-3 mr-1" />
@@ -451,7 +463,7 @@ export default function AdminDashboard() {
                                 type="datetime-local"
                                 value={editEndTime}
                                 onChange={(e) => setEditEndTime(e.target.value)}
-                                className="w-40 text-xs border-2 border-purple-300 focus:border-purple-500 font-medium"
+                                className="w-40 text-xs border-2 border-orange-300 focus:border-orange-500 font-medium"
                               />
                               {saving && (
                                 <div className="flex items-center text-orange-600 text-xs font-bold">
@@ -467,104 +479,118 @@ export default function AdminDashboard() {
                           )}
                         </div>
                       </TableCell>
-                      <TableCell className="py-3">
+                      <TableCell className="py-4 border-r border-gray-100">
                         {getStatusBadge(registration)}
                       </TableCell>
-                      <TableCell className="py-3">
-                        <div className="flex items-center space-x-1">
+                      <TableCell className="py-4">
+                        <div className="flex items-center space-x-2">
                           <Dialog>
                             <DialogTrigger asChild>
                               <Button
                                 size="sm"
                                 variant="outline"
-                                className="h-7 w-7 p-0 border-2 border-purple-500 text-purple-600 hover:bg-purple-50"
+                                className={`h-8 w-8 p-0 border-2 hover:scale-105 transition-transform ${
+                                  index % 2 === 0 
+                                    ? 'border-blue-500 text-blue-600 hover:bg-blue-50' 
+                                    : 'border-purple-500 text-purple-600 hover:bg-purple-50'
+                                }`}
                               >
-                                <Eye className="h-3 w-3" />
+                                <Eye className="h-4 w-4" />
                               </Button>
                             </DialogTrigger>
-                            <DialogContent className="max-w-5xl max-h-[85vh] overflow-y-auto">
+                            <DialogContent className="max-w-6xl max-h-[90vh] overflow-y-auto">
                               <DialogHeader>
-                                <DialogTitle className="text-xl font-bold text-purple-800">
+                                <DialogTitle className="text-2xl font-bold text-gray-800 mb-2">
                                   {registration.visitorname}
                                 </DialogTitle>
                                 <DialogDescription className="text-sm text-gray-600 font-medium">
-                                  Complete visitor information
+                                  Complete visitor information and documentation
                                 </DialogDescription>
                               </DialogHeader>
-                              <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
-                                <div className="space-y-3">
-                                  <div className="bg-gradient-to-br from-purple-50 to-purple-100 p-3 rounded-lg border border-purple-200">
-                                    <h4 className="font-bold text-sm mb-2 flex items-center text-purple-800">
-                                      <User className="h-4 w-4 mr-2" />
+                              
+                              <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 mt-4">
+                                {/* Left Column - Visitor Information */}
+                                <div className="lg:col-span-1">
+                                  <div className="bg-gradient-to-br from-blue-50 to-blue-100 p-4 rounded-lg border border-blue-200">
+                                    <h4 className="font-bold text-base mb-3 flex items-center text-blue-800">
+                                      <User className="h-5 w-5 mr-2" />
                                       Visitor Information
                                     </h4>
-                                    <div className="grid grid-cols-1 gap-1 text-xs font-medium">
-                                      <p><strong className="text-gray-700">Name:</strong> <span className="text-gray-900">{registration.visitorname}</span></p>
-                                      <p><strong className="text-gray-700">Phone:</strong> <span className="text-gray-900">{registration.phonenumber}</span></p>
-                                      <p><strong className="text-gray-700">Purpose:</strong> <span className="text-gray-900">{formatPurpose(registration.purpose)}</span></p>
-                                      <p><strong className="text-gray-700">School:</strong> <span className="text-gray-900">{registration.schoolname}</span></p>
-                                      <p><strong className="text-gray-700">Address:</strong> <span className="text-gray-900">{registration.address}</span></p>
+                                    <div className="space-y-2 text-sm">
+                                      <div><span className="font-semibold text-gray-700">Name:</span> <span className="text-gray-900 ml-2">{registration.visitorname}</span></div>
+                                      <div><span className="font-semibold text-gray-700">Phone:</span> <span className="text-gray-900 ml-2">{registration.phonenumber}</span></div>
+                                      <div><span className="font-semibold text-gray-700">Purpose:</span> <span className="text-gray-900 ml-2">{formatPurpose(registration.purpose)}</span></div>
+                                      <div><span className="font-semibold text-gray-700">School:</span> <span className="text-gray-900 ml-2">{registration.schoolname}</span></div>
+                                      <div><span className="font-semibold text-gray-700">Address:</span> <span className="text-gray-900 ml-2">{registration.address}</span></div>
                                     </div>
                                   </div>
                                   
-                                  <div className="bg-gradient-to-br from-emerald-50 to-emerald-100 p-3 rounded-lg border border-emerald-200">
-                                    <h4 className="font-bold text-sm mb-2 flex items-center text-emerald-800">
-                                      <Clock className="h-4 w-4 mr-2" />
+                                  <div className="bg-gradient-to-br from-emerald-50 to-emerald-100 p-4 rounded-lg border border-emerald-200 mt-4">
+                                    <h4 className="font-bold text-base mb-3 flex items-center text-emerald-800">
+                                      <Clock className="h-5 w-5 mr-2" />
                                       Visit Details
                                     </h4>
-                                    <div className="space-y-1 text-xs font-medium">
-                                      <p><strong className="text-gray-700">People ({registration.numberofpeople}):</strong></p>
-                                      <p className="text-xs bg-white p-2 rounded border border-emerald-200 font-medium">{parsePeople(registration.people)}</p>
-                                      <div className="grid grid-cols-1 gap-1">
-                                        <p><strong className="text-gray-700">Start:</strong> <span className="text-gray-900">{formatDate(registration.starttime)}</span></p>
-                                        <p><strong className="text-gray-700">End:</strong> <span className="text-gray-900">{formatDate(registration.endtime)}</span></p>
-                                        <p><strong className="text-gray-700">Registered:</strong> <span className="text-gray-900">{formatDate(registration.created_at)}</span></p>
-                                      </div>
+                                    <div className="space-y-2 text-sm">
+                                      <div><span className="font-semibold text-gray-700">People ({registration.numberofpeople}):</span></div>
+                                      <div className="bg-white p-2 rounded border border-emerald-200 text-xs">{parsePeople(registration.people)}</div>
+                                      <div><span className="font-semibold text-gray-700">Start:</span> <span className="text-gray-900 ml-2">{formatDate(registration.starttime)}</span></div>
+                                      <div><span className="font-semibold text-gray-700">End:</span> <span className="text-gray-900 ml-2">{formatDate(registration.endtime)}</span></div>
+                                      <div><span className="font-semibold text-gray-700">Registered:</span> <span className="text-gray-900 ml-2">{formatDate(registration.created_at)}</span></div>
                                     </div>
                                   </div>
                                 </div>
                                 
-                                <div className="space-y-3">
-                                  <div className="bg-gradient-to-br from-blue-50 to-blue-100 p-3 rounded-lg border border-blue-200">
-                                    <h4 className="font-bold text-sm mb-2 flex items-center text-blue-800">
-                                      <Image className="h-4 w-4 mr-2" />
-                                      Photo
+                                {/* Middle Column - Photo */}
+                                <div className="lg:col-span-1">
+                                  <div className="bg-gradient-to-br from-indigo-50 to-indigo-100 p-4 rounded-lg border border-indigo-200 h-full">
+                                    <h4 className="font-bold text-base mb-3 flex items-center text-indigo-800">
+                                      <Image className="h-5 w-5 mr-2" />
+                                      Visitor Photo
                                     </h4>
                                     {registration.picture_url ? (
                                       <img
                                         src={getImageUrl(registration.picture_url)}
                                         alt="Visitor"
-                                        className="w-full h-64 object-cover bg-white rounded border border-blue-200"
+                                        className="w-full h-80 object-cover bg-white rounded border border-indigo-200 shadow-sm"
                                         onError={(e) => {
                                           const target = e.target as HTMLImageElement;
-                                          target.src = 'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMjAwIiBoZWlnaHQ9IjI1NiIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48cmVjdCB3aWR0aD0iMTAwJSIgaGVpZ2h0PSIxMDAlIiBmaWxsPSIjZjNmNGY2Ii8+PHRleHQgeD0iNTAlIiB5PSI1MCUiIGZvbnQtZmFtaWx5PSJBcmlhbCIgZm9udC1zaXplPSIxMiIgZmlsbD0iIzllYTNhOCIgdGV4dC1hbmNob3I9Im1pZGRsZSIgZHk9Ii4zZW0iPk5vIGltYWdlPC90ZXh0Pjwvc3ZnPg==';
+                                          target.src = 'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMzAwIiBoZWlnaHQ9IjMyMCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48cmVjdCB3aWR0aD0iMTAwJSIgaGVpZ2h0PSIxMDAlIiBmaWxsPSIjZjNmNGY2Ii8+PHRleHQgeD0iNTAlIiB5PSI1MCUiIGZvbnQtZmFtaWx5PSJBcmlhbCIgZm9udC1zaXplPSIxNCIgZmlsbD0iIzllYTNhOCIgdGV4dC1hbmNob3I9Im1pZGRsZSIgZHk9Ii4zZW0iPk5vIGltYWdlIGF2YWlsYWJsZTwvdGV4dD48L3N2Zz4=';
                                         }}
                                       />
                                     ) : (
-                                      <div className="w-full h-64 bg-gray-200 rounded flex items-center justify-center border border-blue-200">
-                                        <p className="text-gray-500 text-xs">No photo</p>
+                                      <div className="w-full h-80 bg-gray-200 rounded flex items-center justify-center border border-indigo-200">
+                                        <div className="text-center">
+                                          <Image className="h-12 w-12 text-gray-400 mx-auto mb-2" />
+                                          <p className="text-gray-500 text-sm">No photo available</p>
+                                        </div>
                                       </div>
                                     )}
                                   </div>
-                                  
-                                  <div className="bg-gradient-to-br from-orange-50 to-orange-100 p-3 rounded-lg border border-orange-200">
-                                    <h4 className="font-bold text-sm mb-2 flex items-center text-orange-800">
-                                      <FileSignature className="h-4 w-4 mr-2" />
-                                      Signature
+                                </div>
+                                
+                                {/* Right Column - Signature */}
+                                <div className="lg:col-span-1">
+                                  <div className="bg-gradient-to-br from-orange-50 to-orange-100 p-4 rounded-lg border border-orange-200 h-full">
+                                    <h4 className="font-bold text-base mb-3 flex items-center text-orange-800">
+                                      <FileSignature className="h-5 w-5 mr-2" />
+                                      Digital Signature
                                     </h4>
                                     {registration.signature_url ? (
                                       <img
                                         src={getImageUrl(registration.signature_url)}
                                         alt="Signature"
-                                        className="w-full h-32 object-contain bg-white rounded border border-orange-200"
+                                        className="w-full h-80 object-contain bg-white rounded border border-orange-200 shadow-sm"
                                         onError={(e) => {
                                           const target = e.target as HTMLImageElement;
-                                          target.src = 'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMjAwIiBoZWlnaHQ9IjEyOCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48cmVjdCB3aWR0aD0iMTAwJSIgaGVpZ2h0PSIxMDAlIiBmaWxsPSIjZjNmNGY2Ii8+PHRleHQgeD0iNTAlIiB5PSI1MCUiIGZvbnQtZmFtaWx5PSJBcmlhbCIgZm9udC1zaXplPSIxMiIgZmlsbD0iIzllYTNhOCIgdGV4dC1hbmNob3I9Im1pZGRsZSIgZHk9Ii4zZW0iPk5vIHNpZ25hdHVyZTwvdGV4dD48L3N2Zz4=';
+                                          target.src = 'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMzAwIiBoZWlnaHQ9IjMyMCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48cmVjdCB3aWR0aD0iMTAwJSIgaGVpZ2h0PSIxMDAlIiBmaWxsPSIjZjNmNGY2Ii8+PHRleHQgeD0iNTAlIiB5PSI1MCUiIGZvbnQtZmFtaWx5PSJBcmlhbCIgZm9udC1zaXplPSIxNCIgZmlsbD0iIzllYTNhOCIgdGV4dC1hbmNob3I9Im1pZGRsZSIgZHk9Ii4zZW0iPk5vIHNpZ25hdHVyZSBhdmFpbGFibGU8L3RleHQ+PC9zdmc+';
                                         }}
                                       />
                                     ) : (
-                                      <div className="w-full h-32 bg-gray-200 rounded flex items-center justify-center border border-orange-200">
-                                        <p className="text-gray-500 text-xs">No signature</p>
+                                      <div className="w-full h-80 bg-gray-200 rounded flex items-center justify-center border border-orange-200">
+                                        <div className="text-center">
+                                          <FileSignature className="h-12 w-12 text-gray-400 mx-auto mb-2" />
+                                          <p className="text-gray-500 text-sm">No signature available</p>
+                                        </div>
                                       </div>
                                     )}
                                   </div>
@@ -579,18 +605,18 @@ export default function AdminDashboard() {
                                 size="sm"
                                 onClick={() => saveEdit(registration.id)}
                                 disabled={saving}
-                                className="h-7 w-7 p-0 bg-emerald-600 hover:bg-emerald-700 text-white disabled:opacity-50"
+                                className="h-8 w-8 p-0 bg-emerald-600 hover:bg-emerald-700 text-white disabled:opacity-50 hover:scale-105 transition-transform"
                               >
-                                <Save className="h-3 w-3" />
+                                <Save className="h-4 w-4" />
                               </Button>
                               <Button
                                 size="sm"
                                 variant="outline"
                                 onClick={cancelEdit}
                                 disabled={saving}
-                                className="h-7 w-7 p-0 border-2 border-gray-400 text-gray-600 hover:bg-gray-50 disabled:opacity-50"
+                                className="h-8 w-8 p-0 border-2 border-gray-400 text-gray-600 hover:bg-gray-50 disabled:opacity-50 hover:scale-105 transition-transform"
                               >
-                                <X className="h-3 w-3" />
+                                <X className="h-4 w-4" />
                               </Button>
                             </div>
                           ) : (
@@ -598,9 +624,13 @@ export default function AdminDashboard() {
                               size="sm"
                               variant="outline"
                               onClick={() => startEdit(registration)}
-                              className="h-7 w-7 p-0 border-2 border-orange-500 text-orange-600 hover:bg-orange-50"
+                              className={`h-8 w-8 p-0 border-2 hover:scale-105 transition-transform ${
+                                index % 2 === 0 
+                                  ? 'border-orange-500 text-orange-600 hover:bg-orange-50' 
+                                  : 'border-pink-500 text-pink-600 hover:bg-pink-50'
+                              }`}
                             >
-                              <Pencil className="h-3 w-3" />
+                              <Pencil className="h-4 w-4" />
                             </Button>
                           )}
                         </div>
@@ -612,8 +642,8 @@ export default function AdminDashboard() {
             </div>
             {filteredRegistrations.length === 0 && !loading && (
               <div className="text-center py-12">
-                <Search className="mx-auto h-12 w-12 text-purple-400 mb-4" />
-                <p className="text-purple-500 text-lg font-bold">
+                <Search className="mx-auto h-12 w-12 text-gray-400 mb-4" />
+                <p className="text-gray-500 text-lg font-bold">
                   {searchTerm ? 'No registrations found matching your search.' : 'No registrations found.'}
                 </p>
               </div>
