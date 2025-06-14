@@ -394,14 +394,14 @@ export default function AdminDashboard() {
                       key={registration.id} 
                       className="hover:bg-gradient-to-r hover:from-purple-50 hover:to-blue-50 transition-all duration-200 border-b border-purple-100"
                     >
-                      <TableCell className="py-2">
-                        <div className="flex items-center space-x-2">
+                      <TableCell className="py-3">
+                        <div className="flex items-center space-x-3">
                           <div className="flex-shrink-0">
                             <div className="h-8 w-8 bg-gradient-to-br from-purple-500 to-blue-600 rounded-full flex items-center justify-center">
                               <User className="h-4 w-4 text-white" />
                             </div>
                           </div>
-                          <div className="bg-gradient-to-r from-purple-50 to-blue-50 p-2 rounded-lg border border-purple-200">
+                          <div>
                             <div className="text-sm font-bold text-gray-900">
                               {registration.visitorname}
                             </div>
@@ -412,25 +412,25 @@ export default function AdminDashboard() {
                           </div>
                         </div>
                       </TableCell>
-                      <TableCell className="py-2">
-                        <div className="bg-gradient-to-r from-emerald-50 to-emerald-100 p-2 rounded-lg border border-emerald-200">
+                      <TableCell className="py-3">
+                        <div className="space-y-1">
                           <div className="text-sm text-gray-900 flex items-center font-medium">
                             <Phone className="h-3 w-3 mr-1 text-gray-500" />
                             {registration.phonenumber}
                           </div>
-                          <div className="text-xs text-gray-600 flex items-center mt-1 font-medium">
+                          <div className="text-xs text-gray-600 flex items-center font-medium">
                             <MapPin className="h-3 w-3 mr-1 text-gray-500" />
                             {registration.address?.slice(0, 25)}...
                           </div>
                         </div>
                       </TableCell>
-                      <TableCell className="py-2">
+                      <TableCell className="py-3">
                         <span className="inline-flex items-center px-2 py-1 rounded-full text-xs font-bold bg-purple-100 text-purple-800 border border-purple-200">
                           {formatPurpose(registration.purpose)}
                         </span>
                       </TableCell>
-                      <TableCell className="py-2">
-                        <div className="bg-gradient-to-r from-orange-50 to-orange-100 p-2 rounded-lg border border-orange-200">
+                      <TableCell className="py-3">
+                        <div>
                           <div className="text-sm font-bold text-gray-900">
                             {registration.numberofpeople} {registration.numberofpeople === 1 ? 'person' : 'people'}
                           </div>
@@ -439,9 +439,9 @@ export default function AdminDashboard() {
                           </div>
                         </div>
                       </TableCell>
-                      <TableCell className="py-2">
-                        <div className="bg-gradient-to-r from-blue-50 to-blue-100 p-2 rounded-lg border border-blue-200">
-                          <div className="flex items-center text-xs text-gray-600 mb-1 font-medium">
+                      <TableCell className="py-3">
+                        <div className="space-y-1">
+                          <div className="flex items-center text-xs text-gray-600 font-medium">
                             <Clock className="h-3 w-3 mr-1" />
                             Started: {formatDate(registration.starttime)}
                           </div>
@@ -467,10 +467,10 @@ export default function AdminDashboard() {
                           )}
                         </div>
                       </TableCell>
-                      <TableCell className="py-2">
+                      <TableCell className="py-3">
                         {getStatusBadge(registration)}
                       </TableCell>
-                      <TableCell className="py-2">
+                      <TableCell className="py-3">
                         <div className="flex items-center space-x-1">
                           <Dialog>
                             <DialogTrigger asChild>
@@ -482,7 +482,7 @@ export default function AdminDashboard() {
                                 <Eye className="h-3 w-3" />
                               </Button>
                             </DialogTrigger>
-                            <DialogContent className="max-w-6xl max-h-[90vh] overflow-y-auto">
+                            <DialogContent className="max-w-5xl max-h-[85vh] overflow-y-auto">
                               <DialogHeader>
                                 <DialogTitle className="text-xl font-bold text-purple-800">
                                   {registration.visitorname}
@@ -491,19 +491,19 @@ export default function AdminDashboard() {
                                   Complete visitor information
                                 </DialogDescription>
                               </DialogHeader>
-                              <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
-                                <div className="lg:col-span-2 space-y-3">
+                              <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+                                <div className="space-y-3">
                                   <div className="bg-gradient-to-br from-purple-50 to-purple-100 p-3 rounded-lg border border-purple-200">
                                     <h4 className="font-bold text-sm mb-2 flex items-center text-purple-800">
                                       <User className="h-4 w-4 mr-2" />
                                       Visitor Information
                                     </h4>
-                                    <div className="grid grid-cols-2 gap-2 text-xs font-medium">
+                                    <div className="grid grid-cols-1 gap-1 text-xs font-medium">
                                       <p><strong className="text-gray-700">Name:</strong> <span className="text-gray-900">{registration.visitorname}</span></p>
                                       <p><strong className="text-gray-700">Phone:</strong> <span className="text-gray-900">{registration.phonenumber}</span></p>
                                       <p><strong className="text-gray-700">Purpose:</strong> <span className="text-gray-900">{formatPurpose(registration.purpose)}</span></p>
                                       <p><strong className="text-gray-700">School:</strong> <span className="text-gray-900">{registration.schoolname}</span></p>
-                                      <p className="col-span-2"><strong className="text-gray-700">Address:</strong> <span className="text-gray-900">{registration.address}</span></p>
+                                      <p><strong className="text-gray-700">Address:</strong> <span className="text-gray-900">{registration.address}</span></p>
                                     </div>
                                   </div>
                                   
@@ -515,11 +515,11 @@ export default function AdminDashboard() {
                                     <div className="space-y-1 text-xs font-medium">
                                       <p><strong className="text-gray-700">People ({registration.numberofpeople}):</strong></p>
                                       <p className="text-xs bg-white p-2 rounded border border-emerald-200 font-medium">{parsePeople(registration.people)}</p>
-                                      <div className="grid grid-cols-2 gap-2">
+                                      <div className="grid grid-cols-1 gap-1">
                                         <p><strong className="text-gray-700">Start:</strong> <span className="text-gray-900">{formatDate(registration.starttime)}</span></p>
                                         <p><strong className="text-gray-700">End:</strong> <span className="text-gray-900">{formatDate(registration.endtime)}</span></p>
+                                        <p><strong className="text-gray-700">Registered:</strong> <span className="text-gray-900">{formatDate(registration.created_at)}</span></p>
                                       </div>
-                                      <p><strong className="text-gray-700">Registered:</strong> <span className="text-gray-900">{formatDate(registration.created_at)}</span></p>
                                     </div>
                                   </div>
                                 </div>
@@ -534,14 +534,14 @@ export default function AdminDashboard() {
                                       <img
                                         src={getImageUrl(registration.picture_url)}
                                         alt="Visitor"
-                                        className="w-full h-48 object-cover bg-white rounded border border-blue-200"
+                                        className="w-full h-64 object-cover bg-white rounded border border-blue-200"
                                         onError={(e) => {
                                           const target = e.target as HTMLImageElement;
-                                          target.src = 'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMjAwIiBoZWlnaHQ9IjE5MiIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48cmVjdCB3aWR0aD0iMTAwJSIgaGVpZ2h0PSIxMDAlIiBmaWxsPSIjZjNmNGY2Ii8+PHRleHQgeD0iNTAlIiB5PSI1MCUiIGZvbnQtZmFtaWx5PSJBcmlhbCIgZm9udC1zaXplPSIxMiIgZmlsbD0iIzllYTNhOCIgdGV4dC1hbmNob3I9Im1pZGRsZSIgZHk9Ii4zZW0iPk5vIGltYWdlPC90ZXh0Pjwvc3ZnPg==';
+                                          target.src = 'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMjAwIiBoZWlnaHQ9IjI1NiIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48cmVjdCB3aWR0aD0iMTAwJSIgaGVpZ2h0PSIxMDAlIiBmaWxsPSIjZjNmNGY2Ii8+PHRleHQgeD0iNTAlIiB5PSI1MCUiIGZvbnQtZmFtaWx5PSJBcmlhbCIgZm9udC1zaXplPSIxMiIgZmlsbD0iIzllYTNhOCIgdGV4dC1hbmNob3I9Im1pZGRsZSIgZHk9Ii4zZW0iPk5vIGltYWdlPC90ZXh0Pjwvc3ZnPg==';
                                         }}
                                       />
                                     ) : (
-                                      <div className="w-full h-48 bg-gray-200 rounded flex items-center justify-center border border-blue-200">
+                                      <div className="w-full h-64 bg-gray-200 rounded flex items-center justify-center border border-blue-200">
                                         <p className="text-gray-500 text-xs">No photo</p>
                                       </div>
                                     )}
@@ -556,14 +556,14 @@ export default function AdminDashboard() {
                                       <img
                                         src={getImageUrl(registration.signature_url)}
                                         alt="Signature"
-                                        className="w-full h-24 object-contain bg-white rounded border border-orange-200"
+                                        className="w-full h-32 object-contain bg-white rounded border border-orange-200"
                                         onError={(e) => {
                                           const target = e.target as HTMLImageElement;
-                                          target.src = 'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMjAwIiBoZWlnaHQ9Ijk2IiB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciPjxyZWN0IHdpZHRoPSIxMDAlIiBoZWlnaHQ9IjEwMCUiIGZpbGw9IiNmM2Y0ZjYiLz48dGV4dCB4PSI1MCUiIHk9IjUwJSIgZm9udC1mYW1pbHk9IkFyaWFsIiBmb250LXNpemU9IjEyIiBmaWxsPSIjOWVhM2E4IiB0ZXh0LWFuY2hvcj0ibWlkZGxlIiBkeT0iLjNlbSI+Tm8gc2lnbmF0dXJlPC90ZXh0Pjwvc3ZnPg==';
+                                          target.src = 'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMjAwIiBoZWlnaHQ9IjEyOCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48cmVjdCB3aWR0aD0iMTAwJSIgaGVpZ2h0PSIxMDAlIiBmaWxsPSIjZjNmNGY2Ii8+PHRleHQgeD0iNTAlIiB5PSI1MCUiIGZvbnQtZmFtaWx5PSJBcmlhbCIgZm9udC1zaXplPSIxMiIgZmlsbD0iIzllYTNhOCIgdGV4dC1hbmNob3I9Im1pZGRsZSIgZHk9Ii4zZW0iPk5vIHNpZ25hdHVyZTwvdGV4dD48L3N2Zz4=';
                                         }}
                                       />
                                     ) : (
-                                      <div className="w-full h-24 bg-gray-200 rounded flex items-center justify-center border border-orange-200">
+                                      <div className="w-full h-32 bg-gray-200 rounded flex items-center justify-center border border-orange-200">
                                         <p className="text-gray-500 text-xs">No signature</p>
                                       </div>
                                     )}
