@@ -498,101 +498,200 @@ export default function AdminDashboard() {
                                 <Eye className="h-4 w-4" />
                               </Button>
                             </DialogTrigger>
-                            <DialogContent className="max-w-6xl max-h-[90vh] overflow-y-auto">
-                              <DialogHeader>
-                                <DialogTitle className="text-2xl font-bold text-gray-800 mb-2">
-                                  {registration.visitorname}
-                                </DialogTitle>
-                                <DialogDescription className="text-sm text-gray-600 font-medium">
-                                  Complete visitor information and documentation
-                                </DialogDescription>
-                              </DialogHeader>
-                              
-                              <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 mt-4">
-                                {/* Left Column - Visitor Information */}
-                                <div className="lg:col-span-1">
-                                  <div className="bg-gradient-to-br from-blue-50 to-blue-100 p-4 rounded-lg border border-blue-200">
-                                    <h4 className="font-bold text-base mb-3 flex items-center text-blue-800">
-                                      <User className="h-5 w-5 mr-2" />
-                                      Visitor Information
-                                    </h4>
-                                    <div className="space-y-2 text-sm">
-                                      <div><span className="font-semibold text-gray-700">Name:</span> <span className="text-gray-900 ml-2">{registration.visitorname}</span></div>
-                                      <div><span className="font-semibold text-gray-700">Phone:</span> <span className="text-gray-900 ml-2">{registration.phonenumber}</span></div>
-                                      <div><span className="font-semibold text-gray-700">Purpose:</span> <span className="text-gray-900 ml-2">{formatPurpose(registration.purpose)}</span></div>
-                                      <div><span className="font-semibold text-gray-700">School:</span> <span className="text-gray-900 ml-2">{registration.schoolname}</span></div>
-                                      <div><span className="font-semibold text-gray-700">Address:</span> <span className="text-gray-900 ml-2">{registration.address}</span></div>
+                            <DialogContent className="max-w-7xl max-h-[95vh] overflow-y-auto p-0">
+                              <div className="bg-gradient-to-br from-slate-50 to-gray-100 min-h-full">
+                                <DialogHeader className="bg-gradient-to-r from-blue-600 to-indigo-600 text-white p-6 rounded-t-lg">
+                                  <DialogTitle className="text-3xl font-bold mb-2 flex items-center">
+                                    <User className="h-8 w-8 mr-3" />
+                                    {registration.visitorname}
+                                  </DialogTitle>
+                                  <DialogDescription className="text-blue-100 text-lg font-medium">
+                                    Complete visitor information and documentation
+                                  </DialogDescription>
+                                </DialogHeader>
+                                
+                                <div className="p-6 space-y-6">
+                                  {/* Top Section - Visitor Info and Photo */}
+                                  <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                                    {/* Visitor Information */}
+                                    <div className="bg-white rounded-xl shadow-lg border border-gray-200 overflow-hidden">
+                                      <div className="bg-gradient-to-r from-blue-500 to-blue-600 text-white p-4">
+                                        <h3 className="text-xl font-bold flex items-center">
+                                          <User className="h-6 w-6 mr-2" />
+                                          Visitor Information
+                                        </h3>
+                                      </div>
+                                      <div className="p-6 space-y-4">
+                                        <div className="grid grid-cols-1 gap-4">
+                                          <div className="flex items-center space-x-3">
+                                            <div className="w-10 h-10 bg-blue-100 rounded-full flex items-center justify-center">
+                                              <User className="h-5 w-5 text-blue-600" />
+                                            </div>
+                                            <div>
+                                              <p className="text-sm font-medium text-gray-500">Full Name</p>
+                                              <p className="text-lg font-bold text-gray-900">{registration.visitorname}</p>
+                                            </div>
+                                          </div>
+                                          
+                                          <div className="flex items-center space-x-3">
+                                            <div className="w-10 h-10 bg-green-100 rounded-full flex items-center justify-center">
+                                              <Phone className="h-5 w-5 text-green-600" />
+                                            </div>
+                                            <div>
+                                              <p className="text-sm font-medium text-gray-500">Phone Number</p>
+                                              <p className="text-lg font-bold text-gray-900">{registration.phonenumber}</p>
+                                            </div>
+                                          </div>
+                                          
+                                          <div className="flex items-center space-x-3">
+                                            <div className="w-10 h-10 bg-purple-100 rounded-full flex items-center justify-center">
+                                              <Target className="h-5 w-5 text-purple-600" />
+                                            </div>
+                                            <div>
+                                              <p className="text-sm font-medium text-gray-500">Purpose</p>
+                                              <p className="text-lg font-bold text-gray-900">{formatPurpose(registration.purpose)}</p>
+                                            </div>
+                                          </div>
+                                          
+                                          <div className="flex items-center space-x-3">
+                                            <div className="w-10 h-10 bg-orange-100 rounded-full flex items-center justify-center">
+                                              <Building className="h-5 w-5 text-orange-600" />
+                                            </div>
+                                            <div>
+                                              <p className="text-sm font-medium text-gray-500">School/Institution</p>
+                                              <p className="text-lg font-bold text-gray-900">{registration.schoolname}</p>
+                                            </div>
+                                          </div>
+                                          
+                                          <div className="flex items-start space-x-3">
+                                            <div className="w-10 h-10 bg-red-100 rounded-full flex items-center justify-center mt-1">
+                                              <MapPin className="h-5 w-5 text-red-600" />
+                                            </div>
+                                            <div>
+                                              <p className="text-sm font-medium text-gray-500">Address</p>
+                                              <p className="text-base font-semibold text-gray-900">{registration.address}</p>
+                                            </div>
+                                          </div>
+                                        </div>
+                                      </div>
+                                    </div>
+                                    
+                                    {/* Visitor Photo */}
+                                    <div className="bg-white rounded-xl shadow-lg border border-gray-200 overflow-hidden">
+                                      <div className="bg-gradient-to-r from-indigo-500 to-indigo-600 text-white p-4">
+                                        <h3 className="text-xl font-bold flex items-center">
+                                          <Image className="h-6 w-6 mr-2" />
+                                          Visitor Photo
+                                        </h3>
+                                      </div>
+                                      <div className="p-6">
+                                        {registration.picture_url ? (
+                                          <div className="bg-gray-50 rounded-lg p-2">
+                                            <img
+                                              src={getImageUrl(registration.picture_url)}
+                                              alt="Visitor"
+                                              className="w-full h-96 object-cover rounded-lg shadow-md"
+                                              onError={(e) => {
+                                                const target = e.target as HTMLImageElement;
+                                                target.src = 'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMzAwIiBoZWlnaHQ9IjM4NCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48cmVjdCB3aWR0aD0iMTAwJSIgaGVpZ2h0PSIxMDAlIiBmaWxsPSIjZjNmNGY2Ii8+PHRleHQgeD0iNTAlIiB5PSI1MCUiIGZvbnQtZmFtaWx5PSJBcmlhbCIgZm9udC1zaXplPSIxNiIgZmlsbD0iIzllYTNhOCIgdGV4dC1hbmNob3I9Im1pZGRsZSIgZHk9Ii4zZW0iPk5vIGltYWdlIGF2YWlsYWJsZTwvdGV4dD48L3N2Zz4=';
+                                              }}
+                                            />
+                                          </div>
+                                        ) : (
+                                          <div className="w-full h-96 bg-gray-100 rounded-lg flex items-center justify-center">
+                                            <div className="text-center">
+                                              <Image className="h-16 w-16 text-gray-400 mx-auto mb-4" />
+                                              <p className="text-gray-500 text-lg font-medium">No photo available</p>
+                                            </div>
+                                          </div>
+                                        )}
+                                      </div>
                                     </div>
                                   </div>
                                   
-                                  <div className="bg-gradient-to-br from-emerald-50 to-emerald-100 p-4 rounded-lg border border-emerald-200 mt-4">
-                                    <h4 className="font-bold text-base mb-3 flex items-center text-emerald-800">
-                                      <Clock className="h-5 w-5 mr-2" />
-                                      Visit Details
-                                    </h4>
-                                    <div className="space-y-2 text-sm">
-                                      <div><span className="font-semibold text-gray-700">People ({registration.numberofpeople}):</span></div>
-                                      <div className="bg-white p-2 rounded border border-emerald-200 text-xs">{parsePeople(registration.people)}</div>
-                                      <div><span className="font-semibold text-gray-700">Start:</span> <span className="text-gray-900 ml-2">{formatDate(registration.starttime)}</span></div>
-                                      <div><span className="font-semibold text-gray-700">End:</span> <span className="text-gray-900 ml-2">{formatDate(registration.endtime)}</span></div>
-                                      <div><span className="font-semibold text-gray-700">Registered:</span> <span className="text-gray-900 ml-2">{formatDate(registration.created_at)}</span></div>
+                                  {/* Bottom Section - Visit Details and Signature */}
+                                  <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                                    {/* Visit Details */}
+                                    <div className="bg-white rounded-xl shadow-lg border border-gray-200 overflow-hidden">
+                                      <div className="bg-gradient-to-r from-emerald-500 to-emerald-600 text-white p-4">
+                                        <h3 className="text-xl font-bold flex items-center">
+                                          <Clock className="h-6 w-6 mr-2" />
+                                          Visit Details
+                                        </h3>
+                                      </div>
+                                      <div className="p-6 space-y-4">
+                                        <div className="bg-emerald-50 rounded-lg p-4 border border-emerald-200">
+                                          <p className="text-sm font-medium text-emerald-800 mb-2">People ({registration.numberofpeople})</p>
+                                          <div className="bg-white p-3 rounded border text-sm font-medium text-gray-700">
+                                            {parsePeople(registration.people)}
+                                          </div>
+                                        </div>
+                                        
+                                        <div className="space-y-3">
+                                          <div className="flex items-center space-x-3">
+                                            <div className="w-8 h-8 bg-green-100 rounded-full flex items-center justify-center">
+                                              <Clock className="h-4 w-4 text-green-600" />
+                                            </div>
+                                            <div>
+                                              <p className="text-sm font-medium text-gray-500">Start Time</p>
+                                              <p className="text-base font-bold text-gray-900">{formatDate(registration.starttime)}</p>
+                                            </div>
+                                          </div>
+                                          
+                                          <div className="flex items-center space-x-3">
+                                            <div className="w-8 h-8 bg-red-100 rounded-full flex items-center justify-center">
+                                              <Clock className="h-4 w-4 text-red-600" />
+                                            </div>
+                                            <div>
+                                              <p className="text-sm font-medium text-gray-500">End Time</p>
+                                              <p className="text-base font-bold text-gray-900">{formatDate(registration.endtime)}</p>
+                                            </div>
+                                          </div>
+                                          
+                                          <div className="flex items-center space-x-3">
+                                            <div className="w-8 h-8 bg-blue-100 rounded-full flex items-center justify-center">
+                                              <Calendar className="h-4 w-4 text-blue-600" />
+                                            </div>
+                                            <div>
+                                              <p className="text-sm font-medium text-gray-500">Registered On</p>
+                                              <p className="text-base font-bold text-gray-900">{formatDate(registration.created_at)}</p>
+                                            </div>
+                                          </div>
+                                        </div>
+                                      </div>
                                     </div>
-                                  </div>
-                                </div>
-                                
-                                {/* Middle Column - Photo */}
-                                <div className="lg:col-span-1">
-                                  <div className="bg-gradient-to-br from-indigo-50 to-indigo-100 p-4 rounded-lg border border-indigo-200 h-full">
-                                    <h4 className="font-bold text-base mb-3 flex items-center text-indigo-800">
-                                      <Image className="h-5 w-5 mr-2" />
-                                      Visitor Photo
-                                    </h4>
-                                    {registration.picture_url ? (
-                                      <img
-                                        src={getImageUrl(registration.picture_url)}
-                                        alt="Visitor"
-                                        className="w-full h-80 object-cover bg-white rounded border border-indigo-200 shadow-sm"
-                                        onError={(e) => {
-                                          const target = e.target as HTMLImageElement;
-                                          target.src = 'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMzAwIiBoZWlnaHQ9IjMyMCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48cmVjdCB3aWR0aD0iMTAwJSIgaGVpZ2h0PSIxMDAlIiBmaWxsPSIjZjNmNGY2Ii8+PHRleHQgeD0iNTAlIiB5PSI1MCUiIGZvbnQtZmFtaWx5PSJBcmlhbCIgZm9udC1zaXplPSIxNCIgZmlsbD0iIzllYTNhOCIgdGV4dC1hbmNob3I9Im1pZGRsZSIgZHk9Ii4zZW0iPk5vIGltYWdlIGF2YWlsYWJsZTwvdGV4dD48L3N2Zz4=';
-                                        }}
-                                      />
-                                    ) : (
-                                      <div className="w-full h-80 bg-gray-200 rounded flex items-center justify-center border border-indigo-200">
-                                        <div className="text-center">
-                                          <Image className="h-12 w-12 text-gray-400 mx-auto mb-2" />
-                                          <p className="text-gray-500 text-sm">No photo available</p>
-                                        </div>
+                                    
+                                    {/* Digital Signature */}
+                                    <div className="bg-white rounded-xl shadow-lg border border-gray-200 overflow-hidden">
+                                      <div className="bg-gradient-to-r from-orange-500 to-orange-600 text-white p-4">
+                                        <h3 className="text-xl font-bold flex items-center">
+                                          <FileSignature className="h-6 w-6 mr-2" />
+                                          Digital Signature
+                                        </h3>
                                       </div>
-                                    )}
-                                  </div>
-                                </div>
-                                
-                                {/* Right Column - Signature */}
-                                <div className="lg:col-span-1">
-                                  <div className="bg-gradient-to-br from-orange-50 to-orange-100 p-4 rounded-lg border border-orange-200 h-full">
-                                    <h4 className="font-bold text-base mb-3 flex items-center text-orange-800">
-                                      <FileSignature className="h-5 w-5 mr-2" />
-                                      Digital Signature
-                                    </h4>
-                                    {registration.signature_url ? (
-                                      <img
-                                        src={getImageUrl(registration.signature_url)}
-                                        alt="Signature"
-                                        className="w-full h-80 object-contain bg-white rounded border border-orange-200 shadow-sm"
-                                        onError={(e) => {
-                                          const target = e.target as HTMLImageElement;
-                                          target.src = 'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMzAwIiBoZWlnaHQ9IjMyMCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48cmVjdCB3aWR0aD0iMTAwJSIgaGVpZ2h0PSIxMDAlIiBmaWxsPSIjZjNmNGY2Ii8+PHRleHQgeD0iNTAlIiB5PSI1MCUiIGZvbnQtZmFtaWx5PSJBcmlhbCIgZm9udC1zaXplPSIxNCIgZmlsbD0iIzllYTNhOCIgdGV4dC1hbmNob3I9Im1pZGRsZSIgZHk9Ii4zZW0iPk5vIHNpZ25hdHVyZSBhdmFpbGFibGU8L3RleHQ+PC9zdmc+';
-                                        }}
-                                      />
-                                    ) : (
-                                      <div className="w-full h-80 bg-gray-200 rounded flex items-center justify-center border border-orange-200">
-                                        <div className="text-center">
-                                          <FileSignature className="h-12 w-12 text-gray-400 mx-auto mb-2" />
-                                          <p className="text-gray-500 text-sm">No signature available</p>
-                                        </div>
+                                      <div className="p-6">
+                                        {registration.signature_url ? (
+                                          <div className="bg-gray-50 rounded-lg p-2">
+                                            <img
+                                              src={getImageUrl(registration.signature_url)}
+                                              alt="Signature"
+                                              className="w-full h-96 object-contain rounded-lg shadow-md bg-white"
+                                              onError={(e) => {
+                                                const target = e.target as HTMLImageElement;
+                                                target.src = 'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMzAwIiBoZWlnaHQ9IjM4NCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48cmVjdCB3aWR0aD0iMTAwJSIgaGVpZ2h0PSIxMDAlIiBmaWxsPSIjZjNmNGY2Ii8+PHRleHQgeD0iNTAlIiB5PSI1MCUiIGZvbnQtZmFtaWx5PSJBcmlhbCIgZm9udC1zaXplPSIxNiIgZmlsbD0iIzllYTNhOCIgdGV4dC1hbmNob3I9Im1pZGRsZSIgZHk9Ii4zZW0iPk5vIHNpZ25hdHVyZSBhdmFpbGFibGU8L3RleHQ+PC9zdmc+';
+                                              }}
+                                            />
+                                          </div>
+                                        ) : (
+                                          <div className="w-full h-96 bg-gray-100 rounded-lg flex items-center justify-center">
+                                            <div className="text-center">
+                                              <FileSignature className="h-16 w-16 text-gray-400 mx-auto mb-4" />
+                                              <p className="text-gray-500 text-lg font-medium">No signature available</p>
+                                            </div>
+                                          </div>
+                                        )}
                                       </div>
-                                    )}
+                                    </div>
                                   </div>
                                 </div>
                               </div>
