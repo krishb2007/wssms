@@ -497,7 +497,7 @@ export default function AdminDashboard() {
                                 <Eye className="h-4 w-4" />
                               </Button>
                             </DialogTrigger>
-                            <DialogContent className="max-w-5xl max-h-[90vh] overflow-y-auto p-0">
+                            <DialogContent className="max-w-6xl max-h-[95vh] overflow-y-auto p-0">
                               <div className="bg-white">
                                 <DialogHeader className="bg-gradient-to-r from-blue-600 to-indigo-600 text-white p-4">
                                   <DialogTitle className="text-lg font-bold flex items-center">
@@ -511,14 +511,14 @@ export default function AdminDashboard() {
                                 
                                 <div className="p-6">
                                   {/* Top Row: Visitor Information (left) and Photo (right) */}
-                                  <div className="grid grid-cols-2 gap-6 mb-6">
+                                  <div className="grid grid-cols-2 gap-8 mb-8">
                                     {/* Visitor Information */}
                                     <div className="bg-gray-50 rounded-lg p-4 border">
-                                      <h3 className="text-base font-bold text-gray-800 mb-4 flex items-center">
+                                      <h3 className="text-sm font-bold text-gray-800 mb-3 flex items-center">
                                         <User className="h-4 w-4 mr-2" />
                                         Visitor Information
                                       </h3>
-                                      <div className="space-y-3">
+                                      <div className="space-y-2">
                                         <div>
                                           <p className="text-xs text-gray-500">Name</p>
                                           <p className="text-sm font-semibold text-gray-900">{registration.visitorname}</p>
@@ -544,7 +544,7 @@ export default function AdminDashboard() {
                                     
                                     {/* Photo */}
                                     <div className="bg-gray-50 rounded-lg p-4 border">
-                                      <h3 className="text-base font-bold text-gray-800 mb-4 flex items-center">
+                                      <h3 className="text-sm font-bold text-gray-800 mb-3 flex items-center">
                                         <Image className="h-4 w-4 mr-2" />
                                         Visitor Photo
                                       </h3>
@@ -552,14 +552,15 @@ export default function AdminDashboard() {
                                         <img
                                           src={getImageUrl(registration.picture_url)}
                                           alt="Visitor"
-                                          className="w-full h-60 object-cover rounded-lg"
+                                          className="w-full h-80 object-contain rounded-lg bg-white border cursor-pointer hover:scale-105 transition-transform"
                                           onError={(e) => {
                                             const target = e.target as HTMLImageElement;
                                             target.src = 'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMzAwIiBoZWlnaHQ9IjM4NCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48cmVjdCB3aWR0aD0iMTAwJSIgaGVpZ2h0PSIxMDAlIiBmaWxsPSIjZjNmNGY2Ii8+PHRleHQgeD0iNTAlIiB5PSI1MCUiIGZvbnQtZmFtaWx5PSJBcmlhbCIgZm9udC1zaXplPSIxNiIgZmlsbD0iIzllYTNhOCIgdGV4dC1hbmNob3I9Im1pZGRsZSIgZHk9Ii4zZW0iPk5vIGltYWdlIGF2YWlsYWJsZTwvdGV4dD48L3N2Zz4=';
                                           }}
+                                          onClick={() => window.open(getImageUrl(registration.picture_url), '_blank')}
                                         />
                                       ) : (
-                                        <div className="w-full h-60 bg-gray-200 rounded-lg flex items-center justify-center">
+                                        <div className="w-full h-80 bg-gray-200 rounded-lg flex items-center justify-center">
                                           <div className="text-center">
                                             <Image className="h-8 w-8 text-gray-400 mx-auto mb-2" />
                                             <p className="text-gray-500 text-sm">No photo available</p>
@@ -570,14 +571,14 @@ export default function AdminDashboard() {
                                   </div>
                                   
                                   {/* Bottom Row: Visit Details (left) and Digital Signature (right) */}
-                                  <div className="grid grid-cols-2 gap-6">
+                                  <div className="grid grid-cols-2 gap-8">
                                     {/* Visit Details */}
                                     <div className="bg-gray-50 rounded-lg p-4 border">
-                                      <h3 className="text-base font-bold text-gray-800 mb-4 flex items-center">
+                                      <h3 className="text-sm font-bold text-gray-800 mb-3 flex items-center">
                                         <Clock className="h-4 w-4 mr-2" />
                                         Visit Details
                                       </h3>
-                                      <div className="space-y-3">
+                                      <div className="space-y-2">
                                         <div>
                                           <p className="text-xs text-gray-500">People ({registration.numberofpeople})</p>
                                           <p className="text-sm font-semibold text-gray-900">{parsePeople(registration.people)}</p>
@@ -599,7 +600,7 @@ export default function AdminDashboard() {
                                     
                                     {/* Digital Signature */}
                                     <div className="bg-gray-50 rounded-lg p-4 border">
-                                      <h3 className="text-base font-bold text-gray-800 mb-4 flex items-center">
+                                      <h3 className="text-sm font-bold text-gray-800 mb-3 flex items-center">
                                         <FileSignature className="h-4 w-4 mr-2" />
                                         Digital Signature
                                       </h3>
@@ -607,14 +608,15 @@ export default function AdminDashboard() {
                                         <img
                                           src={getImageUrl(registration.signature_url)}
                                           alt="Signature"
-                                          className="w-full h-60 object-contain rounded-lg bg-white border"
+                                          className="w-full h-80 object-contain rounded-lg bg-white border cursor-pointer hover:scale-105 transition-transform"
                                           onError={(e) => {
                                             const target = e.target as HTMLImageElement;
                                             target.src = 'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMzAwIiBoZWlnaHQ9IjM4NCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48cmVjdCB3aWR0aD0iMTAwJSIgaGVpZ2h0PSIxMDAlIiBmaWxsPSIjZjNmNGY2Ii8+PHRleHQgeD0iNTAlIiB5PSI1MCUiIGZvbnQtZmFtaWx5PSJBcmlhbCIgZm9udC1zaXplPSIxNiIgZmlsbD0iIzllYTNhOCIgdGV4dC1hbmNob3I9Im1pZGRsZSIgZHk9Ii4zZW0iPk5vIHNpZ25hdHVyZSBhdmFpbGFibGU8L3RleHQ+PC9zdmc+';
                                           }}
+                                          onClick={() => window.open(getImageUrl(registration.signature_url), '_blank')}
                                         />
                                       ) : (
-                                        <div className="w-full h-60 bg-gray-200 rounded-lg flex items-center justify-center">
+                                        <div className="w-full h-80 bg-gray-200 rounded-lg flex items-center justify-center">
                                           <div className="text-center">
                                             <FileSignature className="h-8 w-8 text-gray-400 mx-auto mb-2" />
                                             <p className="text-gray-500 text-sm">No signature available</p>
