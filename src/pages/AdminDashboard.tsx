@@ -132,13 +132,12 @@ export default function AdminDashboard() {
       const endTimeISO = new Date(editEndTime).toISOString();
       console.log("Converted to ISO string:", endTimeISO);
 
-      const { data, error } = await supabase
+      const { error } = await supabase
         .from('visitor_registrations')
         .update({ endtime: endTimeISO })
-        .eq('id', id)
-        .select();
+        .eq('id', id);
 
-      console.log("Update response:", { data, error });
+      console.log("Update response:", { error });
 
       if (error) {
         console.error("Update error:", error);
@@ -150,24 +149,22 @@ export default function AdminDashboard() {
         return;
       }
 
-      if (data && data.length > 0) {
-        console.log("Successfully updated end time:", data[0]);
-        
-        // Update local state
-        setRegistrations(prev => 
-          prev.map(reg => 
-            reg.id === id ? { ...reg, endtime: endTimeISO } : reg
-          )
-        );
-        
-        toast({
-          title: "Success",
-          description: "End time updated successfully",
-        });
-        
-        setEditingId(null);
-        setEditEndTime('');
-      }
+      console.log("Successfully updated end time");
+      
+      // Update local state
+      setRegistrations(prev => 
+        prev.map(reg => 
+          reg.id === id ? { ...reg, endtime: endTimeISO } : reg
+        )
+      );
+      
+      toast({
+        title: "Success",
+        description: "End time updated successfully",
+      });
+      
+      setEditingId(null);
+      setEditEndTime('');
       
     } catch (error) {
       console.error("Unexpected error during update:", error);
@@ -404,7 +401,7 @@ export default function AdminDashboard() {
                               <User className="h-4 w-4 text-white" />
                             </div>
                           </div>
-                          <div>
+                          <div className="bg-gradient-to-r from-purple-50 to-blue-50 p-2 rounded-lg border border-purple-200">
                             <div className="text-sm font-bold text-gray-900">
                               {registration.visitorname}
                             </div>
@@ -416,13 +413,15 @@ export default function AdminDashboard() {
                         </div>
                       </TableCell>
                       <TableCell className="py-2">
-                        <div className="text-sm text-gray-900 flex items-center font-medium">
-                          <Phone className="h-3 w-3 mr-1 text-gray-500" />
-                          {registration.phonenumber}
-                        </div>
-                        <div className="text-xs text-gray-600 flex items-center mt-1 font-medium">
-                          <MapPin className="h-3 w-3 mr-1 text-gray-500" />
-                          {registration.address?.slice(0, 25)}...
+                        <div className="bg-gradient-to-r from-emerald-50 to-emerald-100 p-2 rounded-lg border border-emerald-200">
+                          <div className="text-sm text-gray-900 flex items-center font-medium">
+                            <Phone className="h-3 w-3 mr-1 text-gray-500" />
+                            {registration.phonenumber}
+                          </div>
+                          <div className="text-xs text-gray-600 flex items-center mt-1 font-medium">
+                            <MapPin className="h-3 w-3 mr-1 text-gray-500" />
+                            {registration.address?.slice(0, 25)}...
+                          </div>
                         </div>
                       </TableCell>
                       <TableCell className="py-2">
@@ -431,15 +430,17 @@ export default function AdminDashboard() {
                         </span>
                       </TableCell>
                       <TableCell className="py-2">
-                        <div className="text-sm font-bold text-gray-900">
-                          {registration.numberofpeople} {registration.numberofpeople === 1 ? 'person' : 'people'}
-                        </div>
-                        <div className="text-xs text-gray-600 max-w-xs truncate font-medium">
-                          {parsePeople(registration.people)}
+                        <div className="bg-gradient-to-r from-orange-50 to-orange-100 p-2 rounded-lg border border-orange-200">
+                          <div className="text-sm font-bold text-gray-900">
+                            {registration.numberofpeople} {registration.numberofpeople === 1 ? 'person' : 'people'}
+                          </div>
+                          <div className="text-xs text-gray-600 max-w-xs truncate font-medium">
+                            {parsePeople(registration.people)}
+                          </div>
                         </div>
                       </TableCell>
                       <TableCell className="py-2">
-                        <div className="text-sm text-gray-900">
+                        <div className="bg-gradient-to-r from-blue-50 to-blue-100 p-2 rounded-lg border border-blue-200">
                           <div className="flex items-center text-xs text-gray-600 mb-1 font-medium">
                             <Clock className="h-3 w-3 mr-1" />
                             Started: {formatDate(registration.starttime)}
@@ -481,7 +482,7 @@ export default function AdminDashboard() {
                                 <Eye className="h-3 w-3" />
                               </Button>
                             </DialogTrigger>
-                            <DialogContent className="max-w-4xl max-h-[80vh] overflow-y-auto">
+                            <DialogContent className="max-w-6xl max-h-[90vh] overflow-y-auto">
                               <DialogHeader>
                                 <DialogTitle className="text-xl font-bold text-purple-800">
                                   {registration.visitorname}
@@ -490,8 +491,8 @@ export default function AdminDashboard() {
                                   Complete visitor information
                                 </DialogDescription>
                               </DialogHeader>
-                              <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
-                                <div className="space-y-3">
+                              <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
+                                <div className="lg:col-span-2 space-y-3">
                                   <div className="bg-gradient-to-br from-purple-50 to-purple-100 p-3 rounded-lg border border-purple-200">
                                     <h4 className="font-bold text-sm mb-2 flex items-center text-purple-800">
                                       <User className="h-4 w-4 mr-2" />
@@ -533,14 +534,14 @@ export default function AdminDashboard() {
                                       <img
                                         src={getImageUrl(registration.picture_url)}
                                         alt="Visitor"
-                                        className="w-full h-24 object-cover bg-white rounded border border-blue-200"
+                                        className="w-full h-48 object-cover bg-white rounded border border-blue-200"
                                         onError={(e) => {
                                           const target = e.target as HTMLImageElement;
-                                          target.src = 'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMjAwIiBoZWlnaHQ9IjEyOCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48cmVjdCB3aWR0aD0iMTAwJSIgaGVpZ2h0PSIxMDAlIiBmaWxsPSIjZjNmNGY2Ii8+PHRleHQgeD0iNTAlIiB5PSI1MCUiIGZvbnQtZmFtaWx5PSJBcmlhbCIgZm9udC1zaXplPSIxMiIgZmlsbD0iIzllYTNhOCIgdGV4dC1hbmNob3I9Im1pZGRsZSIgZHk9Ii4zZW0iPk5vIGltYWdlPC90ZXh0Pjwvc3ZnPg==';
+                                          target.src = 'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMjAwIiBoZWlnaHQ9IjE5MiIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48cmVjdCB3aWR0aD0iMTAwJSIgaGVpZ2h0PSIxMDAlIiBmaWxsPSIjZjNmNGY2Ii8+PHRleHQgeD0iNTAlIiB5PSI1MCUiIGZvbnQtZmFtaWx5PSJBcmlhbCIgZm9udC1zaXplPSIxMiIgZmlsbD0iIzllYTNhOCIgdGV4dC1hbmNob3I9Im1pZGRsZSIgZHk9Ii4zZW0iPk5vIGltYWdlPC90ZXh0Pjwvc3ZnPg==';
                                         }}
                                       />
                                     ) : (
-                                      <div className="w-full h-24 bg-gray-200 rounded flex items-center justify-center border border-blue-200">
+                                      <div className="w-full h-48 bg-gray-200 rounded flex items-center justify-center border border-blue-200">
                                         <p className="text-gray-500 text-xs">No photo</p>
                                       </div>
                                     )}
@@ -555,14 +556,14 @@ export default function AdminDashboard() {
                                       <img
                                         src={getImageUrl(registration.signature_url)}
                                         alt="Signature"
-                                        className="w-full h-16 object-contain bg-white rounded border border-orange-200"
+                                        className="w-full h-24 object-contain bg-white rounded border border-orange-200"
                                         onError={(e) => {
                                           const target = e.target as HTMLImageElement;
-                                          target.src = 'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMjAwIiBoZWlnaHQ9IjgwIiB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciPjxyZWN0IHdpZHRoPSIxMDAlIiBoZWlnaHQ9IjEwMCUiIGZpbGw9IiNmM2Y0ZjYiLz48dGV4dCB4PSI1MCUiIHk9IjUwJSIgZm9udC1mYW1pbHk9IkFyaWFsIiBmb250LXNpemU9IjEyIiBmaWxsPSIjOWVhM2E4IiB0ZXh0LWFuY2hvcj0ibWlkZGxlIiBkeT0iLjNlbSI+Tm8gc2lnbmF0dXJlPC90ZXh0Pjwvc3ZnPg==';
+                                          target.src = 'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMjAwIiBoZWlnaHQ9Ijk2IiB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciPjxyZWN0IHdpZHRoPSIxMDAlIiBoZWlnaHQ9IjEwMCUiIGZpbGw9IiNmM2Y0ZjYiLz48dGV4dCB4PSI1MCUiIHk9IjUwJSIgZm9udC1mYW1pbHk9IkFyaWFsIiBmb250LXNpemU9IjEyIiBmaWxsPSIjOWVhM2E4IiB0ZXh0LWFuY2hvcj0ibWlkZGxlIiBkeT0iLjNlbSI+Tm8gc2lnbmF0dXJlPC90ZXh0Pjwvc3ZnPg==';
                                         }}
                                       />
                                     ) : (
-                                      <div className="w-full h-16 bg-gray-200 rounded flex items-center justify-center border border-orange-200">
+                                      <div className="w-full h-24 bg-gray-200 rounded flex items-center justify-center border border-orange-200">
                                         <p className="text-gray-500 text-xs">No signature</p>
                                       </div>
                                     )}
