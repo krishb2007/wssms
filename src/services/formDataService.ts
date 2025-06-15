@@ -1,4 +1,4 @@
-import { saveVisitorRegistration, VisitorFormData } from './visitorService';
+import { saveVisitorRegistration, VisitorFormData, getAllVisitorRegistrations, deleteVisitorRegistration } from './visitorService';
 
 export interface FormEntry {
   id?: string;
@@ -41,6 +41,16 @@ export interface FormDataInput {
   endTime: string | null;
   phoneNumber: string;
   acceptedPolicy?: boolean;
+}
+
+export interface FormDataWithId {
+  id: string;
+  created_at: string;
+  visitor_name: string;
+  contact_email?: string;
+  purpose: string;
+  number_of_people: number;
+  phone_number?: string;
 }
 
 export const saveFormData = async (formData: FormDataInput): Promise<FormEntry> => {
@@ -95,6 +105,37 @@ export const saveFormData = async (formData: FormDataInput): Promise<FormEntry> 
     } else {
       throw new Error("Registration failed due to an unexpected error. Please try again.");
     }
+  }
+};
+
+export const getAllFormData = async (): Promise<FormDataWithId[]> => {
+  try {
+    console.log("Fetching all visitor registrations...");
+    const data = await getAllVisitorRegistrations();
+    
+    return data.map(item => ({
+      id: item.id,
+      created_at: item.created_at,
+      visitor_name: item.visitorname,
+      contact_email: item.phonenumber, // Using phone as contact for now
+      purpose: item.purpose,
+      number_of_people: item.numberofpeople,
+      phone_number: item.phonenumber
+    }));
+  } catch (error) {
+    console.error("Error fetching form data:", error);
+    throw new Error("Failed to fetch visitor data");
+  }
+};
+
+export const deleteFormData = async (id: string): Promise<void> => {
+  try {
+    console.log("Deleting visitor registration:", id);
+    await deleteVisitorRegistration(id);
+    console.log("Successfully deleted visitor registration:", id);
+  } catch (error) {
+    console.error("Error deleting form data:", error);
+    throw new Error("Failed to delete visitor data");
   }
 };
 

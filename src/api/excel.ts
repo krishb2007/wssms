@@ -1,3 +1,4 @@
+
 export async function addRowToExcel(
   accessToken: string,
   fileId: string,
@@ -17,3 +18,41 @@ export async function addRowToExcel(
   if (!response.ok) throw new Error(await response.text());
   return response.json();
 }
+
+export const downloadExcel = async (data: any[]) => {
+  try {
+    console.log("Preparing CSV download for data:", data);
+    
+    // Create CSV content
+    const headers = ['Name', 'Email', 'Purpose', 'People Count', 'Date'];
+    const csvContent = [
+      headers.join(','),
+      ...data.map(item => [
+        `"${item.visitor_name || ''}"`,
+        `"${item.contact_email || ''}"`,
+        `"${item.purpose || ''}"`,
+        item.number_of_people || 0,
+        `"${new Date(item.created_at).toLocaleDateString()}"`
+      ].join(','))
+    ].join('\n');
+
+    // Create and download the file
+    const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+    const link = document.createElement('a');
+    const url = URL.createObjectURL(blob);
+    
+    link.setAttribute('href', url);
+    link.setAttribute('download', `visitor_registrations_${new Date().toISOString().split('T')[0]}.csv`);
+    link.style.visibility = 'hidden';
+    
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+    
+    console.log("CSV file downloaded successfully");
+    
+  } catch (error) {
+    console.error("Error downloading CSV:", error);
+    throw new Error("Failed to download CSV file");
+  }
+};
