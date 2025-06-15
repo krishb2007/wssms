@@ -1,4 +1,3 @@
-
 import React, { useEffect, useState } from 'react';
 import { supabase } from '../integrations/supabase/client';
 import { useNavigate } from 'react-router-dom';
@@ -163,13 +162,12 @@ export default function AdminDashboard() {
       const endTimeISO = new Date(editEndTime).toISOString();
       console.log("Converted to ISO string:", endTimeISO);
 
-      // Use await to ensure the update completes before proceeding
+      // Update without .single() to avoid "no rows returned" error
       const { data, error } = await supabase
         .from('visitor_registrations')
         .update({ endtime: endTimeISO })
         .eq('id', id)
-        .select()
-        .single();
+        .select();
 
       console.log("Update response:", { data, error });
 
@@ -183,12 +181,22 @@ export default function AdminDashboard() {
         return;
       }
 
-      console.log("Successfully updated end time in database:", data);
+      if (!data || data.length === 0) {
+        console.error("No data returned from update");
+        toast({
+          title: "Error",
+          description: "Failed to update end time: No record found",
+          variant: "destructive",
+        });
+        return;
+      }
+
+      console.log("Successfully updated end time in database:", data[0]);
       
       // Update local state with the actual data from the database
       setRegistrations(prev => 
         prev.map(reg => 
-          reg.id === id ? { ...reg, ...data } : reg
+          reg.id === id ? { ...reg, ...data[0] } : reg
         )
       );
       
