@@ -301,11 +301,11 @@ export default function AdminDashboard() {
               <h1 className="text-3xl font-bold text-white mb-2">
                 Visitor Management System
               </h1>
-              <p className="text-amber-200 text-lg">Monitor and manage visitor registrations</p>
+              <p className="text-amber-200 text-lg font-semibold">Monitor and manage visitor registrations</p>
             </div>
             <div className="flex items-center space-x-4">
               <div className="text-right">
-                <p className="text-sm text-amber-200">Signed in as</p>
+                <p className="text-sm text-amber-200 font-medium">Signed in as</p>
                 <p className="font-bold text-white">{user?.email}</p>
               </div>
               <Button 
@@ -329,7 +329,7 @@ export default function AdminDashboard() {
                   <Users className="h-6 w-6 text-white" />
                 </div>
                 <div className="ml-4">
-                  <p className="text-sm font-medium text-amber-100">Total Visitors</p>
+                  <p className="text-sm font-bold text-amber-100">Total Visitors</p>
                   <p className="text-2xl font-bold text-white">{registrations.length}</p>
                 </div>
               </div>
@@ -343,7 +343,7 @@ export default function AdminDashboard() {
                   <Clock className="h-6 w-6 text-white" />
                 </div>
                 <div className="ml-4">
-                  <p className="text-sm font-medium text-emerald-100">Active Visits</p>
+                  <p className="text-sm font-bold text-emerald-100">Active Visits</p>
                   <p className="text-2xl font-bold text-white">
                     {registrations.filter(r => !r.endtime).length}
                   </p>
@@ -359,7 +359,7 @@ export default function AdminDashboard() {
                   <Calendar className="h-6 w-6 text-white" />
                 </div>
                 <div className="ml-4">
-                  <p className="text-sm font-medium text-blue-100">Today's Visits</p>
+                  <p className="text-sm font-bold text-blue-100">Today's Visits</p>
                   <p className="text-2xl font-bold text-white">
                     {registrations.filter(r => 
                       new Date(r.created_at).toDateString() === new Date().toDateString()
@@ -377,7 +377,7 @@ export default function AdminDashboard() {
                   <Target className="h-6 w-6 text-white" />
                 </div>
                 <div className="ml-4">
-                  <p className="text-sm font-medium text-slate-100">Completed</p>
+                  <p className="text-sm font-bold text-slate-100">Completed</p>
                   <p className="text-2xl font-bold text-white">
                     {registrations.filter(r => r.endtime).length}
                   </p>
@@ -401,7 +401,7 @@ export default function AdminDashboard() {
                     placeholder="Search visitors..."
                     value={searchTerm}
                     onChange={(e) => setSearchTerm(e.target.value)}
-                    className="pl-10 w-64 bg-gray-700 border-gray-600 text-white placeholder-white focus:border-amber-500 focus:ring-amber-500"
+                    className="pl-10 w-64 bg-gray-700 border-gray-600 text-white placeholder-white font-medium focus:border-amber-500 focus:ring-amber-500"
                   />
                 </div>
                 <Button 
@@ -450,7 +450,7 @@ export default function AdminDashboard() {
                             <div className="text-sm font-bold text-white">
                               {registration.visitorname}
                             </div>
-                            <div className="text-xs text-white flex items-center">
+                            <div className="text-xs text-white font-medium flex items-center">
                               <Building className="h-3 w-3 mr-1" />
                               {registration.schoolname}
                             </div>
@@ -459,11 +459,11 @@ export default function AdminDashboard() {
                       </TableCell>
                       <TableCell className="py-4 border-r border-gray-700">
                         <div className="space-y-1">
-                          <div className="text-sm text-white flex items-center">
+                          <div className="text-sm text-white font-medium flex items-center">
                             <Phone className="h-3 w-3 mr-1 text-white" />
                             {registration.phonenumber}
                           </div>
-                          <div className="text-xs text-white flex items-center">
+                          <div className="text-xs text-white font-medium flex items-center">
                             <MapPin className="h-3 w-3 mr-1" />
                             {registration.address?.slice(0, 25)}...
                           </div>
@@ -479,14 +479,14 @@ export default function AdminDashboard() {
                           <div className="text-sm font-bold text-white">
                             {registration.numberofpeople} {registration.numberofpeople === 1 ? 'person' : 'people'}
                           </div>
-                          <div className="text-xs text-white max-w-xs truncate">
+                          <div className="text-xs text-white font-medium max-w-xs truncate">
                             {parsePeople(registration.people)}
                           </div>
                         </div>
                       </TableCell>
                       <TableCell className="py-4 border-r border-gray-700">
                         <div className="space-y-1">
-                          <div className="flex items-center text-xs text-white">
+                          <div className="flex items-center text-xs text-white font-medium">
                             <Clock className="h-3 w-3 mr-1" />
                             Started: {formatDate(registration.starttime)}
                           </div>
@@ -496,16 +496,16 @@ export default function AdminDashboard() {
                                 type="datetime-local"
                                 value={editEndTime}
                                 onChange={(e) => setEditEndTime(e.target.value)}
-                                className="w-40 text-xs bg-gray-700 border-gray-600 text-white"
+                                className="w-40 text-xs bg-gray-700 border-gray-600 text-white font-medium"
                               />
                               {saving && (
-                                <div className="text-amber-400 text-xs">
+                                <div className="text-amber-400 text-xs font-medium">
                                   Saving...
                                 </div>
                               )}
                             </div>
                           ) : (
-                            <div className="text-xs text-white">
+                            <div className="text-xs text-white font-medium">
                               Ended: {registration.endtime ? formatDate(registration.endtime) : 'Active'}
                             </div>
                           )}
@@ -533,7 +533,7 @@ export default function AdminDashboard() {
                                     <User className="h-6 w-6 mr-2" />
                                     {registration.visitorname}
                                   </DialogTitle>
-                                  <DialogDescription className="text-amber-200">
+                                  <DialogDescription className="text-amber-200 font-medium">
                                     Complete visitor information and documentation
                                   </DialogDescription>
                                 </DialogHeader>
@@ -549,24 +549,24 @@ export default function AdminDashboard() {
                                       </h3>
                                       <div className="space-y-3">
                                         <div>
-                                          <p className="text-sm text-white">Name</p>
-                                          <p className="text-white font-semibold">{registration.visitorname}</p>
+                                          <p className="text-sm text-white font-medium">Name</p>
+                                          <p className="text-white font-bold">{registration.visitorname}</p>
                                         </div>
                                         <div>
-                                          <p className="text-sm text-white">Phone</p>
-                                          <p className="text-white font-semibold">{registration.phonenumber}</p>
+                                          <p className="text-sm text-white font-medium">Phone</p>
+                                          <p className="text-white font-bold">{registration.phonenumber}</p>
                                         </div>
                                         <div>
-                                          <p className="text-sm text-white">Purpose</p>
-                                          <p className="text-white font-semibold">{formatPurpose(registration.purpose)}</p>
+                                          <p className="text-sm text-white font-medium">Purpose</p>
+                                          <p className="text-white font-bold">{formatPurpose(registration.purpose)}</p>
                                         </div>
                                         <div>
-                                          <p className="text-sm text-white">School/Institution</p>
-                                          <p className="text-white font-semibold">{registration.schoolname}</p>
+                                          <p className="text-sm text-white font-medium">School/Institution</p>
+                                          <p className="text-white font-bold">{registration.schoolname}</p>
                                         </div>
                                         <div>
-                                          <p className="text-sm text-white">Address</p>
-                                          <p className="text-white font-semibold">{registration.address}</p>
+                                          <p className="text-sm text-white font-medium">Address</p>
+                                          <p className="text-white font-bold">{registration.address}</p>
                                         </div>
                                       </div>
                                     </div>
@@ -592,7 +592,7 @@ export default function AdminDashboard() {
                                         <div className="w-full h-80 bg-gray-600 rounded-lg flex items-center justify-center border border-gray-500">
                                           <div className="text-center">
                                             <Image className="h-8 w-8 text-white mx-auto mb-2" />
-                                            <p className="text-white text-sm">No photo available</p>
+                                            <p className="text-white text-sm font-medium">No photo available</p>
                                           </div>
                                         </div>
                                       )}
@@ -609,20 +609,20 @@ export default function AdminDashboard() {
                                       </h3>
                                       <div className="space-y-3">
                                         <div>
-                                          <p className="text-sm text-white">People ({registration.numberofpeople})</p>
-                                          <p className="text-white font-semibold">{parsePeople(registration.people)}</p>
+                                          <p className="text-sm text-white font-medium">People ({registration.numberofpeople})</p>
+                                          <p className="text-white font-bold">{parsePeople(registration.people)}</p>
                                         </div>
                                         <div>
-                                          <p className="text-sm text-white">Start Time</p>
-                                          <p className="text-white font-semibold">{formatDate(registration.starttime)}</p>
+                                          <p className="text-sm text-white font-medium">Start Time</p>
+                                          <p className="text-white font-bold">{formatDate(registration.starttime)}</p>
                                         </div>
                                         <div>
-                                          <p className="text-sm text-white">End Time</p>
-                                          <p className="text-white font-semibold">{formatDate(registration.endtime)}</p>
+                                          <p className="text-sm text-white font-medium">End Time</p>
+                                          <p className="text-white font-bold">{formatDate(registration.endtime)}</p>
                                         </div>
                                         <div>
-                                          <p className="text-sm text-white">Registered On</p>
-                                          <p className="text-white font-semibold">{formatDate(registration.created_at)}</p>
+                                          <p className="text-sm text-white font-medium">Registered On</p>
+                                          <p className="text-white font-bold">{formatDate(registration.created_at)}</p>
                                         </div>
                                       </div>
                                     </div>
@@ -648,7 +648,7 @@ export default function AdminDashboard() {
                                         <div className="w-full h-80 bg-gray-600 rounded-lg flex items-center justify-center border border-gray-500">
                                           <div className="text-center">
                                             <FileSignature className="h-8 w-8 text-white mx-auto mb-2" />
-                                            <p className="text-white text-sm">No signature available</p>
+                                            <p className="text-white text-sm font-medium">No signature available</p>
                                           </div>
                                         </div>
                                       )}
