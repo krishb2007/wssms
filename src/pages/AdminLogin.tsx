@@ -90,31 +90,32 @@ export default function AdminLogin() {
     <div 
       className="min-h-screen flex justify-center items-center relative"
       style={{
-        backgroundImage: `linear-gradient(rgba(0, 0, 0, 0.4), rgba(0, 0, 0, 0.4)), url('/lovable-uploads/fb6393ba-f46a-4e08-bd51-911eadf6f6eb.png')`,
+        backgroundImage: `linear-gradient(rgba(0, 0, 0, 0.3), rgba(0, 0, 0, 0.3)), url('/lovable-uploads/bfe3e178-bae8-49ce-a019-db646e66fe14.png')`,
         backgroundSize: 'cover',
         backgroundPosition: 'center',
-        backgroundRepeat: 'no-repeat'
+        backgroundRepeat: 'no-repeat',
+        backgroundAttachment: 'fixed'
       }}
     >
-      <Card className="w-full max-w-md shadow-2xl bg-white/90 backdrop-blur-md border border-white/20 rounded-2xl overflow-hidden">
-        <CardHeader className="text-center pb-6 bg-gradient-to-br from-amber-500 via-orange-500 to-red-500 text-white relative">
-          <div className="absolute inset-0 bg-gradient-to-br from-yellow-400/20 via-orange-400/20 to-red-400/20"></div>
+      <Card className="w-full max-w-sm shadow-xl bg-white/10 backdrop-blur-xl border border-white/20 rounded-xl overflow-hidden">
+        <CardHeader className="text-center pb-4 bg-gradient-to-br from-amber-600/80 via-orange-600/80 to-red-600/80 text-white relative">
+          <div className="absolute inset-0 bg-gradient-to-br from-yellow-400/10 via-orange-400/10 to-red-400/10"></div>
           <div className="relative z-10">
-            <CardTitle className="text-3xl font-bold mb-2 drop-shadow-lg">
-              {isSignUp ? "Create Admin Account" : "Admin Login"}
+            <CardTitle className="text-xl font-bold mb-1 drop-shadow-lg">
+              {isSignUp ? "Create Admin" : "Admin Login"}
             </CardTitle>
-            <p className="text-white/90 text-sm font-medium">
+            <p className="text-white/90 text-xs font-medium">
               {isSignUp 
-                ? "Create your administrator account for Woodstock School" 
-                : "Access the administrative dashboard"
+                ? "Create administrator account" 
+                : "Access dashboard"
               }
             </p>
           </div>
         </CardHeader>
-        <CardContent className="p-8 bg-gradient-to-b from-white/95 to-white/90">
-          <form onSubmit={handleSubmit} className="space-y-6">
-            <div className="space-y-3">
-              <Label htmlFor="email" className="text-gray-800 font-bold text-sm">Email Address</Label>
+        <CardContent className="p-6 bg-gradient-to-b from-white/5 to-white/10">
+          <form onSubmit={handleSubmit} className="space-y-4">
+            <div className="space-y-2">
+              <Label htmlFor="email" className="text-white/90 font-semibold text-xs">Email</Label>
               <Input
                 id="email"
                 type="email"
@@ -123,45 +124,45 @@ export default function AdminLogin() {
                 onChange={e => setEmail(e.target.value)}
                 required
                 disabled={loading}
-                className="focus:ring-2 focus:ring-orange-400 border-2 border-gray-200 bg-white/80 backdrop-blur-sm rounded-lg h-12 text-gray-800 font-medium placeholder:text-gray-500"
+                className="focus:ring-2 focus:ring-orange-400/50 border border-white/30 bg-white/10 backdrop-blur-sm rounded-lg h-10 text-white font-medium placeholder:text-white/60"
               />
             </div>
-            <div className="space-y-3">
-              <Label htmlFor="password" className="text-gray-800 font-bold text-sm">Password</Label>
+            <div className="space-y-2">
+              <Label htmlFor="password" className="text-white/90 font-semibold text-xs">Password</Label>
               <Input
                 id="password"
                 type="password"
-                placeholder="Enter your password"
+                placeholder="Enter password"
                 value={password}
                 onChange={e => setPassword(e.target.value)}
                 required
                 disabled={loading}
-                className="focus:ring-2 focus:ring-orange-400 border-2 border-gray-200 bg-white/80 backdrop-blur-sm rounded-lg h-12 text-gray-800 font-medium placeholder:text-gray-500"
+                className="focus:ring-2 focus:ring-orange-400/50 border border-white/30 bg-white/10 backdrop-blur-sm rounded-lg h-10 text-white font-medium placeholder:text-white/60"
                 minLength={6}
               />
             </div>
             <Button 
               type="submit" 
               disabled={loading} 
-              className="w-full mt-8 h-12 bg-gradient-to-r from-amber-500 via-orange-500 to-red-500 hover:from-amber-600 hover:via-orange-600 hover:to-red-600 text-white font-bold text-base rounded-lg shadow-lg transform transition-all duration-200 hover:scale-[1.02] hover:shadow-xl disabled:opacity-50 disabled:cursor-not-allowed disabled:transform-none"
+              className="w-full mt-6 h-10 bg-gradient-to-r from-amber-600/90 via-orange-600/90 to-red-600/90 hover:from-amber-700 hover:via-orange-700 hover:to-red-700 text-white font-bold text-sm rounded-lg shadow-lg transform transition-all duration-200 hover:scale-[1.02] hover:shadow-xl disabled:opacity-50 disabled:cursor-not-allowed disabled:transform-none border border-white/20"
             >
               {loading 
-                ? (isSignUp ? 'Creating Account...' : 'Signing in...') 
-                : (isSignUp ? 'Create Admin Account' : 'Sign In')
+                ? (isSignUp ? 'Creating...' : 'Signing in...') 
+                : (isSignUp ? 'Create Account' : 'Sign In')
               }
             </Button>
           </form>
           
-          <div className="mt-6 text-center">
+          <div className="mt-4 text-center">
             <Button 
               variant="link" 
               onClick={() => setIsSignUp(!isSignUp)}
               disabled={loading}
-              className="text-orange-600 hover:text-orange-800 font-bold text-sm underline-offset-4 hover:underline"
+              className="text-white/80 hover:text-white font-semibold text-xs underline-offset-4 hover:underline p-0"
             >
               {isSignUp 
-                ? "Already have an account? Sign in" 
-                : "Need to create an admin account? Sign up"
+                ? "Have an account? Sign in" 
+                : "Create admin account"
               }
             </Button>
           </div>
