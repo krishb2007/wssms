@@ -1,6 +1,3 @@
-
-import { FormDataWithId } from '../services/formDataService';
-
 export async function addRowToExcel(
   accessToken: string,
   fileId: string,
@@ -19,35 +16,4 @@ export async function addRowToExcel(
   });
   if (!response.ok) throw new Error(await response.text());
   return response.json();
-}
-
-export async function downloadExcel(data: FormDataWithId[]): Promise<void> {
-  try {
-    // Create CSV content
-    const headers = ['Name', 'Contact', 'Purpose', 'Number of People', 'Date'];
-    const csvContent = [
-      headers.join(','),
-      ...data.map(item => [
-        `"${item.visitor_name}"`,
-        `"${item.contact_email}"`,
-        `"${item.purpose}"`,
-        item.number_of_people,
-        `"${new Date(item.created_at).toLocaleDateString()}"`
-      ].join(','))
-    ].join('\n');
-
-    // Create and download file
-    const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
-    const link = document.createElement('a');
-    const url = URL.createObjectURL(blob);
-    link.setAttribute('href', url);
-    link.setAttribute('download', `visitor_data_${new Date().toISOString().split('T')[0]}.csv`);
-    link.style.visibility = 'hidden';
-    document.body.appendChild(link);
-    link.click();
-    document.body.removeChild(link);
-  } catch (error) {
-    console.error('Error downloading Excel file:', error);
-    throw error;
-  }
 }
