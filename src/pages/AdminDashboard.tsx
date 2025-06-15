@@ -163,14 +163,13 @@ export default function AdminDashboard() {
       const endTimeISO = new Date(editEndTime).toISOString();
       console.log("Converted to ISO string:", endTimeISO);
 
-      // Remove .single() to fix the error - just use select() to verify the update worked
-      const { data, error } = await supabase
+      // Simplified update operation
+      const { error } = await supabase
         .from('visitor_registrations')
         .update({ endtime: endTimeISO })
-        .eq('id', id)
-        .select();
+        .eq('id', id);
 
-      console.log("Update response:", { data, error });
+      console.log("Update response error:", error);
 
       if (error) {
         console.error("Update error:", error);
@@ -182,31 +181,22 @@ export default function AdminDashboard() {
         return;
       }
 
-      if (data && data.length > 0) {
-        console.log("Successfully updated end time, updated record:", data[0]);
-        
-        // Update local state with the returned data
-        setRegistrations(prev => 
-          prev.map(reg => 
-            reg.id === id ? { ...reg, endtime: endTimeISO } : reg
-          )
-        );
-        
-        toast({
-          title: "Success",
-          description: "End time updated successfully",
-        });
-        
-        setEditingId(null);
-        setEditEndTime('');
-      } else {
-        console.warn("Update succeeded but no data returned");
-        toast({
-          title: "Warning",
-          description: "Update may not have been applied",
-          variant: "destructive",
-        });
-      }
+      console.log("Successfully updated end time");
+      
+      // Update local state
+      setRegistrations(prev => 
+        prev.map(reg => 
+          reg.id === id ? { ...reg, endtime: endTimeISO } : reg
+        )
+      );
+      
+      toast({
+        title: "Success",
+        description: "End time updated successfully",
+      });
+      
+      setEditingId(null);
+      setEditEndTime('');
       
     } catch (error) {
       console.error("Unexpected error during update:", error);
