@@ -1,5 +1,4 @@
-
-import { supabase } from '../integrations/supabase/client';
+import { supabase } from "@/integrations/supabase/client";
 
 export interface VisitorFormData {
   visitorname: string;
@@ -12,86 +11,114 @@ export interface VisitorFormData {
     state: string;
     country: string;
   };
-  picture: File | string | null;
-  signature: File | string | null;
-  starttime: string;
-  endtime: string | null;
-}
-
-export interface VisitorRegistration {
-  id: string;
-  created_at: string;
-  visitorname: string;
-  schoolname?: string;
-  numberofpeople: number;
-  people: string;
-  purpose: string;
-  phonenumber: string;
-  picture_url?: string;
-  signature_url?: string;
+  picture?: File | string | null;
+  signature?: File | string | null;
   starttime?: string;
-  endtime?: string;
+  endtime?: string | null;
 }
 
-export const saveVisitorRegistration = async (data: VisitorFormData): Promise<VisitorRegistration> => {
+// Upload file to Supabase storage
+const uploadFile = async (file: File, bucket: string, path: string): Promise<string | null> => {
   try {
-    console.log("Saving visitor registration to database:", data);
+    console.log("Uploading file to Supabase storage:", file.name);
+    
+    const { data, error } = await supabase.storage
+      .from(bucket)
+      .upload(path, file, {
+        cacheControl: '3600',
+        upsert: false
+      });
 
-    // Convert people array to JSON string
-    const peopleJson = JSON.stringify(data.people);
-    
-    // Convert address object to JSON string
-    const addressJson = JSON.stringify(data.address);
-
-    // Handle file uploads if needed (simplified for now)
-    let pictureUrl = null;
-    let signatureUrl = null;
-    
-    if (data.picture && typeof data.picture === 'string') {
-      pictureUrl = data.picture;
-    }
-    
-    if (data.signature && typeof data.signature === 'string') {
-      signatureUrl = data.signature;
+    if (error) {
+      console.error("Storage upload error:", error);
+      return null;
     }
 
+    // Return the public URL
+    const { data: { publicUrl } } = supabase.storage
+      .from(bucket)
+      .getPublicUrl(data.path);
+
+    console.log("File uploaded successfully, public URL:", publicUrl);
+    return publicUrl;
+  } catch (error) {
+    console.error("Error uploading file:", error);
+    return null;
+  }
+};
+
+export const saveVisitorRegistration = async (formData: VisitorFormData) => {
+  try {
+    console.log("Saving visitor registration to database:", formData);
+
+    // Handle file uploads
+    let pictureUrl: string | null = null;
+    let signatureUrl: string | null = null;
+
+    if (formData.picture && typeof formData.picture !== "string") {
+      const timestamp = Date.now();
+      pictureUrl = await uploadFile(
+        formData.picture, 
+        "visitor-pictures", 
+        `${timestamp}-picture.png`
+      );
+    } else if (typeof formData.picture === "string") {
+      pictureUrl = formData.picture;
+    }
+
+    if (formData.signature && typeof formData.signature !== "string") {
+      const timestamp = Date.now();
+      signatureUrl = await uploadFile(
+        formData.signature, 
+        "visitor-signatures", 
+        `${timestamp}-signature.png`
+      );
+    } else if (typeof formData.signature === "string") {
+      signatureUrl = formData.signature;
+    }
+
+    // Format address as string
+    const addressString = `${formData.address.city}, ${formData.address.state}, ${formData.address.country}`;
+
+    // Prepare data for insertion
     const insertData = {
-      visitorname: data.visitorname,
-      phonenumber: data.phonenumber,
-      numberofpeople: data.numberofpeople,
-      people: peopleJson,
-      purpose: data.purpose,
-      address: addressJson,
+      visitorname: formData.visitorname,
+      phonenumber: formData.phonenumber,
+      numberofpeople: formData.numberofpeople,
+      people: JSON.stringify(formData.people),
+      purpose: formData.purpose,
+      address: addressString,
+      schoolname: "Woodstock School",
+      starttime: formData.starttime || new Date().toISOString(),
+      endtime: formData.endtime || null,
       picture_url: pictureUrl,
       signature_url: signatureUrl,
-      starttime: data.starttime,
-      endtime: data.endtime,
-      schoolname: "Woodstock School"
     };
 
-    const { data: result, error } = await supabase
+    console.log("Attempting to insert into visitor_registrations table:", insertData);
+
+    const { data, error } = await supabase
       .from('visitor_registrations')
-      .insert(insertData)
+      .insert([insertData])
       .select()
       .single();
 
     if (error) {
-      console.error("Supabase error:", error);
-      throw error;
+      console.error("Database insert error:", error);
+      throw new Error(`Failed to save registration: ${error.message}`);
     }
 
-    console.log("Successfully saved visitor registration:", result);
-    return result;
-
+    console.log("Visitor registration saved successfully to database:", data);
+    return data;
   } catch (error) {
     console.error("Error in saveVisitorRegistration:", error);
     throw error;
   }
 };
 
-export const getAllVisitorRegistrations = async (): Promise<VisitorRegistration[]> => {
+export const getVisitorRegistrations = async () => {
   try {
-    console.log("Fetching all visitor registrations from database...");
+    console.log("Fetching visitor registrations from database");
     
     const { data, error } = await supabase
       .from('visitor_registrations')
@@ -99,37 +126,14 @@ export const getAllVisitorRegistrations = async (): Promise<VisitorRegistration[
       .order('created_at', { ascending: false });
 
     if (error) {
-      console.error("Supabase error:", error);
-      throw error;
+      console.error("Error fetching visitor registrations:", error);
+      throw new Error(`Failed to fetch registrations: ${error.message}`);
     }
 
-    console.log("Successfully fetched visitor registrations:", data);
+    console.log("Fetched visitor registrations:", data);
     return data || [];
-
   } catch (error) {
-    console.error("Error in getAllVisitorRegistrations:", error);
-    throw error;
-  }
-};
-
-export const deleteVisitorRegistration = async (id: string): Promise<void> => {
-  try {
-    console.log("Deleting visitor registration from database:", id);
-    
-    const { error } = await supabase
-      .from('visitor_registrations')
-      .delete()
-      .eq('id', id);
-
-    if (error) {
-      console.error("Supabase error:", error);
-      throw error;
-    }
-
-    console.log("Successfully deleted visitor registration:", id);
-
-  } catch (error) {
-    console.error("Error in deleteVisitorRegistration:", error);
+    console.error("Error in getVisitorRegistrations:", error);
     throw error;
   }
 };
