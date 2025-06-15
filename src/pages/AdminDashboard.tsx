@@ -166,8 +166,7 @@ export default function AdminDashboard() {
         .from('visitor_registrations')
         .update({ endtime: endTimeISO })
         .eq('id', id)
-        .select()
-        .single();
+        .select();
 
       console.log("Update response:", { data, error });
 
@@ -181,7 +180,17 @@ export default function AdminDashboard() {
         return;
       }
 
-      console.log("Successfully updated end time, updated record:", data);
+      if (!data || data.length === 0) {
+        console.error("No rows updated - registration not found");
+        toast({
+          title: "Error",
+          description: "Registration not found",
+          variant: "destructive",
+        });
+        return;
+      }
+
+      console.log("Successfully updated end time, updated record:", data[0]);
       
       // Force update local state with the returned data
       setRegistrations(prev => 
@@ -189,9 +198,6 @@ export default function AdminDashboard() {
           reg.id === id ? { ...reg, endtime: endTimeISO } : reg
         )
       );
-      
-      // Also refresh from database to ensure sync
-      await fetchRegistrations();
       
       toast({
         title: "Success",
