@@ -1,3 +1,4 @@
+
 import React, { useEffect, useState } from 'react';
 import { supabase } from '../integrations/supabase/client';
 import { useNavigate } from 'react-router-dom';
@@ -285,7 +286,7 @@ export default function AdminDashboard() {
       <div className="flex justify-center items-center min-h-screen bg-gray-900">
         <div className="text-center">
           <RefreshCw className="mx-auto h-12 w-12 animate-spin text-amber-500 mb-4" />
-          <p className="text-gray-300 font-bold text-xl">Loading registrations...</p>
+          <p className="text-white font-bold text-xl">Loading registrations...</p>
         </div>
       </div>
     );
@@ -396,12 +397,12 @@ export default function AdminDashboard() {
               </CardTitle>
               <div className="flex items-center space-x-4">
                 <div className="relative">
-                  <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 h-4 w-4" />
+                  <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-300 h-4 w-4" />
                   <Input
                     placeholder="Search visitors..."
                     value={searchTerm}
                     onChange={(e) => setSearchTerm(e.target.value)}
-                    className="pl-10 w-64 bg-gray-700 border-gray-600 text-white placeholder-gray-400 focus:border-amber-500 focus:ring-amber-500"
+                    className="pl-10 w-64 bg-gray-700 border-gray-600 text-white placeholder-gray-300 focus:border-amber-500 focus:ring-amber-500"
                   />
                 </div>
                 <Button 
@@ -450,7 +451,7 @@ export default function AdminDashboard() {
                             <div className="text-sm font-bold text-white">
                               {registration.visitorname}
                             </div>
-                            <div className="text-xs text-gray-400 flex items-center">
+                            <div className="text-xs text-gray-300 flex items-center">
                               <Building className="h-3 w-3 mr-1" />
                               {registration.schoolname}
                             </div>
@@ -460,10 +461,10 @@ export default function AdminDashboard() {
                       <TableCell className="py-4 border-r border-gray-700">
                         <div className="space-y-1">
                           <div className="text-sm text-white flex items-center">
-                            <Phone className="h-3 w-3 mr-1 text-gray-400" />
+                            <Phone className="h-3 w-3 mr-1 text-gray-300" />
                             {registration.phonenumber}
                           </div>
-                          <div className="text-xs text-gray-400 flex items-center">
+                          <div className="text-xs text-gray-300 flex items-center">
                             <MapPin className="h-3 w-3 mr-1" />
                             {registration.address?.slice(0, 25)}...
                           </div>
@@ -479,14 +480,14 @@ export default function AdminDashboard() {
                           <div className="text-sm font-bold text-white">
                             {registration.numberofpeople} {registration.numberofpeople === 1 ? 'person' : 'people'}
                           </div>
-                          <div className="text-xs text-gray-400 max-w-xs truncate">
+                          <div className="text-xs text-gray-300 max-w-xs truncate">
                             {parsePeople(registration.people)}
                           </div>
                         </div>
                       </TableCell>
                       <TableCell className="py-4 border-r border-gray-700">
                         <div className="space-y-1">
-                          <div className="flex items-center text-xs text-gray-400">
+                          <div className="flex items-center text-xs text-gray-300">
                             <Clock className="h-3 w-3 mr-1" />
                             Started: {formatDate(registration.starttime)}
                           </div>
@@ -505,7 +506,7 @@ export default function AdminDashboard() {
                               )}
                             </div>
                           ) : (
-                            <div className="text-xs text-gray-400">
+                            <div className="text-xs text-gray-300">
                               Ended: {registration.endtime ? formatDate(registration.endtime) : 'Active'}
                             </div>
                           )}
@@ -549,23 +550,23 @@ export default function AdminDashboard() {
                                       </h3>
                                       <div className="space-y-3">
                                         <div>
-                                          <p className="text-sm text-gray-400">Name</p>
+                                          <p className="text-sm text-gray-300">Name</p>
                                           <p className="text-white font-semibold">{registration.visitorname}</p>
                                         </div>
                                         <div>
-                                          <p className="text-sm text-gray-400">Phone</p>
+                                          <p className="text-sm text-gray-300">Phone</p>
                                           <p className="text-white font-semibold">{registration.phonenumber}</p>
                                         </div>
                                         <div>
-                                          <p className="text-sm text-gray-400">Purpose</p>
+                                          <p className="text-sm text-gray-300">Purpose</p>
                                           <p className="text-white font-semibold">{formatPurpose(registration.purpose)}</p>
                                         </div>
                                         <div>
-                                          <p className="text-sm text-gray-400">School/Institution</p>
+                                          <p className="text-sm text-gray-300">School/Institution</p>
                                           <p className="text-white font-semibold">{registration.schoolname}</p>
                                         </div>
                                         <div>
-                                          <p className="text-sm text-gray-400">Address</p>
+                                          <p className="text-sm text-gray-300">Address</p>
                                           <p className="text-white font-semibold">{registration.address}</p>
                                         </div>
                                       </div>
@@ -591,8 +592,8 @@ export default function AdminDashboard() {
                                       ) : (
                                         <div className="w-full h-80 bg-gray-600 rounded-lg flex items-center justify-center border border-gray-500">
                                           <div className="text-center">
-                                            <Image className="h-8 w-8 text-gray-400 mx-auto mb-2" />
-                                            <p className="text-gray-400 text-sm">No photo available</p>
+                                            <Image className="h-8 w-8 text-gray-300 mx-auto mb-2" />
+                                            <p className="text-gray-300 text-sm">No photo available</p>
                                           </div>
                                         </div>
                                       )}
@@ -609,19 +610,19 @@ export default function AdminDashboard() {
                                       </h3>
                                       <div className="space-y-3">
                                         <div>
-                                          <p className="text-sm text-gray-400">People ({registration.numberofpeople})</p>
+                                          <p className="text-sm text-gray-300">People ({registration.numberofpeople})</p>
                                           <p className="text-white font-semibold">{parsePeople(registration.people)}</p>
                                         </div>
                                         <div>
-                                          <p className="text-sm text-gray-400">Start Time</p>
+                                          <p className="text-sm text-gray-300">Start Time</p>
                                           <p className="text-white font-semibold">{formatDate(registration.starttime)}</p>
                                         </div>
                                         <div>
-                                          <p className="text-sm text-gray-400">End Time</p>
+                                          <p className="text-sm text-gray-300">End Time</p>
                                           <p className="text-white font-semibold">{formatDate(registration.endtime)}</p>
                                         </div>
                                         <div>
-                                          <p className="text-sm text-gray-400">Registered On</p>
+                                          <p className="text-sm text-gray-300">Registered On</p>
                                           <p className="text-white font-semibold">{formatDate(registration.created_at)}</p>
                                         </div>
                                       </div>
@@ -647,8 +648,8 @@ export default function AdminDashboard() {
                                       ) : (
                                         <div className="w-full h-80 bg-gray-600 rounded-lg flex items-center justify-center border border-gray-500">
                                           <div className="text-center">
-                                            <FileSignature className="h-8 w-8 text-gray-400 mx-auto mb-2" />
-                                            <p className="text-gray-400 text-sm">No signature available</p>
+                                            <FileSignature className="h-8 w-8 text-gray-300 mx-auto mb-2" />
+                                            <p className="text-gray-300 text-sm">No signature available</p>
                                           </div>
                                         </div>
                                       )}
@@ -674,7 +675,7 @@ export default function AdminDashboard() {
                                 variant="outline"
                                 onClick={cancelEdit}
                                 disabled={saving}
-                                className="h-8 w-8 p-0 border-2 border-gray-600 text-gray-400 hover:bg-gray-700 disabled:opacity-50"
+                                className="h-8 w-8 p-0 border-2 border-gray-600 text-gray-300 hover:bg-gray-700 disabled:opacity-50"
                               >
                                 <X className="h-4 w-4" />
                               </Button>
@@ -698,8 +699,8 @@ export default function AdminDashboard() {
             </div>
             {filteredRegistrations.length === 0 && !loading && (
               <div className="text-center py-12">
-                <Search className="mx-auto h-12 w-12 text-gray-400 mb-4" />
-                <p className="text-gray-400 text-lg font-bold">
+                <Search className="mx-auto h-12 w-12 text-gray-300 mb-4" />
+                <p className="text-gray-300 text-lg font-bold">
                   {searchTerm ? 'No registrations found matching your search.' : 'No registrations found.'}
                 </p>
               </div>
