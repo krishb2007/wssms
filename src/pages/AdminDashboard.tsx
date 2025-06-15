@@ -163,13 +163,15 @@ export default function AdminDashboard() {
       const endTimeISO = new Date(editEndTime).toISOString();
       console.log("Converted to ISO string:", endTimeISO);
 
-      // Simplified update operation
-      const { error } = await supabase
+      // Use await to ensure the update completes before proceeding
+      const { data, error } = await supabase
         .from('visitor_registrations')
         .update({ endtime: endTimeISO })
-        .eq('id', id);
+        .eq('id', id)
+        .select()
+        .single();
 
-      console.log("Update response error:", error);
+      console.log("Update response:", { data, error });
 
       if (error) {
         console.error("Update error:", error);
@@ -181,12 +183,12 @@ export default function AdminDashboard() {
         return;
       }
 
-      console.log("Successfully updated end time");
+      console.log("Successfully updated end time in database:", data);
       
-      // Update local state
+      // Update local state with the actual data from the database
       setRegistrations(prev => 
         prev.map(reg => 
-          reg.id === id ? { ...reg, endtime: endTimeISO } : reg
+          reg.id === id ? { ...reg, ...data } : reg
         )
       );
       
