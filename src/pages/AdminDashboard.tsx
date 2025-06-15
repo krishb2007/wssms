@@ -162,41 +162,45 @@ export default function AdminDashboard() {
       const endTimeISO = new Date(editEndTime).toISOString();
       console.log("Converted to ISO string:", endTimeISO);
 
-      // Update without .single() to avoid "no rows returned" error
-      const { data, error } = await supabase
+      // First, try to update the record
+      const { error: updateError } = await supabase
         .from('visitor_registrations')
         .update({ endtime: endTimeISO })
+        .eq('id', id);
+
+      if (updateError) {
+        console.error("Update error:", updateError);
+        toast({
+          title: "Error",
+          description: "Failed to update end time: " + updateError.message,
+          variant: "destructive",
+        });
+        return;
+      }
+
+      // Then fetch the updated record to confirm it was saved
+      const { data: updatedData, error: fetchError } = await supabase
+        .from('visitor_registrations')
+        .select('*')
         .eq('id', id)
-        .select();
+        .single();
 
-      console.log("Update response:", { data, error });
-
-      if (error) {
-        console.error("Update error:", error);
+      if (fetchError || !updatedData) {
+        console.error("Fetch error after update:", fetchError);
         toast({
           title: "Error",
-          description: "Failed to update end time: " + error.message,
+          description: "Update may have failed - please refresh the page",
           variant: "destructive",
         });
         return;
       }
 
-      if (!data || data.length === 0) {
-        console.error("No data returned from update");
-        toast({
-          title: "Error",
-          description: "Failed to update end time: No record found",
-          variant: "destructive",
-        });
-        return;
-      }
-
-      console.log("Successfully updated end time in database:", data[0]);
+      console.log("Successfully updated and fetched record:", updatedData);
       
-      // Update local state with the actual data from the database
+      // Update local state with the confirmed data from database
       setRegistrations(prev => 
         prev.map(reg => 
-          reg.id === id ? { ...reg, ...data[0] } : reg
+          reg.id === id ? updatedData : reg
         )
       );
       
@@ -268,13 +272,13 @@ export default function AdminDashboard() {
     if (registration.endtime) {
       return (
         <span className="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-red-100 text-red-800">
-          Completed
+          • Completed
         </span>
       );
     }
     return (
       <span className="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-green-100 text-green-800">
-        Active
+        • Active
       </span>
     );
   };
@@ -294,23 +298,23 @@ export default function AdminDashboard() {
     <div className="min-h-screen bg-gray-50">
       <div className="max-w-7xl mx-auto p-6">
         {/* Header */}
-        <div className="bg-white shadow rounded-lg p-6 mb-6">
+        <div className="bg-gradient-to-r from-purple-600 to-blue-600 text-white rounded-lg p-6 mb-6">
           <div className="flex justify-between items-center">
             <div>
-              <h1 className="text-2xl font-bold text-gray-900 mb-1">
+              <h1 className="text-2xl font-bold mb-1">
                 Visitor Management System
               </h1>
-              <p className="text-gray-600">Monitor and manage visitor registrations</p>
+              <p className="text-purple-100">Monitor and manage visitor registrations</p>
             </div>
             <div className="flex items-center space-x-4">
               <div className="text-right">
-                <p className="text-sm text-gray-500">Signed in as</p>
-                <p className="font-medium text-gray-900">{user?.email}</p>
+                <p className="text-sm text-purple-200">Signed in as</p>
+                <p className="font-medium">{user?.email}</p>
               </div>
               <Button 
                 onClick={handleLogout} 
                 variant="outline"
-                className="flex items-center space-x-2"
+                className="bg-white text-purple-600 border-white hover:bg-purple-50 flex items-center space-x-2"
               >
                 <LogOut className="h-4 w-4" />
                 <span>Sign Out</span>
@@ -321,74 +325,66 @@ export default function AdminDashboard() {
 
         {/* Stats Cards */}
         <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-6">
-          <Card>
-            <CardContent className="p-6">
-              <div className="flex items-center">
-                <div className="p-2 bg-blue-100 rounded-lg">
-                  <Users className="h-6 w-6 text-blue-600" />
-                </div>
-                <div className="ml-4">
-                  <p className="text-sm font-medium text-gray-600">Total Visitors</p>
-                  <p className="text-2xl font-bold text-gray-900">{registrations.length}</p>
-                </div>
+          <div className="bg-gradient-to-br from-purple-500 to-purple-600 text-white rounded-lg p-6">
+            <div className="flex items-center">
+              <div className="p-2 bg-white bg-opacity-20 rounded-lg">
+                <Users className="h-6 w-6" />
               </div>
-            </CardContent>
-          </Card>
+              <div className="ml-4">
+                <p className="text-sm font-medium text-purple-100">Total Visitors</p>
+                <p className="text-2xl font-bold">{registrations.length}</p>
+              </div>
+            </div>
+          </div>
           
-          <Card>
-            <CardContent className="p-6">
-              <div className="flex items-center">
-                <div className="p-2 bg-green-100 rounded-lg">
-                  <Clock className="h-6 w-6 text-green-600" />
-                </div>
-                <div className="ml-4">
-                  <p className="text-sm font-medium text-gray-600">Active Visits</p>
-                  <p className="text-2xl font-bold text-gray-900">
-                    {registrations.filter(r => !r.endtime).length}
-                  </p>
-                </div>
+          <div className="bg-gradient-to-br from-green-500 to-green-600 text-white rounded-lg p-6">
+            <div className="flex items-center">
+              <div className="p-2 bg-white bg-opacity-20 rounded-lg">
+                <Clock className="h-6 w-6" />
               </div>
-            </CardContent>
-          </Card>
+              <div className="ml-4">
+                <p className="text-sm font-medium text-green-100">Active Visits</p>
+                <p className="text-2xl font-bold">
+                  {registrations.filter(r => !r.endtime).length}
+                </p>
+              </div>
+            </div>
+          </div>
           
-          <Card>
-            <CardContent className="p-6">
-              <div className="flex items-center">
-                <div className="p-2 bg-purple-100 rounded-lg">
-                  <Calendar className="h-6 w-6 text-purple-600" />
-                </div>
-                <div className="ml-4">
-                  <p className="text-sm font-medium text-gray-600">Today's Visits</p>
-                  <p className="text-2xl font-bold text-gray-900">
-                    {registrations.filter(r => 
-                      new Date(r.created_at).toDateString() === new Date().toDateString()
-                    ).length}
-                  </p>
-                </div>
+          <div className="bg-gradient-to-br from-blue-500 to-blue-600 text-white rounded-lg p-6">
+            <div className="flex items-center">
+              <div className="p-2 bg-white bg-opacity-20 rounded-lg">
+                <Calendar className="h-6 w-6" />
               </div>
-            </CardContent>
-          </Card>
+              <div className="ml-4">
+                <p className="text-sm font-medium text-blue-100">Today's Visits</p>
+                <p className="text-2xl font-bold">
+                  {registrations.filter(r => 
+                    new Date(r.created_at).toDateString() === new Date().toDateString()
+                  ).length}
+                </p>
+              </div>
+            </div>
+          </div>
 
-          <Card>
-            <CardContent className="p-6">
-              <div className="flex items-center">
-                <div className="p-2 bg-red-100 rounded-lg">
-                  <Target className="h-6 w-6 text-red-600" />
-                </div>
-                <div className="ml-4">
-                  <p className="text-sm font-medium text-gray-600">Completed</p>
-                  <p className="text-2xl font-bold text-gray-900">
-                    {registrations.filter(r => r.endtime).length}
-                  </p>
-                </div>
+          <div className="bg-gradient-to-br from-red-500 to-red-600 text-white rounded-lg p-6">
+            <div className="flex items-center">
+              <div className="p-2 bg-white bg-opacity-20 rounded-lg">
+                <Target className="h-6 w-6" />
               </div>
-            </CardContent>
-          </Card>
+              <div className="ml-4">
+                <p className="text-sm font-medium text-red-100">Completed</p>
+                <p className="text-2xl font-bold">
+                  {registrations.filter(r => r.endtime).length}
+                </p>
+              </div>
+            </div>
+          </div>
         </div>
 
         {/* Main Content */}
-        <Card>
-          <CardHeader>
+        <Card className="shadow-lg">
+          <CardHeader className="bg-white rounded-t-lg">
             <div className="flex justify-between items-center">
               <CardTitle className="text-xl font-bold text-gray-900">
                 Visitor Registrations ({filteredRegistrations.length})
@@ -418,23 +414,23 @@ export default function AdminDashboard() {
             <div className="overflow-x-auto">
               <Table>
                 <TableHeader>
-                  <TableRow>
-                    <TableHead className="font-semibold">Visitor</TableHead>
-                    <TableHead className="font-semibold">Contact</TableHead>
-                    <TableHead className="font-semibold">Purpose</TableHead>
-                    <TableHead className="font-semibold">People</TableHead>
-                    <TableHead className="font-semibold">Visit Duration</TableHead>
-                    <TableHead className="font-semibold">Status</TableHead>
-                    <TableHead className="font-semibold">Actions</TableHead>
+                  <TableRow className="bg-gray-50">
+                    <TableHead className="font-semibold text-gray-700">Visitor</TableHead>
+                    <TableHead className="font-semibold text-gray-700">Contact</TableHead>
+                    <TableHead className="font-semibold text-gray-700">Purpose</TableHead>
+                    <TableHead className="font-semibold text-gray-700">People</TableHead>
+                    <TableHead className="font-semibold text-gray-700">Visit Duration</TableHead>
+                    <TableHead className="font-semibold text-gray-700">Status</TableHead>
+                    <TableHead className="font-semibold text-gray-700">Actions</TableHead>
                   </TableRow>
                 </TableHeader>
                 <TableBody>
                   {filteredRegistrations.map((registration) => (
-                    <TableRow key={registration.id}>
+                    <TableRow key={registration.id} className="hover:bg-gray-50">
                       <TableCell className="py-4">
                         <div className="flex items-center space-x-3">
-                          <div className="h-8 w-8 rounded-full bg-blue-100 flex items-center justify-center">
-                            <User className="h-4 w-4 text-blue-600" />
+                          <div className="h-10 w-10 rounded-full bg-gradient-to-br from-purple-400 to-blue-500 flex items-center justify-center text-white font-semibold">
+                            {registration.visitorname.charAt(0).toUpperCase()}
                           </div>
                           <div>
                             <div className="text-sm font-medium text-gray-900">
