@@ -1,4 +1,3 @@
-
 import React, { useEffect, useState } from 'react';
 import { supabase } from '../integrations/supabase/client';
 import { useNavigate } from 'react-router-dom';
@@ -315,36 +314,36 @@ export default function AdminDashboard() {
 
   if (loading) {
     return (
-      <div className="flex justify-center items-center min-h-screen bg-gradient-to-br from-purple-100 via-blue-100 to-indigo-100">
+      <div className="flex justify-center items-center min-h-screen bg-gradient-to-br from-orange-100 via-amber-50 to-orange-200">
         <div className="text-center">
-          <RefreshCw className="mx-auto h-12 w-12 animate-spin text-purple-600 mb-4" />
-          <p className="text-gray-700 font-bold text-xl">Loading registrations...</p>
+          <RefreshCw className="mx-auto h-12 w-12 animate-spin text-orange-600 mb-4" />
+          <p className="text-gray-800 font-bold text-xl">Loading registrations...</p>
         </div>
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-purple-100 via-blue-100 to-indigo-100">
+    <div className="min-h-screen bg-gradient-to-br from-orange-100 via-amber-50 to-orange-200">
       <div className="max-w-7xl mx-auto p-4">
-        {/* Header */}
-        <div className="bg-gradient-to-r from-purple-600 via-blue-600 to-indigo-600 shadow-xl rounded-xl p-4 mb-4 border border-purple-200">
+        {/* Header with Woodstock tiger colors */}
+        <div className="bg-gradient-to-r from-orange-600 via-orange-700 to-amber-700 shadow-xl rounded-xl p-4 mb-4 border border-orange-300">
           <div className="flex justify-between items-center">
             <div>
               <h1 className="text-2xl font-bold text-white mb-1">
                 Visitor Management System
               </h1>
-              <p className="text-purple-100 text-base font-medium">Monitor and manage visitor registrations</p>
+              <p className="text-orange-100 text-base font-medium">Monitor and manage visitor registrations</p>
             </div>
             <div className="flex items-center space-x-3">
               <div className="text-right">
-                <p className="text-xs text-purple-200 font-medium">Signed in as</p>
+                <p className="text-xs text-orange-200 font-medium">Signed in as</p>
                 <p className="font-bold text-white text-sm">{user?.email}</p>
               </div>
               <Button 
                 onClick={handleLogout} 
                 variant="outline"
-                className="flex items-center space-x-2 bg-white text-purple-600 hover:bg-purple-50 border-2 border-white font-bold text-sm px-3 py-2"
+                className="flex items-center space-x-2 bg-white text-orange-700 hover:bg-orange-50 border-2 border-white font-bold text-sm px-3 py-2"
               >
                 <LogOut className="h-4 w-4" />
                 <span>Sign Out</span>
@@ -353,30 +352,30 @@ export default function AdminDashboard() {
           </div>
         </div>
 
-        {/* Stats Cards */}
+        {/* Stats Cards with tiger colors */}
         <div className="grid grid-cols-1 md:grid-cols-4 gap-3 mb-4">
-          <Card className="border-0 shadow-lg bg-gradient-to-br from-purple-500 to-purple-600 text-white">
+          <Card className="border-0 shadow-lg bg-gradient-to-br from-orange-500 to-orange-600 text-white">
             <CardContent className="p-3">
               <div className="flex items-center">
                 <div className="p-2 bg-white/20 rounded-lg">
                   <Users className="h-5 w-5 text-white" />
                 </div>
                 <div className="ml-3">
-                  <p className="text-xs font-medium text-purple-100">Total Visitors</p>
+                  <p className="text-xs font-medium text-orange-100">Total Visitors</p>
                   <p className="text-xl font-bold text-white">{registrations.length}</p>
                 </div>
               </div>
             </CardContent>
           </Card>
           
-          <Card className="border-0 shadow-lg bg-gradient-to-br from-emerald-500 to-emerald-600 text-white">
+          <Card className="border-0 shadow-lg bg-gradient-to-br from-amber-600 to-amber-700 text-white">
             <CardContent className="p-3">
               <div className="flex items-center">
                 <div className="p-2 bg-white/20 rounded-lg">
                   <Clock className="h-5 w-5 text-white" />
                 </div>
                 <div className="ml-3">
-                  <p className="text-xs font-medium text-emerald-100">Active Visits</p>
+                  <p className="text-xs font-medium text-amber-100">Active Visits</p>
                   <p className="text-xl font-bold text-white">
                     {registrations.filter(r => !r.endtime).length}
                   </p>
@@ -385,14 +384,14 @@ export default function AdminDashboard() {
             </CardContent>
           </Card>
           
-          <Card className="border-0 shadow-lg bg-gradient-to-br from-blue-500 to-blue-600 text-white">
+          <Card className="border-0 shadow-lg bg-gradient-to-br from-orange-700 to-amber-800 text-white">
             <CardContent className="p-3">
               <div className="flex items-center">
                 <div className="p-2 bg-white/20 rounded-lg">
                   <Calendar className="h-5 w-5 text-white" />
                 </div>
                 <div className="ml-3">
-                  <p className="text-xs font-medium text-blue-100">Today's Visits</p>
+                  <p className="text-xs font-medium text-orange-100">Today's Visits</p>
                   <p className="text-xl font-bold text-white">
                     {registrations.filter(r => 
                       new Date(r.created_at).toDateString() === new Date().toDateString()
@@ -403,14 +402,14 @@ export default function AdminDashboard() {
             </CardContent>
           </Card>
 
-          <Card className="border-0 shadow-lg bg-gradient-to-br from-rose-500 to-rose-600 text-white">
+          <Card className="border-0 shadow-lg bg-gradient-to-br from-amber-700 to-orange-800 text-white">
             <CardContent className="p-3">
               <div className="flex items-center">
                 <div className="p-2 bg-white/20 rounded-lg">
                   <Target className="h-5 w-5 text-white" />
                 </div>
                 <div className="ml-3">
-                  <p className="text-xs font-medium text-rose-100">Completed</p>
+                  <p className="text-xs font-medium text-amber-100">Completed</p>
                   <p className="text-xl font-bold text-white">
                     {registrations.filter(r => r.endtime).length}
                   </p>
@@ -422,7 +421,7 @@ export default function AdminDashboard() {
 
         {/* Main Content */}
         <Card className="border-0 shadow-xl bg-white">
-          <CardHeader className="border-b border-gray-200 bg-gradient-to-r from-gray-50 to-gray-100 py-3">
+          <CardHeader className="border-b border-orange-200 bg-gradient-to-r from-orange-50 to-amber-50 py-3">
             <div className="flex justify-between items-center">
               <CardTitle className="text-xl font-bold text-gray-800">
                 Visitor Registrations ({filteredRegistrations.length})
@@ -434,13 +433,13 @@ export default function AdminDashboard() {
                     placeholder="Search visitors..."
                     value={searchTerm}
                     onChange={(e) => setSearchTerm(e.target.value)}
-                    className="pl-9 w-56 border-gray-300 focus:border-blue-500 focus:ring-blue-500 text-sm font-medium"
+                    className="pl-9 w-56 border-orange-300 focus:border-orange-500 focus:ring-orange-500 text-sm font-medium"
                   />
                 </div>
                 <Button 
                   onClick={fetchRegistrations} 
                   variant="outline"
-                  className="flex items-center space-x-2 border-2 border-blue-500 text-blue-600 hover:bg-blue-50 font-bold text-sm px-3 py-2"
+                  className="flex items-center space-x-2 border-2 border-orange-500 text-orange-600 hover:bg-orange-50 font-bold text-sm px-3 py-2"
                 >
                   <RefreshCw className="h-4 w-4" />
                   <span>Refresh</span>
@@ -452,14 +451,14 @@ export default function AdminDashboard() {
             <div className="overflow-x-auto">
               <Table>
                 <TableHeader>
-                  <TableRow className="bg-gradient-to-r from-blue-50 to-indigo-50 border-b-2 border-blue-200">
-                    <TableHead className="font-bold text-blue-900 text-sm border-r border-blue-100">Visitor</TableHead>
-                    <TableHead className="font-bold text-blue-900 text-sm border-r border-blue-100">Contact</TableHead>
-                    <TableHead className="font-bold text-blue-900 text-sm border-r border-blue-100">Purpose</TableHead>
-                    <TableHead className="font-bold text-blue-900 text-sm border-r border-blue-100">People</TableHead>
-                    <TableHead className="font-bold text-blue-900 text-sm border-r border-blue-100">Visit Duration</TableHead>
-                    <TableHead className="font-bold text-blue-900 text-sm border-r border-blue-100">Status</TableHead>
-                    <TableHead className="font-bold text-blue-900 text-sm">Actions</TableHead>
+                  <TableRow className="bg-gradient-to-r from-orange-50 to-amber-50 border-b-2 border-orange-200">
+                    <TableHead className="font-bold text-orange-900 text-sm border-r border-orange-100">Visitor</TableHead>
+                    <TableHead className="font-bold text-orange-900 text-sm border-r border-orange-100">Contact</TableHead>
+                    <TableHead className="font-bold text-orange-900 text-sm border-r border-orange-100">Purpose</TableHead>
+                    <TableHead className="font-bold text-orange-900 text-sm border-r border-orange-100">People</TableHead>
+                    <TableHead className="font-bold text-orange-900 text-sm border-r border-orange-100">Visit Duration</TableHead>
+                    <TableHead className="font-bold text-orange-900 text-sm border-r border-orange-100">Status</TableHead>
+                    <TableHead className="font-bold text-orange-900 text-sm">Actions</TableHead>
                   </TableRow>
                 </TableHeader>
                 <TableBody>
@@ -468,8 +467,8 @@ export default function AdminDashboard() {
                       key={registration.id} 
                       className={`transition-all duration-200 border-b border-gray-100 ${
                         index % 2 === 0 
-                          ? 'bg-gradient-to-r from-blue-25 to-indigo-25 hover:from-blue-50 hover:to-indigo-50' 
-                          : 'bg-gradient-to-r from-purple-25 to-pink-25 hover:from-purple-50 hover:to-pink-50'
+                          ? 'bg-gradient-to-r from-orange-25 to-amber-25 hover:from-orange-50 hover:to-amber-50' 
+                          : 'bg-gradient-to-r from-amber-25 to-orange-25 hover:from-amber-50 hover:to-orange-50'
                       }`}
                     >
                       <TableCell className="py-4 border-r border-gray-100">
@@ -477,8 +476,8 @@ export default function AdminDashboard() {
                           <div className="flex-shrink-0">
                             <div className={`h-10 w-10 rounded-full flex items-center justify-center ${
                               index % 2 === 0 
-                                ? 'bg-gradient-to-br from-blue-500 to-indigo-600' 
-                                : 'bg-gradient-to-br from-purple-500 to-pink-600'
+                                ? 'bg-gradient-to-br from-orange-500 to-amber-600' 
+                                : 'bg-gradient-to-br from-amber-600 to-orange-700'
                             }`}>
                               <User className="h-5 w-5 text-white" />
                             </div>
@@ -509,8 +508,8 @@ export default function AdminDashboard() {
                       <TableCell className="py-4 border-r border-gray-100">
                         <span className={`inline-flex items-center px-3 py-1 rounded-full text-xs font-bold border ${
                           index % 2 === 0 
-                            ? 'bg-blue-100 text-blue-800 border-blue-200' 
-                            : 'bg-purple-100 text-purple-800 border-purple-200'
+                            ? 'bg-orange-100 text-orange-800 border-orange-200' 
+                            : 'bg-amber-100 text-amber-800 border-amber-200'
                         }`}>
                           {formatPurpose(registration.purpose)}
                         </span>
@@ -565,8 +564,8 @@ export default function AdminDashboard() {
                                 variant="outline"
                                 className={`h-8 w-8 p-0 border-2 hover:scale-105 transition-transform ${
                                   index % 2 === 0 
-                                    ? 'border-blue-500 text-blue-600 hover:bg-blue-50' 
-                                    : 'border-purple-500 text-purple-600 hover:bg-purple-50'
+                                    ? 'border-orange-500 text-orange-600 hover:bg-orange-50' 
+                                    : 'border-amber-600 text-amber-700 hover:bg-amber-50'
                                 }`}
                               >
                                 <Eye className="h-4 w-4" />
@@ -574,12 +573,12 @@ export default function AdminDashboard() {
                             </DialogTrigger>
                             <DialogContent className="max-w-6xl max-h-[95vh] overflow-y-auto p-0">
                               <div className="bg-white">
-                                <DialogHeader className="bg-gradient-to-r from-blue-600 to-indigo-600 text-white p-4">
+                                <DialogHeader className="bg-gradient-to-r from-orange-600 to-amber-600 text-white p-4">
                                   <DialogTitle className="text-lg font-bold flex items-center">
                                     <User className="h-5 w-5 mr-2" />
                                     {registration.visitorname}
                                   </DialogTitle>
-                                  <DialogDescription className="text-blue-100 text-sm">
+                                  <DialogDescription className="text-orange-100 text-sm">
                                     Complete visitor information and documentation
                                   </DialogDescription>
                                 </DialogHeader>
@@ -588,38 +587,38 @@ export default function AdminDashboard() {
                                   {/* Top Row: Visitor Information (left) and Photo (right) */}
                                   <div className="grid grid-cols-2 gap-8 mb-8">
                                     {/* Visitor Information */}
-                                    <div className="bg-gray-50 rounded-lg p-4 border">
-                                      <h3 className="text-sm font-bold text-gray-800 mb-3 flex items-center">
+                                    <div className="bg-orange-50 rounded-lg p-4 border border-orange-200">
+                                      <h3 className="text-sm font-bold text-orange-800 mb-3 flex items-center">
                                         <User className="h-4 w-4 mr-2" />
                                         Visitor Information
                                       </h3>
                                       <div className="space-y-2">
                                         <div>
-                                          <p className="text-xs text-gray-500">Name</p>
+                                          <p className="text-xs text-orange-600">Name</p>
                                           <p className="text-sm font-semibold text-gray-900">{registration.visitorname}</p>
                                         </div>
                                         <div>
-                                          <p className="text-xs text-gray-500">Phone</p>
+                                          <p className="text-xs text-orange-600">Phone</p>
                                           <p className="text-sm font-semibold text-gray-900">{registration.phonenumber}</p>
                                         </div>
                                         <div>
-                                          <p className="text-xs text-gray-500">Purpose</p>
+                                          <p className="text-xs text-orange-600">Purpose</p>
                                           <p className="text-sm font-semibold text-gray-900">{formatPurpose(registration.purpose)}</p>
                                         </div>
                                         <div>
-                                          <p className="text-xs text-gray-500">School/Institution</p>
+                                          <p className="text-xs text-orange-600">School/Institution</p>
                                           <p className="text-sm font-semibold text-gray-900">{registration.schoolname}</p>
                                         </div>
                                         <div>
-                                          <p className="text-xs text-gray-500">Address</p>
+                                          <p className="text-xs text-orange-600">Address</p>
                                           <p className="text-sm font-semibold text-gray-900">{registration.address}</p>
                                         </div>
                                       </div>
                                     </div>
                                     
                                     {/* Photo */}
-                                    <div className="bg-gray-50 rounded-lg p-4 border">
-                                      <h3 className="text-sm font-bold text-gray-800 mb-3 flex items-center">
+                                    <div className="bg-amber-50 rounded-lg p-4 border border-amber-200">
+                                      <h3 className="text-sm font-bold text-amber-800 mb-3 flex items-center">
                                         <Image className="h-4 w-4 mr-2" />
                                         Visitor Photo
                                       </h3>
@@ -648,34 +647,34 @@ export default function AdminDashboard() {
                                   {/* Bottom Row: Visit Details (left) and Digital Signature (right) */}
                                   <div className="grid grid-cols-2 gap-8">
                                     {/* Visit Details */}
-                                    <div className="bg-gray-50 rounded-lg p-4 border">
-                                      <h3 className="text-sm font-bold text-gray-800 mb-3 flex items-center">
+                                    <div className="bg-orange-50 rounded-lg p-4 border border-orange-200">
+                                      <h3 className="text-sm font-bold text-orange-800 mb-3 flex items-center">
                                         <Clock className="h-4 w-4 mr-2" />
                                         Visit Details
                                       </h3>
                                       <div className="space-y-2">
                                         <div>
-                                          <p className="text-xs text-gray-500">People ({registration.numberofpeople})</p>
+                                          <p className="text-xs text-orange-600">People ({registration.numberofpeople})</p>
                                           <p className="text-sm font-semibold text-gray-900">{parsePeople(registration.people)}</p>
                                         </div>
                                         <div>
-                                          <p className="text-xs text-gray-500">Start Time</p>
+                                          <p className="text-xs text-orange-600">Start Time</p>
                                           <p className="text-sm font-semibold text-gray-900">{formatDate(registration.starttime)}</p>
                                         </div>
                                         <div>
-                                          <p className="text-xs text-gray-500">End Time</p>
+                                          <p className="text-xs text-orange-600">End Time</p>
                                           <p className="text-sm font-semibold text-gray-900">{formatDate(registration.endtime)}</p>
                                         </div>
                                         <div>
-                                          <p className="text-xs text-gray-500">Registered On</p>
+                                          <p className="text-xs text-orange-600">Registered On</p>
                                           <p className="text-sm font-semibold text-gray-900">{formatDate(registration.created_at)}</p>
                                         </div>
                                       </div>
                                     </div>
                                     
                                     {/* Digital Signature */}
-                                    <div className="bg-gray-50 rounded-lg p-4 border">
-                                      <h3 className="text-sm font-bold text-gray-800 mb-3 flex items-center">
+                                    <div className="bg-amber-50 rounded-lg p-4 border border-amber-200">
+                                      <h3 className="text-sm font-bold text-amber-800 mb-3 flex items-center">
                                         <FileSignature className="h-4 w-4 mr-2" />
                                         Digital Signature
                                       </h3>
@@ -733,7 +732,7 @@ export default function AdminDashboard() {
                               className={`h-8 w-8 p-0 border-2 hover:scale-105 transition-transform ${
                                 index % 2 === 0 
                                   ? 'border-orange-500 text-orange-600 hover:bg-orange-50' 
-                                  : 'border-pink-500 text-pink-600 hover:bg-pink-50'
+                                  : 'border-amber-600 text-amber-700 hover:bg-amber-50'
                               }`}
                             >
                               <Pencil className="h-4 w-4" />
