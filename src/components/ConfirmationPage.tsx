@@ -1,7 +1,13 @@
+
 import React from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { format } from "date-fns";
+import {
+  Dialog,
+  DialogContent,
+  DialogTrigger,
+} from "@/components/ui/dialog";
 
 interface ConfirmationPageProps {
   formData: {
@@ -54,7 +60,19 @@ const ConfirmationPage: React.FC<ConfirmationPageProps> = ({
     }
   };
 
-  return ( // This opening parenthesis should align with the return keyword, or be on the next line.
+  const pictureSrc = formData.picture
+    ? typeof formData.picture === "string"
+      ? formData.picture
+      : URL.createObjectURL(formData.picture)
+    : null;
+
+  const signatureSrc = formData.signature
+    ? typeof formData.signature === "string"
+      ? formData.signature
+      : URL.createObjectURL(formData.signature)
+    : null;
+
+  return (
     <div className="space-y-6">
       <div>
         <h3 className="text-lg font-medium">Review Your Information</h3>
@@ -112,35 +130,51 @@ const ConfirmationPage: React.FC<ConfirmationPageProps> = ({
               <div className="flex flex-col space-y-2">
                 <div>
                   <p className="font-medium text-sm mb-1">Photo:</p>
-                  {formData.picture && typeof formData.picture !== 'string' ? (
-                    <img
-                      src={URL.createObjectURL(formData.picture)}
-                      alt="Visitor"
-                      className="h-32 object-cover rounded-md"
-                    />
-                  ) : formData.picture ? (
-                    <img
-                      src={formData.picture as string}
-                      alt="Visitor"
-                      className="h-32 object-cover rounded-md"
-                    />
-                  ) : null}
+                  {pictureSrc ? (
+                    <Dialog>
+                      <DialogTrigger asChild>
+                        <img
+                          src={pictureSrc}
+                          alt="Visitor"
+                          className="h-32 object-cover rounded-md cursor-pointer hover:opacity-80 transition-opacity"
+                        />
+                      </DialogTrigger>
+                      <DialogContent className="p-0 border-0 max-w-3xl">
+                        <img
+                          src={pictureSrc}
+                          alt="Visitor"
+                          className="w-full h-auto rounded-lg"
+                        />
+                      </DialogContent>
+                    </Dialog>
+                  ) : (
+                    <p className="text-sm text-gray-500">No photo provided</p>
+                  )}
                 </div>
                 <div>
                   <p className="font-medium text-sm mb-1">Signature:</p>
-                  {formData.signature && typeof formData.signature !== 'string' ? (
-                    <img
-                      src={URL.createObjectURL(formData.signature)}
-                      alt="Signature"
-                      className="h-16 object-contain rounded-md bg-white"
-                    />
-                  ) : formData.signature ? (
-                    <img
-                      src={formData.signature as string}
-                      alt="Signature"
-                      className="h-16 object-contain rounded-md bg-white"
-                    />
-                  ) : null}
+                  {signatureSrc ? (
+                    <Dialog>
+                      <DialogTrigger asChild>
+                        <img
+                          src={signatureSrc}
+                          alt="Signature"
+                          className="h-16 object-contain rounded-md bg-white cursor-pointer hover:opacity-80 transition-opacity"
+                        />
+                      </DialogTrigger>
+                      <DialogContent className="p-0 border-0 max-w-lg">
+                        <img
+                          src={signatureSrc}
+                          alt="Signature"
+                          className="w-full h-auto rounded-lg bg-white"
+                        />
+                      </DialogContent>
+                    </Dialog>
+                  ) : (
+                    <p className="text-sm text-gray-500">
+                      No signature provided
+                    </p>
+                  )}
                 </div>
               </div>
             </div>

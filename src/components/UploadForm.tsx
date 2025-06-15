@@ -1,8 +1,14 @@
+
 import React, { useState, useRef, useEffect } from "react";
 import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
 import { toast } from "@/components/ui/use-toast";
 import { Camera } from "lucide-react";
+import {
+  Dialog,
+  DialogContent,
+  DialogTrigger,
+} from "@/components/ui/dialog";
 
 interface UploadFormProps {
   formData: {
@@ -135,21 +141,32 @@ const UploadForm: React.FC<UploadFormProps> = ({
                 </Button>
               </div>
             ) : picturePreview ? (
-              <div className="w-full">
-                <img
-                  src={picturePreview}
-                  alt="Preview"
-                  className="h-64 w-full object-cover rounded-lg"
-                />
-                <Button
-                  type="button"
-                  variant="outline"
-                  onClick={handleRetakePhoto}
-                  className="mt-4"
-                >
-                  Retake Photo
-                </Button>
-              </div>
+              <Dialog>
+                <div className="w-full">
+                  <DialogTrigger asChild>
+                    <img
+                      src={picturePreview}
+                      alt="Preview"
+                      className="h-64 w-full object-cover rounded-lg cursor-pointer hover:opacity-80 transition-opacity"
+                    />
+                  </DialogTrigger>
+                  <Button
+                    type="button"
+                    variant="outline"
+                    onClick={handleRetakePhoto}
+                    className="mt-4"
+                  >
+                    Retake Photo
+                  </Button>
+                </div>
+                <DialogContent className="p-0 border-0 max-w-3xl">
+                  <img
+                    src={picturePreview}
+                    alt="Full Preview"
+                    className="w-full h-auto rounded-lg"
+                  />
+                </DialogContent>
+              </Dialog>
             ) : (
               <Button
                 type="button"
