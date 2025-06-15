@@ -87,13 +87,21 @@ export default function AdminLogin() {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-purple-100 via-blue-100 to-indigo-100 flex justify-center items-center">
-      <Card className="w-full max-w-md shadow-xl bg-white border-0">
-        <CardHeader className="text-center pb-6 bg-gradient-to-r from-purple-600 via-blue-600 to-indigo-600 text-white rounded-t-lg">
-          <CardTitle className="text-2xl font-bold">
+    <div 
+      className="min-h-screen flex justify-center items-center relative"
+      style={{
+        backgroundImage: `linear-gradient(rgba(0, 0, 0, 0.6), rgba(0, 0, 0, 0.6)), url('/lovable-uploads/9f80dc1c-4483-4ce6-b359-72d6b0562d60.png')`,
+        backgroundSize: 'cover',
+        backgroundPosition: 'center',
+        backgroundRepeat: 'no-repeat'
+      }}
+    >
+      <Card className="w-full max-w-md shadow-2xl bg-white border-0 backdrop-blur-sm">
+        <CardHeader className="text-center pb-6 bg-black text-white rounded-t-lg">
+          <CardTitle className="text-2xl font-black">
             {isSignUp ? "Create Admin Account" : "Admin Login"}
           </CardTitle>
-          <p className="text-purple-100 text-sm mt-2">
+          <p className="text-gray-300 text-sm mt-2 font-bold">
             {isSignUp 
               ? "Create your administrator account for Woodstock School" 
               : "Access the administrative dashboard"
@@ -103,7 +111,7 @@ export default function AdminLogin() {
         <CardContent className="p-6">
           <form onSubmit={handleSubmit} className="space-y-4">
             <div className="space-y-2">
-              <Label htmlFor="email" className="text-gray-700">Email</Label>
+              <Label htmlFor="email" className="text-black font-black">Email</Label>
               <Input
                 id="email"
                 type="email"
@@ -112,11 +120,11 @@ export default function AdminLogin() {
                 onChange={e => setEmail(e.target.value)}
                 required
                 disabled={loading}
-                className="focus:ring-2 focus:ring-blue-500"
+                className="focus:ring-2 focus:ring-black border-2 border-gray-300 font-bold"
               />
             </div>
             <div className="space-y-2">
-              <Label htmlFor="password" className="text-gray-700">Password</Label>
+              <Label htmlFor="password" className="text-black font-black">Password</Label>
               <Input
                 id="password"
                 type="password"
@@ -125,11 +133,11 @@ export default function AdminLogin() {
                 onChange={e => setPassword(e.target.value)}
                 required
                 disabled={loading}
-                className="focus:ring-2 focus:ring-blue-500"
+                className="focus:ring-2 focus:ring-black border-2 border-gray-300 font-bold"
                 minLength={6}
               />
             </div>
-            <Button type="submit" disabled={loading} className="w-full mt-6 bg-gradient-to-r from-purple-600 to-blue-600 hover:from-purple-700 hover:to-blue-700">
+            <Button type="submit" disabled={loading} className="w-full mt-6 bg-black hover:bg-gray-800 text-white font-black">
               {loading 
                 ? (isSignUp ? 'Creating Account...' : 'Signing in...') 
                 : (isSignUp ? 'Create Admin Account' : 'Sign In')
@@ -142,7 +150,7 @@ export default function AdminLogin() {
               variant="link" 
               onClick={() => setIsSignUp(!isSignUp)}
               disabled={loading}
-              className="text-blue-600 hover:text-blue-800"
+              className="text-black hover:text-gray-600 font-black"
             >
               {isSignUp 
                 ? "Already have an account? Sign in" 
