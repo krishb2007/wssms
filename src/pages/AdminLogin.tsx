@@ -87,20 +87,20 @@ export default function AdminLogin() {
   }
 
   return (
-    <div className="flex justify-center items-center min-h-screen bg-gray-50">
-      <Card className="w-full max-w-md shadow-lg">
-        <CardHeader className="text-center pb-6">
-          <CardTitle className="text-2xl font-bold text-gray-800">
+    <div className="min-h-screen bg-gradient-to-br from-purple-100 via-blue-100 to-indigo-100 flex justify-center items-center">
+      <Card className="w-full max-w-md shadow-xl bg-white border-0">
+        <CardHeader className="text-center pb-6 bg-gradient-to-r from-purple-600 via-blue-600 to-indigo-600 text-white rounded-t-lg">
+          <CardTitle className="text-2xl font-bold">
             {isSignUp ? "Create Admin Account" : "Admin Login"}
           </CardTitle>
-          <p className="text-gray-600 text-sm mt-2">
+          <p className="text-purple-100 text-sm mt-2">
             {isSignUp 
               ? "Create your administrator account for Woodstock School" 
               : "Access the administrative dashboard"
             }
           </p>
         </CardHeader>
-        <CardContent>
+        <CardContent className="p-6">
           <form onSubmit={handleSubmit} className="space-y-4">
             <div className="space-y-2">
               <Label htmlFor="email" className="text-gray-700">Email</Label>
@@ -129,7 +129,7 @@ export default function AdminLogin() {
                 minLength={6}
               />
             </div>
-            <Button type="submit" disabled={loading} className="w-full mt-6">
+            <Button type="submit" disabled={loading} className="w-full mt-6 bg-gradient-to-r from-purple-600 to-blue-600 hover:from-purple-700 hover:to-blue-700">
               {loading 
                 ? (isSignUp ? 'Creating Account...' : 'Signing in...') 
                 : (isSignUp ? 'Create Admin Account' : 'Sign In')

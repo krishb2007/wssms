@@ -1,3 +1,4 @@
+
 import React, { useEffect, useState } from 'react';
 import { supabase } from '../integrations/supabase/client';
 import { useNavigate } from 'react-router-dom';
@@ -149,6 +150,7 @@ export default function AdminDashboard() {
     try {
       setSaving(true);
       console.log("Saving end time for registration:", id, "datetime-local value:", editEndTime);
+      console.log("Available registrations:", registrations.map(r => ({ id: r.id, name: r.visitorname })));
       
       if (!editEndTime) {
         toast({
@@ -161,6 +163,37 @@ export default function AdminDashboard() {
 
       const endTimeISO = new Date(editEndTime).toISOString();
       console.log("Converted to ISO string:", endTimeISO);
+
+      // First check if the registration exists
+      const { data: existingReg, error: checkError } = await supabase
+        .from('visitor_registrations')
+        .select('id, visitorname')
+        .eq('id', id)
+        .maybeSingle();
+
+      console.log("Registration check:", { existingReg, checkError });
+
+      if (checkError) {
+        console.error("Check error:", checkError);
+        toast({
+          title: "Error",
+          description: "Error checking registration: " + checkError.message,
+          variant: "destructive",
+        });
+        return;
+      }
+
+      if (!existingReg) {
+        console.error("Registration not found with ID:", id);
+        toast({
+          title: "Error",
+          description: "Registration not found",
+          variant: "destructive",
+        });
+        return;
+      }
+
+      console.log("Found registration:", existingReg);
 
       const { data, error } = await supabase
         .from('visitor_registrations')
@@ -181,10 +214,10 @@ export default function AdminDashboard() {
       }
 
       if (!data || data.length === 0) {
-        console.error("No rows updated - registration not found");
+        console.error("No rows updated - this should not happen after existence check");
         toast({
           title: "Error",
-          description: "Registration not found",
+          description: "Update failed unexpectedly",
           variant: "destructive",
         });
         return;
