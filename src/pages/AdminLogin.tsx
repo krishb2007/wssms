@@ -90,7 +90,7 @@ export default function AdminLogin() {
     <div 
       className="min-h-screen flex justify-center items-center relative"
       style={{
-        backgroundImage: `linear-gradient(rgba(0, 0, 0, 0.3), rgba(0, 0, 0, 0.3)), url('/lovable-uploads/e9a9c41f-d6f4-4e7f-be1e-c7e8d4c3c71b.png')`,
+        backgroundImage: `linear-gradient(rgba(0, 0, 0, 0.3), rgba(0, 0, 0, 0.3)), url('/lovable-uploads/fb6393ba-f46a-4e08-bd51-911eadf6f6eb.png')`,
         backgroundSize: 'cover',
         backgroundPosition: 'center',
         backgroundRepeat: 'no-repeat'
