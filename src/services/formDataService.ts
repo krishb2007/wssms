@@ -1,4 +1,6 @@
+
 import { saveVisitorRegistration, VisitorFormData } from './visitorService';
+import { supabase } from '../integrations/supabase/client';
 
 export interface FormEntry {
   id?: string;
@@ -21,6 +23,15 @@ export interface FormEntry {
   visitCount?: number;
   phoneNumber: string;
   acceptedPolicy?: boolean;
+}
+
+export interface FormDataWithId {
+  id: string;
+  visitor_name: string;
+  contact_email?: string;
+  purpose: string;
+  number_of_people: number;
+  created_at: string;
 }
 
 export interface FormDataInput {
@@ -95,6 +106,43 @@ export const saveFormData = async (formData: FormDataInput): Promise<FormEntry> 
     } else {
       throw new Error("Registration failed due to an unexpected error. Please try again.");
     }
+  }
+};
+
+export const getAllFormData = async (): Promise<FormDataWithId[]> => {
+  try {
+    const { data, error } = await supabase
+      .from('visitor_registrations')
+      .select('*')
+      .order('created_at', { ascending: false });
+
+    if (error) throw error;
+
+    return data.map(item => ({
+      id: item.id,
+      visitor_name: item.visitorname,
+      contact_email: item.phonenumber, // Using phone as contact since we don't have email
+      purpose: item.purpose,
+      number_of_people: item.numberofpeople,
+      created_at: item.created_at
+    }));
+  } catch (error) {
+    console.error('Error fetching form data:', error);
+    throw error;
+  }
+};
+
+export const deleteFormData = async (id: string): Promise<void> => {
+  try {
+    const { error } = await supabase
+      .from('visitor_registrations')
+      .delete()
+      .eq('id', id);
+
+    if (error) throw error;
+  } catch (error) {
+    console.error('Error deleting form data:', error);
+    throw error;
   }
 };
 
