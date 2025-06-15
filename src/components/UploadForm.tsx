@@ -3,6 +3,13 @@ import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
 import { toast } from "@/components/ui/use-toast";
 import { Camera } from "lucide-react";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from "@/components/ui/dialog";
 
 interface UploadFormProps {
   formData: {
@@ -136,11 +143,25 @@ const UploadForm: React.FC<UploadFormProps> = ({
               </div>
             ) : picturePreview ? (
               <div className="w-full">
-                <img
-                  src={picturePreview}
-                  alt="Preview"
-                  className="h-64 w-full object-cover rounded-lg"
-                />
+                <Dialog>
+                  <DialogTrigger asChild>
+                    <img
+                      src={picturePreview}
+                      alt="Preview"
+                      className="h-64 w-full object-cover rounded-lg cursor-pointer"
+                    />
+                  </DialogTrigger>
+                  <DialogContent className="max-w-3xl">
+                    <DialogHeader>
+                      <DialogTitle>Photo Preview</DialogTitle>
+                    </DialogHeader>
+                    <img
+                      src={picturePreview}
+                      alt="Preview"
+                      className="w-full h-auto rounded-lg"
+                    />
+                  </DialogContent>
+                </Dialog>
                 <Button
                   type="button"
                   variant="outline"
