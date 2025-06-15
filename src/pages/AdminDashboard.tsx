@@ -656,24 +656,6 @@ export default function AdminDashboard() {
                                   </div>
                                 </div>
                               </div>
-                              
-                              {/* Custom close button with white styling */}
-                              <button 
-                                className="absolute right-4 top-4 rounded-sm opacity-70 ring-offset-background transition-opacity hover:opacity-100 focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 disabled:pointer-events-none data-[state=open]:bg-accent data-[state=open]:text-muted-foreground p-1"
-                                onClick={(e) => {
-                                  e.preventDefault();
-                                  const dialog = e.currentTarget.closest('[role="dialog"]');
-                                  if (dialog) {
-                                    const closeButton = dialog.querySelector('[data-dialog-close]') as HTMLButtonElement;
-                                    if (closeButton) {
-                                      closeButton.click();
-                                    }
-                                  }
-                                }}
-                              >
-                                <X className="h-4 w-4 text-white" />
-                                <span className="sr-only">Close</span>
-                              </button>
                             </DialogContent>
                           </Dialog>
                           
