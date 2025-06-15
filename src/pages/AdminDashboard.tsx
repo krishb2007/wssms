@@ -1,174 +1,401 @@
 
-import React, { useState, useEffect } from 'react';
+import React, { useEffect, useState } from 'react';
+import { supabase } from '../integrations/supabase/client';
+import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../App';
 import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger, DialogDescription } from "@/components/ui/dialog";
 import { toast } from "@/components/ui/use-toast";
-import { Badge } from "@/components/ui/badge";
-import { Separator } from "@/components/ui/separator";
-import { getAllFormData, deleteFormData, FormDataWithId } from '../services/formDataService';
-import { downloadExcel } from '../api/excel';
-import { LogOut, Download, Trash2, Search, Users, Calendar, FileText } from 'lucide-react';
+import { Pencil, Save, X, LogOut, Search, Eye, Image, FileSignature, Users, Clock, RefreshCw, Calendar, MapPin, Phone, User, Building, Target, AlertCircle } from "lucide-react";
+
+interface VisitorRegistration {
+  id: string;
+  visitorname: string;
+  phonenumber: string;
+  numberofpeople: number;
+  people: string;
+  purpose: string;
+  address: string;
+  schoolname: string;
+  starttime: string | null;
+  endtime: string | null;
+  created_at: string;
+  picture_url: string | null;
+  signature_url: string | null;
+}
 
 export default function AdminDashboard() {
-  const { user, logout } = useAuth();
-  const [formData, setFormData] = useState<FormDataWithId[]>([]);
+  const [registrations, setRegistrations] = useState<VisitorRegistration[]>([]);
+  const [filteredRegistrations, setFilteredRegistrations] = useState<VisitorRegistration[]>([]);
+  const [editingId, setEditingId] = useState<string | null>(null);
+  const [editEndTime, setEditEndTime] = useState<string>('');
+  const [searchTerm, setSearchTerm] = useState<string>('');
   const [loading, setLoading] = useState(true);
-  const [searchTerm, setSearchTerm] = useState('');
-  const [selectedEntries, setSelectedEntries] = useState<string[]>([]);
+  const [saving, setSaving] = useState(false);
+  const navigate = useNavigate();
+  const { user, logout } = useAuth();
 
   useEffect(() => {
-    loadFormData();
-  }, []);
+    console.log("AdminDashboard useEffect - checking user:", user);
+    if (!user || user.role !== 'admin') {
+      console.log("User not admin, redirecting to login");
+      navigate('/admin-login');
+      return;
+    }
+    fetchRegistrations();
+    
+    // Set up real-time subscription
+    const channel = supabase
+      .channel('visitor-registrations-changes')
+      .on(
+        'postgres_changes',
+        {
+          event: '*',
+          schema: 'public',
+          table: 'visitor_registrations'
+        },
+        (payload) => {
+          console.log('Real-time update received:', payload);
+          if (payload.eventType === 'UPDATE') {
+            setRegistrations(prev => 
+              prev.map(reg => 
+                reg.id === payload.new.id ? { ...reg, ...payload.new } : reg
+              )
+            );
+          } else if (payload.eventType === 'INSERT') {
+            setRegistrations(prev => [payload.new as VisitorRegistration, ...prev]);
+          } else if (payload.eventType === 'DELETE') {
+            setRegistrations(prev => prev.filter(reg => reg.id !== payload.old.id));
+          }
+        }
+      )
+      .subscribe();
 
-  const loadFormData = async () => {
+    return () => {
+      supabase.removeChannel(channel);
+    };
+  }, [user, navigate]);
+
+  useEffect(() => {
+    if (searchTerm.trim() === '') {
+      setFilteredRegistrations(registrations);
+    } else {
+      const filtered = registrations.filter(registration =>
+        registration.visitorname.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        registration.phonenumber.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        registration.purpose.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        registration.address?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        registration.schoolname?.toLowerCase().includes(searchTerm.toLowerCase())
+      );
+      setFilteredRegistrations(filtered);
+    }
+  }, [searchTerm, registrations]);
+
+  async function fetchRegistrations() {
+    setLoading(true);
     try {
-      const data = await getAllFormData();
-      setFormData(data);
+      console.log("Fetching visitor registrations...");
+      
+      const { data, error } = await supabase
+        .from('visitor_registrations')
+        .select('*')
+        .order('created_at', { ascending: false });
+
+      console.log("Fetch result:", { data, error });
+
+      if (error) {
+        console.error("Database error:", error);
+        toast({
+          title: "Error",
+          description: "Failed to fetch registrations: " + error.message,
+          variant: "destructive",
+        });
+      } else if (data) {
+        console.log(`Successfully fetched ${data.length} registrations`);
+        setRegistrations(data);
+        setFilteredRegistrations(data);
+      }
     } catch (error) {
-      console.error('Error loading form data:', error);
+      console.error("Unexpected error:", error);
       toast({
         title: "Error",
-        description: "Failed to load form data",
+        description: "An unexpected error occurred while fetching data",
+        variant: "destructive",
+      });
+    }
+    setLoading(false);
+  }
+
+  function startEdit(registration: VisitorRegistration) {
+    console.log("Starting edit for registration:", registration.id);
+    setEditingId(registration.id);
+    const currentEndTime = registration.endtime 
+      ? new Date(registration.endtime).toISOString().slice(0, 16)
+      : new Date().toISOString().slice(0, 16);
+    setEditEndTime(currentEndTime);
+  }
+
+  function cancelEdit() {
+    console.log("Cancelling edit");
+    setEditingId(null);
+    setEditEndTime('');
+  }
+
+  async function saveEdit(id: string) {
+    if (saving) return;
+    
+    try {
+      setSaving(true);
+      console.log("Saving end time for registration:", id, "datetime-local value:", editEndTime);
+      console.log("Available registrations:", registrations.map(r => ({ id: r.id, name: r.visitorname })));
+      
+      if (!editEndTime) {
+        toast({
+          title: "Error",
+          description: "Please select an end time",
+          variant: "destructive",
+        });
+        return;
+      }
+
+      const endTimeISO = new Date(editEndTime).toISOString();
+      console.log("Converted to ISO string:", endTimeISO);
+
+      // First check if the registration exists
+      const { data: existingReg, error: checkError } = await supabase
+        .from('visitor_registrations')
+        .select('id, visitorname')
+        .eq('id', id)
+        .maybeSingle();
+
+      console.log("Registration check:", { existingReg, checkError });
+
+      if (checkError) {
+        console.error("Check error:", checkError);
+        toast({
+          title: "Error",
+          description: "Error checking registration: " + checkError.message,
+          variant: "destructive",
+        });
+        return;
+      }
+
+      if (!existingReg) {
+        console.error("Registration not found with ID:", id);
+        toast({
+          title: "Error",
+          description: "Registration not found",
+          variant: "destructive",
+        });
+        return;
+      }
+
+      console.log("Found registration:", existingReg);
+
+      const { data, error } = await supabase
+        .from('visitor_registrations')
+        .update({ endtime: endTimeISO })
+        .eq('id', id)
+        .select();
+
+      console.log("Update response:", { data, error });
+
+      if (error) {
+        console.error("Update error:", error);
+        toast({
+          title: "Error",
+          description: "Failed to update end time: " + error.message,
+          variant: "destructive",
+        });
+        return;
+      }
+
+      if (!data || data.length === 0) {
+        console.error("No rows updated - this should not happen after existence check");
+        toast({
+          title: "Error",
+          description: "Update failed unexpectedly",
+          variant: "destructive",
+        });
+        return;
+      }
+
+      console.log("Successfully updated end time, updated record:", data[0]);
+      
+      // Force update local state with the returned data
+      setRegistrations(prev => 
+        prev.map(reg => 
+          reg.id === id ? { ...reg, endtime: endTimeISO } : reg
+        )
+      );
+      
+      toast({
+        title: "Success",
+        description: "End time updated successfully",
+      });
+      
+      setEditingId(null);
+      setEditEndTime('');
+      
+    } catch (error) {
+      console.error("Unexpected error during update:", error);
+      toast({
+        title: "Error",
+        description: "An unexpected error occurred while updating: " + (error as Error).message,
         variant: "destructive",
       });
     } finally {
-      setLoading(false);
+      setSaving(false);
     }
-  };
-
-  const handleDelete = async (id: string) => {
-    try {
-      await deleteFormData(id);
-      setFormData(formData.filter(item => item.id !== id));
-      toast({
-        title: "Success",
-        description: "Entry deleted successfully",
-      });
-    } catch (error) {
-      console.error('Error deleting entry:', error);
-      toast({
-        title: "Error",
-        description: "Failed to delete entry",
-        variant: "destructive",
-      });
-    }
-  };
-
-  const handleDownloadExcel = async () => {
-    try {
-      await downloadExcel(formData);
-      toast({
-        title: "Success",
-        description: "Excel file downloaded successfully",
-      });
-    } catch (error) {
-      console.error('Error downloading Excel:', error);
-      toast({
-        title: "Error",
-        description: "Failed to download Excel file",
-        variant: "destructive",
-      });
-    }
-  };
-
-  const filteredData = formData.filter(item =>
-    item.visitor_name?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    item.purpose?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    item.contact_email?.toLowerCase().includes(searchTerm.toLowerCase())
-  );
+  }
 
   const handleLogout = async () => {
     await logout();
-    toast({
-      title: "Logged Out",
-      description: "You have been successfully logged out",
+    navigate('/');
+  };
+
+  const formatDate = (dateString: string | null) => {
+    if (!dateString) return 'N/A';
+    return new Date(dateString).toLocaleString('en-US', {
+      month: 'short',
+      day: 'numeric',
+      year: 'numeric',
+      hour: '2-digit',
+      minute: '2-digit'
     });
+  };
+
+  const parsePeople = (peopleString: string) => {
+    try {
+      const people = JSON.parse(peopleString);
+      return people.map((person: any) => `${person.name} (${person.role})`).join(', ');
+    } catch {
+      return peopleString;
+    }
+  };
+
+  const formatPurpose = (purpose: string): string => {
+    const purposeMap: Record<string, string> = {
+      visit: "Visit",
+      work: "Work",
+      tourism: "Tourism",
+      sports: "Sports",
+      meeting: "Meeting",
+      official_visit: "Official Visit",
+      student_visit: "Student Visit"
+    };
+    return purposeMap[purpose] || (purpose.charAt(0).toUpperCase() + purpose.slice(1));
+  };
+
+  const getImageUrl = (url: string | null) => {
+    if (!url) return null;
+    if (url.startsWith('http') || url.startsWith('blob:')) return url;
+    return `https://efxeohyxpnwewhqwlahw.supabase.co/storage/v1/object/public/${url}`;
+  };
+
+  const getStatusBadge = (registration: VisitorRegistration) => {
+    if (registration.endtime) {
+      return (
+        <span className="inline-flex items-center px-2 py-1 rounded-full text-xs font-bold bg-red-100 text-red-800 border border-red-200">
+          <div className="w-1.5 h-1.5 bg-red-500 rounded-full mr-1.5"></div>
+          Completed
+        </span>
+      );
+    }
+    return (
+      <span className="inline-flex items-center px-2 py-1 rounded-full text-xs font-bold bg-green-100 text-green-800 border border-green-200">
+        <div className="w-1.5 h-1.5 bg-green-500 rounded-full mr-1.5 animate-pulse"></div>
+        Active
+      </span>
+    );
   };
 
   if (loading) {
     return (
-      <div 
-        className="min-h-screen flex justify-center items-center"
-        style={{
-          backgroundImage: `linear-gradient(rgba(0, 0, 0, 0.3), rgba(0, 0, 0, 0.3)), url('/lovable-uploads/bfe3e178-bae8-49ce-a019-db646e66fe14.png')`,
-          backgroundSize: 'cover',
-          backgroundPosition: 'center',
-          backgroundRepeat: 'no-repeat',
-          backgroundAttachment: 'fixed'
-        }}
-      >
-        <div className="text-white text-xl">Loading...</div>
+      <div className="flex justify-center items-center min-h-screen bg-gradient-to-br from-purple-100 via-blue-100 to-indigo-100">
+        <div className="text-center">
+          <RefreshCw className="mx-auto h-12 w-12 animate-spin text-purple-600 mb-4" />
+          <p className="text-gray-700 font-bold text-xl">Loading registrations...</p>
+        </div>
       </div>
     );
   }
 
   return (
-    <div 
-      className="min-h-screen p-4"
-      style={{
-        backgroundImage: `linear-gradient(rgba(0, 0, 0, 0.3), rgba(0, 0, 0, 0.3)), url('/lovable-uploads/bfe3e178-bae8-49ce-a019-db646e66fe14.png')`,
-        backgroundSize: 'cover',
-        backgroundPosition: 'center',
-        backgroundRepeat: 'no-repeat',
-        backgroundAttachment: 'fixed'
-      }}
-    >
-      <div className="max-w-7xl mx-auto space-y-6">
+    <div className="min-h-screen bg-gradient-to-br from-purple-100 via-blue-100 to-indigo-100">
+      <div className="max-w-7xl mx-auto p-4">
         {/* Header */}
-        <Card className="bg-white/10 backdrop-blur-xl border border-white/20 rounded-xl overflow-hidden">
-          <CardHeader className="bg-gradient-to-br from-amber-600/80 via-orange-600/80 to-red-600/80 text-white relative">
-            <div className="absolute inset-0 bg-gradient-to-br from-yellow-400/10 via-orange-400/10 to-red-400/10"></div>
-            <div className="relative z-10 flex justify-between items-center">
-              <div>
-                <CardTitle className="text-2xl font-bold drop-shadow-lg">
-                  Admin Dashboard
-                </CardTitle>
-                <p className="text-white/90 text-sm font-medium mt-1">
-                  Welcome back, {user?.email}
-                </p>
+        <div className="bg-gradient-to-r from-purple-600 via-blue-600 to-indigo-600 shadow-xl rounded-xl p-4 mb-4 border border-purple-200">
+          <div className="flex justify-between items-center">
+            <div>
+              <h1 className="text-2xl font-bold text-white mb-1">
+                Visitor Management System
+              </h1>
+              <p className="text-purple-100 text-base font-medium">Monitor and manage visitor registrations</p>
+            </div>
+            <div className="flex items-center space-x-3">
+              <div className="text-right">
+                <p className="text-xs text-purple-200 font-medium">Signed in as</p>
+                <p className="font-bold text-white text-sm">{user?.email}</p>
               </div>
-              <Button
-                onClick={handleLogout}
+              <Button 
+                onClick={handleLogout} 
                 variant="outline"
-                className="text-white border-white/30 bg-white/10 hover:bg-white/20 transition-all duration-200"
+                className="flex items-center space-x-2 bg-white text-purple-600 hover:bg-purple-50 border-2 border-white font-bold text-sm px-3 py-2"
               >
-                <LogOut className="w-4 h-4 mr-2" />
-                Logout
+                <LogOut className="h-4 w-4" />
+                <span>Sign Out</span>
               </Button>
             </div>
-          </CardHeader>
-        </Card>
+          </div>
+        </div>
 
         {/* Stats Cards */}
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-          <Card className="bg-white/10 backdrop-blur-xl border border-white/20 rounded-xl overflow-hidden">
-            <CardContent className="p-6 bg-gradient-to-b from-white/5 to-white/10">
-              <div className="flex items-center space-x-3">
-                <div className="p-3 bg-blue-500/20 rounded-full">
-                  <Users className="w-6 h-6 text-blue-200" />
+        <div className="grid grid-cols-1 md:grid-cols-4 gap-3 mb-4">
+          <Card className="border-0 shadow-lg bg-gradient-to-br from-purple-500 to-purple-600 text-white">
+            <CardContent className="p-3">
+              <div className="flex items-center">
+                <div className="p-2 bg-white/20 rounded-lg">
+                  <Users className="h-5 w-5 text-white" />
                 </div>
-                <div>
-                  <p className="text-white/70 text-sm font-medium">Total Visitors</p>
-                  <p className="text-2xl font-bold text-white">{formData.length}</p>
+                <div className="ml-3">
+                  <p className="text-xs font-medium text-purple-100">Total Visitors</p>
+                  <p className="text-xl font-bold text-white">{registrations.length}</p>
                 </div>
               </div>
             </CardContent>
           </Card>
-
-          <Card className="bg-white/10 backdrop-blur-xl border border-white/20 rounded-xl overflow-hidden">
-            <CardContent className="p-6 bg-gradient-to-b from-white/5 to-white/10">
-              <div className="flex items-center space-x-3">
-                <div className="p-3 bg-green-500/20 rounded-full">
-                  <Calendar className="w-6 h-6 text-green-200" />
+          
+          <Card className="border-0 shadow-lg bg-gradient-to-br from-emerald-500 to-emerald-600 text-white">
+            <CardContent className="p-3">
+              <div className="flex items-center">
+                <div className="p-2 bg-white/20 rounded-lg">
+                  <Clock className="h-5 w-5 text-white" />
                 </div>
-                <div>
-                  <p className="text-white/70 text-sm font-medium">Today's Visits</p>
-                  <p className="text-2xl font-bold text-white">
-                    {formData.filter(item => 
-                      new Date(item.created_at).toDateString() === new Date().toDateString()
+                <div className="ml-3">
+                  <p className="text-xs font-medium text-emerald-100">Active Visits</p>
+                  <p className="text-xl font-bold text-white">
+                    {registrations.filter(r => !r.endtime).length}
+                  </p>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+          
+          <Card className="border-0 shadow-lg bg-gradient-to-br from-blue-500 to-blue-600 text-white">
+            <CardContent className="p-3">
+              <div className="flex items-center">
+                <div className="p-2 bg-white/20 rounded-lg">
+                  <Calendar className="h-5 w-5 text-white" />
+                </div>
+                <div className="ml-3">
+                  <p className="text-xs font-medium text-blue-100">Today's Visits</p>
+                  <p className="text-xl font-bold text-white">
+                    {registrations.filter(r => 
+                      new Date(r.created_at).toDateString() === new Date().toDateString()
                     ).length}
                   </p>
                 </div>
@@ -176,103 +403,357 @@ export default function AdminDashboard() {
             </CardContent>
           </Card>
 
-          <Card className="bg-white/10 backdrop-blur-xl border border-white/20 rounded-xl overflow-hidden">
-            <CardContent className="p-6 bg-gradient-to-b from-white/5 to-white/10">
-              <div className="flex items-center space-x-3">
-                <div className="p-3 bg-purple-500/20 rounded-full">
-                  <FileText className="w-6 h-6 text-purple-200" />
+          <Card className="border-0 shadow-lg bg-gradient-to-br from-rose-500 to-rose-600 text-white">
+            <CardContent className="p-3">
+              <div className="flex items-center">
+                <div className="p-2 bg-white/20 rounded-lg">
+                  <Target className="h-5 w-5 text-white" />
                 </div>
-                <div>
-                  <p className="text-white/70 text-sm font-medium">Filtered Results</p>
-                  <p className="text-2xl font-bold text-white">{filteredData.length}</p>
+                <div className="ml-3">
+                  <p className="text-xs font-medium text-rose-100">Completed</p>
+                  <p className="text-xl font-bold text-white">
+                    {registrations.filter(r => r.endtime).length}
+                  </p>
                 </div>
               </div>
             </CardContent>
           </Card>
         </div>
 
-        {/* Search and Actions */}
-        <Card className="bg-white/10 backdrop-blur-xl border border-white/20 rounded-xl overflow-hidden">
-          <CardContent className="p-6 bg-gradient-to-b from-white/5 to-white/10">
-            <div className="flex flex-col md:flex-row gap-4 items-center justify-between">
-              <div className="relative flex-1 max-w-md">
-                <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-white/60 w-4 h-4" />
-                <Input
-                  placeholder="Search visitors..."
-                  value={searchTerm}
-                  onChange={(e) => setSearchTerm(e.target.value)}
-                  className="pl-10 bg-white/10 border border-white/30 text-white placeholder:text-white/60 focus:ring-2 focus:ring-orange-400/50"
-                />
+        {/* Main Content */}
+        <Card className="border-0 shadow-xl bg-white">
+          <CardHeader className="border-b border-gray-200 bg-gradient-to-r from-gray-50 to-gray-100 py-3">
+            <div className="flex justify-between items-center">
+              <CardTitle className="text-xl font-bold text-gray-800">
+                Visitor Registrations ({filteredRegistrations.length})
+              </CardTitle>
+              <div className="flex items-center space-x-3">
+                <div className="relative">
+                  <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 h-4 w-4" />
+                  <Input
+                    placeholder="Search visitors..."
+                    value={searchTerm}
+                    onChange={(e) => setSearchTerm(e.target.value)}
+                    className="pl-9 w-56 border-gray-300 focus:border-blue-500 focus:ring-blue-500 text-sm font-medium"
+                  />
+                </div>
+                <Button 
+                  onClick={fetchRegistrations} 
+                  variant="outline"
+                  className="flex items-center space-x-2 border-2 border-blue-500 text-blue-600 hover:bg-blue-50 font-bold text-sm px-3 py-2"
+                >
+                  <RefreshCw className="h-4 w-4" />
+                  <span>Refresh</span>
+                </Button>
               </div>
-              <Button
-                onClick={handleDownloadExcel}
-                className="bg-gradient-to-r from-green-600/90 to-emerald-600/90 hover:from-green-700 hover:to-emerald-700 text-white font-bold rounded-lg shadow-lg transition-all duration-200 hover:scale-105"
-              >
-                <Download className="w-4 h-4 mr-2" />
-                Download Excel
-              </Button>
             </div>
-          </CardContent>
-        </Card>
-
-        {/* Visitor Data Table */}
-        <Card className="bg-white/10 backdrop-blur-xl border border-white/20 rounded-xl overflow-hidden">
-          <CardHeader className="bg-gradient-to-br from-amber-600/60 via-orange-600/60 to-red-600/60 text-white relative">
-            <div className="absolute inset-0 bg-gradient-to-br from-yellow-400/10 via-orange-400/10 to-red-400/10"></div>
-            <CardTitle className="relative z-10 text-lg font-bold drop-shadow-lg">
-              Visitor Records ({filteredData.length})
-            </CardTitle>
           </CardHeader>
           <CardContent className="p-0">
             <div className="overflow-x-auto">
-              <div className="max-h-96 overflow-y-auto">
-                {filteredData.length === 0 ? (
-                  <div className="p-8 text-center text-white/70">
-                    No visitor records found.
-                  </div>
-                ) : (
-                  <table className="w-full">
-                    <thead className="bg-white/5 sticky top-0">
-                      <tr>
-                        <th className="text-left p-4 text-white/90 font-semibold text-sm">Name</th>
-                        <th className="text-left p-4 text-white/90 font-semibold text-sm">Email</th>
-                        <th className="text-left p-4 text-white/90 font-semibold text-sm">Purpose</th>
-                        <th className="text-left p-4 text-white/90 font-semibold text-sm">People</th>
-                        <th className="text-left p-4 text-white/90 font-semibold text-sm">Date</th>
-                        <th className="text-left p-4 text-white/90 font-semibold text-sm">Actions</th>
-                      </tr>
-                    </thead>
-                    <tbody>
-                      {filteredData.map((item, index) => (
-                        <tr key={item.id} className={`border-t border-white/10 ${index % 2 === 0 ? 'bg-white/5' : 'bg-transparent'} hover:bg-white/10 transition-colors`}>
-                          <td className="p-4 text-white font-medium">{item.visitor_name}</td>
-                          <td className="p-4 text-white/80 text-sm">{item.contact_email}</td>
-                          <td className="p-4">
-                            <Badge variant="secondary" className="bg-orange-500/20 text-orange-200 border border-orange-500/30">
-                              {item.purpose}
-                            </Badge>
-                          </td>
-                          <td className="p-4 text-white/80 text-sm">{item.number_of_people}</td>
-                          <td className="p-4 text-white/80 text-sm">
-                            {new Date(item.created_at).toLocaleDateString()}
-                          </td>
-                          <td className="p-4">
+              <Table>
+                <TableHeader>
+                  <TableRow className="bg-gradient-to-r from-blue-50 to-indigo-50 border-b-2 border-blue-200">
+                    <TableHead className="font-bold text-blue-900 text-sm border-r border-blue-100">Visitor</TableHead>
+                    <TableHead className="font-bold text-blue-900 text-sm border-r border-blue-100">Contact</TableHead>
+                    <TableHead className="font-bold text-blue-900 text-sm border-r border-blue-100">Purpose</TableHead>
+                    <TableHead className="font-bold text-blue-900 text-sm border-r border-blue-100">People</TableHead>
+                    <TableHead className="font-bold text-blue-900 text-sm border-r border-blue-100">Visit Duration</TableHead>
+                    <TableHead className="font-bold text-blue-900 text-sm border-r border-blue-100">Status</TableHead>
+                    <TableHead className="font-bold text-blue-900 text-sm">Actions</TableHead>
+                  </TableRow>
+                </TableHeader>
+                <TableBody>
+                  {filteredRegistrations.map((registration, index) => (
+                    <TableRow 
+                      key={registration.id} 
+                      className={`transition-all duration-200 border-b border-gray-100 ${
+                        index % 2 === 0 
+                          ? 'bg-gradient-to-r from-blue-25 to-indigo-25 hover:from-blue-50 hover:to-indigo-50' 
+                          : 'bg-gradient-to-r from-purple-25 to-pink-25 hover:from-purple-50 hover:to-pink-50'
+                      }`}
+                    >
+                      <TableCell className="py-4 border-r border-gray-100">
+                        <div className="flex items-center space-x-3">
+                          <div className="flex-shrink-0">
+                            <div className={`h-10 w-10 rounded-full flex items-center justify-center ${
+                              index % 2 === 0 
+                                ? 'bg-gradient-to-br from-blue-500 to-indigo-600' 
+                                : 'bg-gradient-to-br from-purple-500 to-pink-600'
+                            }`}>
+                              <User className="h-5 w-5 text-white" />
+                            </div>
+                          </div>
+                          <div>
+                            <div className="text-sm font-bold text-gray-900">
+                              {registration.visitorname}
+                            </div>
+                            <div className="text-xs text-gray-600 flex items-center font-medium">
+                              <Building className="h-3 w-3 mr-1" />
+                              {registration.schoolname}
+                            </div>
+                          </div>
+                        </div>
+                      </TableCell>
+                      <TableCell className="py-4 border-r border-gray-100">
+                        <div className="space-y-1">
+                          <div className="text-sm text-gray-900 flex items-center font-medium">
+                            <Phone className="h-3 w-3 mr-1 text-gray-500" />
+                            {registration.phonenumber}
+                          </div>
+                          <div className="text-xs text-gray-600 flex items-center font-medium">
+                            <MapPin className="h-3 w-3 mr-1 text-gray-500" />
+                            {registration.address?.slice(0, 25)}...
+                          </div>
+                        </div>
+                      </TableCell>
+                      <TableCell className="py-4 border-r border-gray-100">
+                        <span className={`inline-flex items-center px-3 py-1 rounded-full text-xs font-bold border ${
+                          index % 2 === 0 
+                            ? 'bg-blue-100 text-blue-800 border-blue-200' 
+                            : 'bg-purple-100 text-purple-800 border-purple-200'
+                        }`}>
+                          {formatPurpose(registration.purpose)}
+                        </span>
+                      </TableCell>
+                      <TableCell className="py-4 border-r border-gray-100">
+                        <div>
+                          <div className="text-sm font-bold text-gray-900">
+                            {registration.numberofpeople} {registration.numberofpeople === 1 ? 'person' : 'people'}
+                          </div>
+                          <div className="text-xs text-gray-600 max-w-xs truncate font-medium">
+                            {parsePeople(registration.people)}
+                          </div>
+                        </div>
+                      </TableCell>
+                      <TableCell className="py-4 border-r border-gray-100">
+                        <div className="space-y-1">
+                          <div className="flex items-center text-xs text-gray-600 font-medium">
+                            <Clock className="h-3 w-3 mr-1" />
+                            Started: {formatDate(registration.starttime)}
+                          </div>
+                          {editingId === registration.id ? (
+                            <div className="space-y-1">
+                              <Input
+                                type="datetime-local"
+                                value={editEndTime}
+                                onChange={(e) => setEditEndTime(e.target.value)}
+                                className="w-40 text-xs border-2 border-orange-300 focus:border-orange-500 font-medium"
+                              />
+                              {saving && (
+                                <div className="flex items-center text-orange-600 text-xs font-bold">
+                                  <AlertCircle className="h-3 w-3 mr-1" />
+                                  Saving...
+                                </div>
+                              )}
+                            </div>
+                          ) : (
+                            <div className="text-xs text-gray-600 font-medium">
+                              Ended: {registration.endtime ? formatDate(registration.endtime) : 'Active'}
+                            </div>
+                          )}
+                        </div>
+                      </TableCell>
+                      <TableCell className="py-4 border-r border-gray-100">
+                        {getStatusBadge(registration)}
+                      </TableCell>
+                      <TableCell className="py-4">
+                        <div className="flex items-center space-x-2">
+                          <Dialog>
+                            <DialogTrigger asChild>
+                              <Button
+                                size="sm"
+                                variant="outline"
+                                className={`h-8 w-8 p-0 border-2 hover:scale-105 transition-transform ${
+                                  index % 2 === 0 
+                                    ? 'border-blue-500 text-blue-600 hover:bg-blue-50' 
+                                    : 'border-purple-500 text-purple-600 hover:bg-purple-50'
+                                }`}
+                              >
+                                <Eye className="h-4 w-4" />
+                              </Button>
+                            </DialogTrigger>
+                            <DialogContent className="max-w-6xl max-h-[95vh] overflow-y-auto p-0">
+                              <div className="bg-white">
+                                <DialogHeader className="bg-gradient-to-r from-blue-600 to-indigo-600 text-white p-4">
+                                  <DialogTitle className="text-lg font-bold flex items-center">
+                                    <User className="h-5 w-5 mr-2" />
+                                    {registration.visitorname}
+                                  </DialogTitle>
+                                  <DialogDescription className="text-blue-100 text-sm">
+                                    Complete visitor information and documentation
+                                  </DialogDescription>
+                                </DialogHeader>
+                                
+                                <div className="p-6">
+                                  {/* Top Row: Visitor Information (left) and Photo (right) */}
+                                  <div className="grid grid-cols-2 gap-8 mb-8">
+                                    {/* Visitor Information */}
+                                    <div className="bg-gray-50 rounded-lg p-4 border">
+                                      <h3 className="text-sm font-bold text-gray-800 mb-3 flex items-center">
+                                        <User className="h-4 w-4 mr-2" />
+                                        Visitor Information
+                                      </h3>
+                                      <div className="space-y-2">
+                                        <div>
+                                          <p className="text-xs text-gray-500">Name</p>
+                                          <p className="text-sm font-semibold text-gray-900">{registration.visitorname}</p>
+                                        </div>
+                                        <div>
+                                          <p className="text-xs text-gray-500">Phone</p>
+                                          <p className="text-sm font-semibold text-gray-900">{registration.phonenumber}</p>
+                                        </div>
+                                        <div>
+                                          <p className="text-xs text-gray-500">Purpose</p>
+                                          <p className="text-sm font-semibold text-gray-900">{formatPurpose(registration.purpose)}</p>
+                                        </div>
+                                        <div>
+                                          <p className="text-xs text-gray-500">School/Institution</p>
+                                          <p className="text-sm font-semibold text-gray-900">{registration.schoolname}</p>
+                                        </div>
+                                        <div>
+                                          <p className="text-xs text-gray-500">Address</p>
+                                          <p className="text-sm font-semibold text-gray-900">{registration.address}</p>
+                                        </div>
+                                      </div>
+                                    </div>
+                                    
+                                    {/* Photo */}
+                                    <div className="bg-gray-50 rounded-lg p-4 border">
+                                      <h3 className="text-sm font-bold text-gray-800 mb-3 flex items-center">
+                                        <Image className="h-4 w-4 mr-2" />
+                                        Visitor Photo
+                                      </h3>
+                                      {registration.picture_url ? (
+                                        <img
+                                          src={getImageUrl(registration.picture_url)}
+                                          alt="Visitor"
+                                          className="w-full h-80 object-contain rounded-lg bg-white border cursor-pointer hover:scale-105 transition-transform"
+                                          onError={(e) => {
+                                            const target = e.target as HTMLImageElement;
+                                            target.src = 'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMzAwIiBoZWlnaHQ9IjM4NCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48cmVjdCB3aWR0aD0iMTAwJSIgaGVpZ2h0PSIxMDAlIiBmaWxsPSIjZjNmNGY2Ii8+PHRleHQgeD0iNTAlIiB5PSI1MCUiIGZvbnQtZmFtaWx5PSJBcmlhbCIgZm9udC1zaXplPSIxNiIgZmlsbD0iIzllYTNhOCIgdGV4dC1hbmNob3I9Im1pZGRsZSIgZHk9Ii4zZW0iPk5vIGltYWdlIGF2YWlsYWJsZTwvdGV4dD48L3N2Zz4=';
+                                          }}
+                                          onClick={() => window.open(getImageUrl(registration.picture_url), '_blank')}
+                                        />
+                                      ) : (
+                                        <div className="w-full h-80 bg-gray-200 rounded-lg flex items-center justify-center">
+                                          <div className="text-center">
+                                            <Image className="h-8 w-8 text-gray-400 mx-auto mb-2" />
+                                            <p className="text-gray-500 text-sm">No photo available</p>
+                                          </div>
+                                        </div>
+                                      )}
+                                    </div>
+                                  </div>
+                                  
+                                  {/* Bottom Row: Visit Details (left) and Digital Signature (right) */}
+                                  <div className="grid grid-cols-2 gap-8">
+                                    {/* Visit Details */}
+                                    <div className="bg-gray-50 rounded-lg p-4 border">
+                                      <h3 className="text-sm font-bold text-gray-800 mb-3 flex items-center">
+                                        <Clock className="h-4 w-4 mr-2" />
+                                        Visit Details
+                                      </h3>
+                                      <div className="space-y-2">
+                                        <div>
+                                          <p className="text-xs text-gray-500">People ({registration.numberofpeople})</p>
+                                          <p className="text-sm font-semibold text-gray-900">{parsePeople(registration.people)}</p>
+                                        </div>
+                                        <div>
+                                          <p className="text-xs text-gray-500">Start Time</p>
+                                          <p className="text-sm font-semibold text-gray-900">{formatDate(registration.starttime)}</p>
+                                        </div>
+                                        <div>
+                                          <p className="text-xs text-gray-500">End Time</p>
+                                          <p className="text-sm font-semibold text-gray-900">{formatDate(registration.endtime)}</p>
+                                        </div>
+                                        <div>
+                                          <p className="text-xs text-gray-500">Registered On</p>
+                                          <p className="text-sm font-semibold text-gray-900">{formatDate(registration.created_at)}</p>
+                                        </div>
+                                      </div>
+                                    </div>
+                                    
+                                    {/* Digital Signature */}
+                                    <div className="bg-gray-50 rounded-lg p-4 border">
+                                      <h3 className="text-sm font-bold text-gray-800 mb-3 flex items-center">
+                                        <FileSignature className="h-4 w-4 mr-2" />
+                                        Digital Signature
+                                      </h3>
+                                      {registration.signature_url ? (
+                                        <img
+                                          src={getImageUrl(registration.signature_url)}
+                                          alt="Signature"
+                                          className="w-full h-80 object-contain rounded-lg bg-white border cursor-pointer hover:scale-105 transition-transform"
+                                          onError={(e) => {
+                                            const target = e.target as HTMLImageElement;
+                                            target.src = 'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMzAwIiBoZWlnaHQ9IjM4NCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48cmVjdCB3aWR0aD0iMTAwJSIgaGVpZ2h0PSIxMDAlIiBmaWxsPSIjZjNmNGY2Ii8+PHRleHQgeD0iNTAlIiB5PSI1MCUiIGZvbnQtZmFtaWx5PSJBcmlhbCIgZm9udC1zaXplPSIxNiIgZmlsbD0iIzllYTNhOCIgdGV4dC1hbmNob3I9Im1pZGRsZSIgZHk9Ii4zZW0iPk5vIHNpZ25hdHVyZSBhdmFpbGFibGU8L3RleHQ+PC9zdmc+';
+                                          }}
+                                          onClick={() => window.open(getImageUrl(registration.signature_url), '_blank')}
+                                        />
+                                      ) : (
+                                        <div className="w-full h-80 bg-gray-200 rounded-lg flex items-center justify-center">
+                                          <div className="text-center">
+                                            <FileSignature className="h-8 w-8 text-gray-400 mx-auto mb-2" />
+                                            <p className="text-gray-500 text-sm">No signature available</p>
+                                          </div>
+                                        </div>
+                                      )}
+                                    </div>
+                                  </div>
+                                </div>
+                              </div>
+                            </DialogContent>
+                          </Dialog>
+                          
+                          {editingId === registration.id ? (
+                            <div className="flex space-x-1">
+                              <Button
+                                size="sm"
+                                onClick={() => saveEdit(registration.id)}
+                                disabled={saving}
+                                className="h-8 w-8 p-0 bg-emerald-600 hover:bg-emerald-700 text-white disabled:opacity-50 hover:scale-105 transition-transform"
+                              >
+                                <Save className="h-4 w-4" />
+                              </Button>
+                              <Button
+                                size="sm"
+                                variant="outline"
+                                onClick={cancelEdit}
+                                disabled={saving}
+                                className="h-8 w-8 p-0 border-2 border-gray-400 text-gray-600 hover:bg-gray-50 disabled:opacity-50 hover:scale-105 transition-transform"
+                              >
+                                <X className="h-4 w-4" />
+                              </Button>
+                            </div>
+                          ) : (
                             <Button
-                              variant="destructive"
                               size="sm"
-                              onClick={() => handleDelete(item.id)}
-                              className="bg-red-500/20 hover:bg-red-500/40 text-red-200 border border-red-500/30"
+                              variant="outline"
+                              onClick={() => startEdit(registration)}
+                              className={`h-8 w-8 p-0 border-2 hover:scale-105 transition-transform ${
+                                index % 2 === 0 
+                                  ? 'border-orange-500 text-orange-600 hover:bg-orange-50' 
+                                  : 'border-pink-500 text-pink-600 hover:bg-pink-50'
+                              }`}
                             >
-                              <Trash2 className="w-4 h-4" />
+                              <Pencil className="h-4 w-4" />
                             </Button>
-                          </td>
-                        </tr>
-                      ))}
-                    </tbody>
-                  </table>
-                )}
-              </div>
+                          )}
+                        </div>
+                      </TableCell>
+                    </TableRow>
+                  ))}
+                </TableBody>
+              </Table>
             </div>
+            {filteredRegistrations.length === 0 && !loading && (
+              <div className="text-center py-12">
+                <Search className="mx-auto h-12 w-12 text-gray-400 mb-4" />
+                <p className="text-gray-500 text-lg font-bold">
+                  {searchTerm ? 'No registrations found matching your search.' : 'No registrations found.'}
+                </p>
+              </div>
+            )}
           </CardContent>
         </Card>
       </div>
