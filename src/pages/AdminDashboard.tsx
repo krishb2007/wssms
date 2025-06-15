@@ -301,7 +301,7 @@ export default function AdminDashboard() {
               <h1 className="text-3xl font-bold text-white mb-2">
                 Visitor Management System
               </h1>
-              <p className="text-amber-200 text-lg font-semibold">Monitor and manage visitor registrations</p>
+              <p className="text-amber-200 text-lg font-semibold">Monitor and Manage Visitor Registration</p>
             </div>
             <div className="flex items-center space-x-4">
               <div className="text-right">
