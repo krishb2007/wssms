@@ -163,13 +163,12 @@ export default function AdminDashboard() {
       const endTimeISO = new Date(editEndTime).toISOString();
       console.log("Converted to ISO string:", endTimeISO);
 
-      // Use proper filtering as suggested by Supabase
+      // Remove .single() to fix the error - just use select() to verify the update worked
       const { data, error } = await supabase
         .from('visitor_registrations')
         .update({ endtime: endTimeISO })
         .eq('id', id)
-        .select()
-        .single();
+        .select();
 
       console.log("Update response:", { data, error });
 
@@ -183,22 +182,31 @@ export default function AdminDashboard() {
         return;
       }
 
-      console.log("Successfully updated end time, updated record:", data);
-      
-      // Update local state with the returned data
-      setRegistrations(prev => 
-        prev.map(reg => 
-          reg.id === id ? { ...reg, endtime: endTimeISO } : reg
-        )
-      );
-      
-      toast({
-        title: "Success",
-        description: "End time updated successfully",
-      });
-      
-      setEditingId(null);
-      setEditEndTime('');
+      if (data && data.length > 0) {
+        console.log("Successfully updated end time, updated record:", data[0]);
+        
+        // Update local state with the returned data
+        setRegistrations(prev => 
+          prev.map(reg => 
+            reg.id === id ? { ...reg, endtime: endTimeISO } : reg
+          )
+        );
+        
+        toast({
+          title: "Success",
+          description: "End time updated successfully",
+        });
+        
+        setEditingId(null);
+        setEditEndTime('');
+      } else {
+        console.warn("Update succeeded but no data returned");
+        toast({
+          title: "Warning",
+          description: "Update may not have been applied",
+          variant: "destructive",
+        });
+      }
       
     } catch (error) {
       console.error("Unexpected error during update:", error);
