@@ -6,7 +6,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger, DialogDescription } from "@/components/ui/dialog";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { toast } from "@/components/ui/use-toast";
 import { Pencil, Save, X, LogOut, Search, Eye, Image, FileSignature, Users, Clock, RefreshCw, Calendar, MapPin, Phone, User, Building, Target } from "lucide-react";
 
@@ -34,19 +34,16 @@ export default function AdminDashboard() {
   const [searchTerm, setSearchTerm] = useState<string>('');
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
+  const [viewingRegistration, setViewingRegistration] = useState<VisitorRegistration | null>(null);
   const navigate = useNavigate();
   const { user, logout } = useAuth();
 
   useEffect(() => {
-    console.log("AdminDashboard useEffect - checking user:", user);
     if (!user || user.role !== 'admin') {
-      console.log("User not admin, redirecting to login");
       navigate('/admin-login');
       return;
     }
     fetchRegistrations();
-    
-    // Set up real-time subscription
     const channel = supabase
       .channel('visitor-registrations-changes')
       .on(
@@ -57,7 +54,6 @@ export default function AdminDashboard() {
           table: 'visitor_registrations'
         },
         (payload) => {
-          console.log('Real-time update received:', payload);
           if (payload.eventType === 'UPDATE') {
             setRegistrations(prev => 
               prev.map(reg => 
@@ -72,7 +68,6 @@ export default function AdminDashboard() {
         }
       )
       .subscribe();
-
     return () => {
       supabase.removeChannel(channel);
     };
@@ -96,29 +91,21 @@ export default function AdminDashboard() {
   async function fetchRegistrations() {
     setLoading(true);
     try {
-      console.log("Fetching visitor registrations...");
-      
       const { data, error } = await supabase
         .from('visitor_registrations')
         .select('*')
         .order('created_at', { ascending: false });
-
-      console.log("Fetch result:", { data, error });
-
       if (error) {
-        console.error("Database error:", error);
         toast({
           title: "Error",
           description: "Failed to fetch registrations: " + error.message,
           variant: "destructive",
         });
       } else if (data) {
-        console.log(`Successfully fetched ${data.length} registrations`);
         setRegistrations(data);
         setFilteredRegistrations(data);
       }
     } catch (error) {
-      console.error("Unexpected error:", error);
       toast({
         title: "Error",
         description: "An unexpected error occurred while fetching data",
@@ -129,7 +116,6 @@ export default function AdminDashboard() {
   }
 
   function startEdit(registration: VisitorRegistration) {
-    console.log("Starting edit for registration:", registration.id);
     setEditingId(registration.id);
     const currentEndTime = registration.endtime 
       ? new Date(registration.endtime).toISOString().slice(0, 16)
@@ -138,18 +124,14 @@ export default function AdminDashboard() {
   }
 
   function cancelEdit() {
-    console.log("Cancelling edit");
     setEditingId(null);
     setEditEndTime('');
   }
 
   async function saveEdit(id: string) {
     if (saving) return;
-    
     try {
       setSaving(true);
-      console.log("Saving end time for registration:", id, "datetime-local value:", editEndTime);
-      
       if (!editEndTime) {
         toast({
           title: "Error",
@@ -158,20 +140,13 @@ export default function AdminDashboard() {
         });
         return;
       }
-
       const endTimeISO = new Date(editEndTime).toISOString();
-      console.log("Converted to ISO string:", endTimeISO);
-
       const { data, error } = await supabase
         .from('visitor_registrations')
         .update({ endtime: endTimeISO })
         .eq('id', id)
         .select();
-
-      console.log("Update response:", { data, error });
-
       if (error) {
-        console.error("Update error:", error);
         toast({
           title: "Error",
           description: "Failed to update end time: " + error.message,
@@ -179,9 +154,7 @@ export default function AdminDashboard() {
         });
         return;
       }
-
       if (!data || data.length === 0) {
-        console.error("No rows updated");
         toast({
           title: "Error",
           description: "Update failed - registration not found",
@@ -189,26 +162,18 @@ export default function AdminDashboard() {
         });
         return;
       }
-
-      console.log("Successfully updated end time, updated record:", data[0]);
-      
-      // Update local state
       setRegistrations(prev => 
         prev.map(reg => 
           reg.id === id ? { ...reg, endtime: endTimeISO } : reg
         )
       );
-      
       toast({
         title: "Success",
         description: "End time updated successfully",
       });
-      
       setEditingId(null);
       setEditEndTime('');
-      
     } catch (error) {
-      console.error("Unexpected error during update:", error);
       toast({
         title: "Error",
         description: "An unexpected error occurred while updating: " + (error as Error).message,
@@ -369,7 +334,6 @@ export default function AdminDashboard() {
               </div>
             </CardContent>
           </Card>
-
           <Card className="border-0 shadow-lg bg-gradient-to-br from-slate-600 to-slate-700 text-white">
             <CardContent className="p-6">
               <div className="flex items-center">
@@ -386,7 +350,6 @@ export default function AdminDashboard() {
             </CardContent>
           </Card>
         </div>
-
         {/* Main Content */}
         <Card className="border-0 shadow-xl bg-gray-800 border-gray-700">
           <CardHeader className="border-b border-gray-700 bg-gradient-to-r from-gray-800 to-gray-900 py-4">
@@ -441,10 +404,6 @@ export default function AdminDashboard() {
                           : 'bg-gray-750 hover:bg-gray-700'
                       }`}
                     >
-                      {/* ... row content stays the same ... */}
-                      {/* (keep the rest of your row rendering here!) */}
-                      {/* No changes below this line, except for the sorting above */}
-                      {/* ... */}
                       <TableCell className="py-4 border-r border-gray-700">
                         <div className="flex items-center space-x-3">
                           <div className="flex-shrink-0">
@@ -522,7 +481,7 @@ export default function AdminDashboard() {
                       </TableCell>
                       <TableCell className="py-4">
                         <div className="flex items-center space-x-2">
-                          <Dialog>
+                          <Dialog open={viewingRegistration?.id === registration.id} onOpenChange={(open) => setViewingRegistration(open ? registration : null)}>
                             <DialogTrigger asChild>
                               <Button
                                 size="sm"
@@ -532,8 +491,36 @@ export default function AdminDashboard() {
                                 <Eye className="h-4 w-4" />
                               </Button>
                             </DialogTrigger>
-                            <DialogContent className="max-w-6xl max-h-[95vh] overflow-y-auto p-0 bg-gray-800 border-gray-700">
-                              {/* ... (keep your DialogContent here) ... */}
+                            <DialogContent className="max-w-6xl max-h-[95vh] overflow-y-auto p-6 bg-gray-800 border-gray-700">
+                              <DialogHeader>
+                                <DialogTitle className="text-2xl text-amber-400">Visitor Registration Details</DialogTitle>
+                              </DialogHeader>
+                              <div className="text-white space-y-2">
+                                <div><b>Visitor Name:</b> {registration.visitorname}</div>
+                                <div><b>Contact:</b> {registration.phonenumber}</div>
+                                <div><b>Purpose:</b> {formatPurpose(registration.purpose)}</div>
+                                <div><b>Address:</b> {registration.address}</div>
+                                <div><b>School:</b> {registration.schoolname}</div>
+                                <div><b>Start Time:</b> {formatDate(registration.starttime)}</div>
+                                <div><b>End Time:</b> {registration.endtime ? formatDate(registration.endtime) : "Active"}</div>
+                                <div><b>Number of People:</b> {registration.numberofpeople}</div>
+                                <div><b>People:</b> {parsePeople(registration.people)}</div>
+                                <div><b>Created At:</b> {formatDate(registration.created_at)}</div>
+                                <div className="flex space-x-4 mt-4">
+                                  {registration.picture_url && (
+                                    <div>
+                                      <div className="mb-2 text-sm text-amber-200 font-bold">Picture</div>
+                                      <img src={getImageUrl(registration.picture_url)} alt="Visitor" className="w-36 h-36 object-cover rounded border-2 border-white" />
+                                    </div>
+                                  )}
+                                  {registration.signature_url && (
+                                    <div>
+                                      <div className="mb-2 text-sm text-amber-200 font-bold">Signature</div>
+                                      <img src={getImageUrl(registration.signature_url)} alt="Signature" className="w-36 h-36 object-contain rounded border-2 border-white bg-white" />
+                                    </div>
+                                  )}
+                                </div>
+                              </div>
                             </DialogContent>
                           </Dialog>
                           {editingId === registration.id ? (
