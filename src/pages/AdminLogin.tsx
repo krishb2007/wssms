@@ -1,7 +1,6 @@
-
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { signIn, signUp } from '../services/authService';
+import { signIn } from '../services/authService';
 import { useAuth } from '../App';
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -13,7 +12,6 @@ export default function AdminLogin() {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [loading, setLoading] = useState(false);
-  const [isSignUp, setIsSignUp] = useState(false);
   const navigate = useNavigate();
   const { user, refreshAuth } = useAuth();
 
@@ -29,19 +27,12 @@ export default function AdminLogin() {
     e.preventDefault();
     setLoading(true);
 
-    console.log("Form submitted with:", { email, password: "***", isSignUp });
-
     try {
-      const { user: authUser, error } = isSignUp 
-        ? await signUp({ email, password })
-        : await signIn({ email, password });
-
-      console.log("Auth result:", { user: authUser, error });
+      const { user: authUser, error } = await signIn({ email, password });
 
       if (error || !authUser) {
-        console.error("Auth failed:", error);
         toast({
-          title: isSignUp ? "Sign Up Failed" : "Login Failed",
+          title: "Login Failed",
           description: error || "Invalid credentials",
           variant: "destructive",
         });
@@ -49,10 +40,7 @@ export default function AdminLogin() {
         return;
       }
 
-      console.log("User role:", authUser.role);
-
       if (authUser.role !== 'admin') {
-        console.error("User is not admin:", authUser.role);
         toast({
           title: "Access Denied",
           description: "You are not authorized as admin.",
@@ -63,19 +51,14 @@ export default function AdminLogin() {
       }
 
       toast({
-        title: isSignUp ? "Account Created" : "Login Successful",
-        description: isSignUp 
-          ? "Admin account created successfully. Redirecting to dashboard..." 
-          : "Welcome to the admin dashboard",
+        title: "Login Successful",
+        description: "Welcome to the admin dashboard",
       });
 
       // Refresh auth context and navigate
       await refreshAuth();
-      console.log("Navigating to admin dashboard...");
       navigate('/admin-dashboard');
-      
     } catch (error) {
-      console.error("Unexpected error:", error);
       toast({
         title: "Error",
         description: "An unexpected error occurred",
@@ -102,13 +85,10 @@ export default function AdminLogin() {
           <div className="absolute inset-0 bg-gradient-to-br from-yellow-400/10 via-orange-400/10 to-red-400/10"></div>
           <div className="relative z-10">
             <CardTitle className="text-xl font-bold mb-1 drop-shadow-lg">
-              {isSignUp ? "Create Admin" : "Admin Login"}
+              Admin Login
             </CardTitle>
             <p className="text-white/90 text-xs font-medium">
-              {isSignUp 
-                ? "Create administrator account" 
-                : "Access dashboard"
-              }
+              Access dashboard
             </p>
           </div>
         </CardHeader>
@@ -146,26 +126,9 @@ export default function AdminLogin() {
               disabled={loading} 
               className="w-full mt-6 h-10 bg-gradient-to-r from-amber-600/90 via-orange-600/90 to-red-600/90 hover:from-amber-700 hover:via-orange-700 hover:to-red-700 text-white font-bold text-sm rounded-lg shadow-lg transform transition-all duration-200 hover:scale-[1.02] hover:shadow-xl disabled:opacity-50 disabled:cursor-not-allowed disabled:transform-none border border-white/20"
             >
-              {loading 
-                ? (isSignUp ? 'Creating...' : 'Signing in...') 
-                : (isSignUp ? 'Create Account' : 'Sign In')
-              }
+              {loading ? 'Signing in...' : 'Sign In'}
             </Button>
           </form>
-          
-          <div className="mt-4 text-center">
-            <Button 
-              variant="link" 
-              onClick={() => setIsSignUp(!isSignUp)}
-              disabled={loading}
-              className="text-white/80 hover:text-white font-semibold text-xs underline-offset-4 hover:underline p-0"
-            >
-              {isSignUp 
-                ? "Have an account? Sign in" 
-                : "Create admin account"
-              }
-            </Button>
-          </div>
         </CardContent>
       </Card>
     </div>
