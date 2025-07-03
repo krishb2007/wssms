@@ -59,13 +59,19 @@ export default function AdminDashboard() {
         (payload) => {
           console.log('Real-time update received:', payload);
           if (payload.eventType === 'UPDATE') {
-            setRegistrations(prev => 
-              prev.map(reg => 
+            setRegistrations(prev => {
+              const updated = prev.map(reg => 
                 reg.id === payload.new.id ? { ...reg, ...payload.new } : reg
-              )
-            );
+              );
+              // Re-sort to maintain latest first order
+              return updated.sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime());
+            });
           } else if (payload.eventType === 'INSERT') {
-            setRegistrations(prev => [payload.new as VisitorRegistration, ...prev]);
+            setRegistrations(prev => {
+              const newList = [payload.new as VisitorRegistration, ...prev];
+              // Re-sort to maintain latest first order
+              return newList.sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime());
+            });
           } else if (payload.eventType === 'DELETE') {
             setRegistrations(prev => prev.filter(reg => reg.id !== payload.old.id));
           }
@@ -80,7 +86,11 @@ export default function AdminDashboard() {
 
   useEffect(() => {
     if (searchTerm.trim() === '') {
-      setFilteredRegistrations(registrations);
+      // Ensure filtered list is also sorted with latest first
+      const sortedRegistrations = [...registrations].sort((a, b) => 
+        new Date(b.created_at).getTime() - new Date(a.created_at).getTime()
+      );
+      setFilteredRegistrations(sortedRegistrations);
     } else {
       const filtered = registrations.filter(registration =>
         registration.visitorname.toLowerCase().includes(searchTerm.toLowerCase()) ||
@@ -89,7 +99,11 @@ export default function AdminDashboard() {
         registration.address?.toLowerCase().includes(searchTerm.toLowerCase()) ||
         registration.schoolname?.toLowerCase().includes(searchTerm.toLowerCase())
       );
-      setFilteredRegistrations(filtered);
+      // Sort filtered results with latest first
+      const sortedFiltered = filtered.sort((a, b) => 
+        new Date(b.created_at).getTime() - new Date(a.created_at).getTime()
+      );
+      setFilteredRegistrations(sortedFiltered);
     }
   }, [searchTerm, registrations]);
 
@@ -101,7 +115,7 @@ export default function AdminDashboard() {
       const { data, error } = await supabase
         .from('visitor_registrations')
         .select('*')
-        .order('created_at', { ascending: false });
+        .order('created_at', { ascending: false }); // Latest first
 
       console.log("Fetch result:", { data, error });
 
@@ -114,8 +128,12 @@ export default function AdminDashboard() {
         });
       } else if (data) {
         console.log(`Successfully fetched ${data.length} registrations`);
-        setRegistrations(data);
-        setFilteredRegistrations(data);
+        // Additional sort to ensure latest entries are truly at the top
+        const sortedData = data.sort((a, b) => 
+          new Date(b.created_at).getTime() - new Date(a.created_at).getTime()
+        );
+        setRegistrations(sortedData);
+        setFilteredRegistrations(sortedData);
       }
     } catch (error) {
       console.error("Unexpected error:", error);
@@ -192,12 +210,13 @@ export default function AdminDashboard() {
 
       console.log("Successfully updated end time, updated record:", data[0]);
       
-      // Update local state
-      setRegistrations(prev => 
-        prev.map(reg => 
+      // Update local state and maintain sort order
+      setRegistrations(prev => {
+        const updated = prev.map(reg => 
           reg.id === id ? { ...reg, endtime: endTimeISO } : reg
-        )
-      );
+        );
+        return updated.sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime());
+      });
       
       toast({
         title: "Success",
