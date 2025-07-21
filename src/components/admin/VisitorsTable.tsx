@@ -48,8 +48,7 @@ export const VisitorsTable: React.FC<VisitorsTableProps> = ({
       day: 'numeric',
       year: 'numeric',
       hour: '2-digit',
-      minute: '2-digit',
-      timeZoneName: 'short'
+      minute: '2-digit'
     });
   };
 
