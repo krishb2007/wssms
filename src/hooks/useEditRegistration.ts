@@ -73,6 +73,7 @@ export const useEditRegistration = (updateRegistration: (id: string, updates: Pa
 
       console.log("Successfully updated end time, updated record:", data[0]);
       
+      // Update local state immediately
       updateRegistration(id, { endtime: endTimeISO });
       
       toast({
