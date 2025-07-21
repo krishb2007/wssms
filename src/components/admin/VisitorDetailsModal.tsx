@@ -24,12 +24,13 @@ export const VisitorDetailsModal: React.FC<VisitorDetailsModalProps> = ({
   const formatDate = (dateString: string | null) => {
     if (!dateString) return 'N/A';
     const date = new Date(dateString);
-    return date.toLocaleString('en-US', {
+    return date.toLocaleString('en-IN', {
       month: 'short',
       day: 'numeric',
       year: 'numeric',
       hour: '2-digit',
-      minute: '2-digit'
+      minute: '2-digit',
+      timeZone: 'Asia/Kolkata'
     });
   };
 
@@ -151,7 +152,7 @@ export const VisitorDetailsModal: React.FC<VisitorDetailsModalProps> = ({
                   </div>
                   <div>
                     <p className="text-sm text-white font-medium">Start Time</p>
-                    <p className="text-white font-bold">{formatDate(registration.starttime)}</p>
+                    <p className="text-white font-bold">{formatDate(registration.created_at)}</p>
                   </div>
                   <div>
                     <p className="text-sm text-white font-medium">End Time</p>

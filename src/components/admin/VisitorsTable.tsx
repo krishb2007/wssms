@@ -43,12 +43,13 @@ export const VisitorsTable: React.FC<VisitorsTableProps> = ({
   const formatDate = (dateString: string | null) => {
     if (!dateString) return 'N/A';
     const date = new Date(dateString);
-    return date.toLocaleString('en-US', {
+    return date.toLocaleString('en-IN', {
       month: 'short',
       day: 'numeric',
       year: 'numeric',
       hour: '2-digit',
-      minute: '2-digit'
+      minute: '2-digit',
+      timeZone: 'Asia/Kolkata'
     });
   };
 
@@ -175,7 +176,7 @@ export const VisitorsTable: React.FC<VisitorsTableProps> = ({
                       <div className="space-y-1">
                         <div className="flex items-center text-xs text-white font-medium">
                           <Clock className="h-3 w-3 mr-1" />
-                          Started: {formatDate(registration.starttime)}
+                          Started: {formatDate(registration.created_at)}
                         </div>
                         {editingId === registration.id ? (
                           <div className="space-y-1">
