@@ -184,7 +184,7 @@ export const VisitorsTable: React.FC<VisitorsTableProps> = ({
                               type="datetime-local"
                               value={editEndTime}
                               onChange={(e) => onEditEndTimeChange(e.target.value)}
-                              className="w-40 text-xs bg-gray-700 border-gray-600 text-white font-medium"
+                              className="w-52 text-xs bg-gray-700 border-gray-600 text-white font-medium"
                             />
                             {saving && (
                               <div className="text-amber-400 text-xs font-medium">
