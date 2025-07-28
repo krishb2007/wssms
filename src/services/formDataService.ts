@@ -1,4 +1,5 @@
 import { saveVisitorRegistration, VisitorFormData } from './visitorService';
+import { supabase } from '@/integrations/supabase/client';
 
 export interface FormEntry {
   id?: string;
@@ -86,6 +87,32 @@ export const saveFormData = async (formData: FormDataInput): Promise<FormEntry> 
       acceptedPolicy: formData.acceptedPolicy ?? false,
       visitCount: 1
     };
+
+    // Send email notification if meeting school staff
+    if (formData.purpose === "meeting_school_staff" && formData.staffEmail) {
+      try {
+        console.log("Sending staff notification email to:", formData.staffEmail);
+        const emailResponse = await supabase.functions.invoke('send-staff-notification', {
+          body: {
+            staffEmail: formData.staffEmail,
+            visitorName: formData.visitorName,
+            purpose: purposeValue,
+            numberOfPeople: formData.numberOfPeople,
+            startTime: formData.startTime,
+            phoneNumber: formData.phoneNumber
+          }
+        });
+        
+        if (emailResponse.error) {
+          console.error("Error sending staff notification:", emailResponse.error);
+        } else {
+          console.log("Staff notification sent successfully");
+        }
+      } catch (emailError) {
+        console.error("Failed to send staff notification email:", emailError);
+        // Don't throw error - we don't want to fail the registration if email fails
+      }
+    }
 
     console.log("Form data saved successfully:", savedEntry);
     return savedEntry;
