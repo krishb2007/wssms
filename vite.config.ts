@@ -6,6 +6,20 @@ export default defineConfig(({ mode }) => ({
   server: {
     host: "::",
     port: 8080,
+    watch: {
+      usePolling: false,
+      ignored: [
+        '**/node_modules/**',
+        '**/.git/**',
+        '**/dist/**',
+        '**/build/**',
+        '**/.next/**',
+        '**/coverage/**',
+        '**/.nyc_output/**',
+        '**/tmp/**',
+        '**/temp/**'
+      ]
+    }
   },
   // Add these two lines
   root: './',        // Explicitly set the project root to the current directory
