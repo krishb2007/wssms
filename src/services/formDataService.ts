@@ -9,6 +9,7 @@ export interface FormEntry {
   people: Array<{ name: string; role: string }>;
   purpose: string;
   otherPurpose: string;
+  staffEmail: string;
   address: {
     city: string;
     state: string;
@@ -30,6 +31,7 @@ export interface FormDataInput {
   people: Array<{ name: string; role: string }>;
   purpose: string;
   otherPurpose: string;
+  staffEmail: string;
   address: {
     city: string;
     state: string;
@@ -74,6 +76,7 @@ export const saveFormData = async (formData: FormDataInput): Promise<FormEntry> 
       people: JSON.parse(savedData.people),
       purpose: savedData.purpose,
       otherPurpose: formData.purpose === "other" ? formData.otherPurpose : "",
+      staffEmail: formData.purpose === "meeting_school_staff" ? formData.staffEmail : "",
       address: formData.address,
       picture: savedData.picture_url,
       signature: savedData.signature_url,

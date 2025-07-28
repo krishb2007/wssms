@@ -23,6 +23,7 @@ const Index = () => {
     people: [{ name: "", role: "" }],
     purpose: "",
     otherPurpose: "",
+    staffEmail: "",
     startTime: "",
     endTime: null as string | null, // Optional end time
     phoneNumber: "",
@@ -88,6 +89,7 @@ const Index = () => {
         people: [{ name: "", role: "" }],
         purpose: "",
         otherPurpose: "",
+        staffEmail: "",
         startTime: "",
         endTime: null,
         phoneNumber: "",

@@ -13,12 +13,14 @@ interface CombinedPurposeDurationFormProps {
   formData: {
     purpose: string;
     otherPurpose: string;
+    staffEmail: string;
     startTime: string;
     endTime?: string | null;
   };
   updateFormData: (data: Partial<{ 
     purpose: string; 
     otherPurpose: string;
+    staffEmail: string;
     startTime: string;
     endTime?: string | null;
   }>) => void;
@@ -85,6 +87,14 @@ const CombinedPurposeDurationForm: React.FC<CombinedPurposeDurationFormProps> = 
       });
       return;
     }
+    if (formData.purpose === "meeting_school_staff" && !formData.staffEmail) {
+      toast({
+        title: "Information required",
+        description: "Please enter the staff email address",
+        variant: "destructive"
+      });
+      return;
+    }
     nextStep();
   };
 
@@ -145,11 +155,31 @@ const CombinedPurposeDurationForm: React.FC<CombinedPurposeDurationFormProps> = 
               <Label htmlFor="student_visit">Student Visit</Label>
             </div>
             <div className="flex items-center space-x-2">
+              <RadioGroupItem value="meeting_school_staff" id="meeting_school_staff" />
+              <Label htmlFor="meeting_school_staff">Meeting School Staff</Label>
+            </div>
+            <div className="flex items-center space-x-2">
               <RadioGroupItem value="other" id="other" />
               <Label htmlFor="other">Other</Label>
             </div>
           </RadioGroup>
         </div>
+
+        {formData.purpose === "meeting_school_staff" && (
+          <div className="space-y-2">
+            <Label htmlFor="staffEmail">Staff Email Address:</Label>
+            <Input
+              id="staffEmail"
+              type="email"
+              value={formData.staffEmail || "@woodstock.ac.in"}
+              onChange={(e) =>
+                updateFormData({ staffEmail: e.target.value })
+              }
+              placeholder="staff@woodstock.ac.in"
+              required={formData.purpose === "meeting_school_staff"}
+            />
+          </div>
+        )}
 
         {formData.purpose === "other" && (
           <div className="space-y-2">
