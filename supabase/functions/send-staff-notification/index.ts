@@ -35,7 +35,7 @@ const handler = async (req: Request): Promise<Response> => {
     });
 
     const emailResponse = await resend.emails.send({
-      from: "security@woodstock.ac.in",
+      from: "Woodstock Security <onboarding@resend.dev>",
       to: [staffEmail],
       subject: "New entry",
       html: `
