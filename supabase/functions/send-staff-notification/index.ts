@@ -16,6 +16,7 @@ interface StaffNotificationRequest {
   startTime: string;
   phoneNumber: string;
   pictureUrl?: string;
+  people?: Array<{ name: string; role: string }>;
 }
 
 const handler = async (req: Request): Promise<Response> => {
@@ -25,7 +26,7 @@ const handler = async (req: Request): Promise<Response> => {
   }
 
   try {
-    const { staffEmail, visitorName, purpose, numberOfPeople, startTime, phoneNumber, pictureUrl }: StaffNotificationRequest = await req.json();
+    const { staffEmail, visitorName, purpose, numberOfPeople, startTime, phoneNumber, pictureUrl, people }: StaffNotificationRequest = await req.json();
 
     console.log("Sending email to:", staffEmail);
     console.log("Picture URL received:", pictureUrl);
@@ -37,11 +38,14 @@ const handler = async (req: Request): Promise<Response> => {
       timeStyle: 'short'
     });
 
-    const formattedStartTime = new Date(startTime).toLocaleString('en-US', {
-      timeZone: 'Asia/Kolkata',
-      dateStyle: 'full',
-      timeStyle: 'short'
-    });
+    // Format people names if available
+    let peopleInfo = `${numberOfPeople}`;
+    if (people && people.length > 0) {
+      const names = people.map(person => person.name).filter(name => name.trim() !== '');
+      if (names.length > 0) {
+        peopleInfo += ` (${names.join(', ')})`;
+      }
+    }
 
     // Prepare email content
     const emailHtml = `
@@ -51,9 +55,8 @@ const handler = async (req: Request): Promise<Response> => {
       <div style="background: #f5f5f5; padding: 15px; border-radius: 5px; margin: 15px 0;">
         <p><strong>Visitor Name:</strong> ${visitorName}</p>
         <p><strong>Purpose:</strong> ${purpose}</p>
-        <p><strong>Number of People:</strong> ${numberOfPeople}</p>
+        <p><strong>Number of People:</strong> ${peopleInfo}</p>
         <p><strong>Registration Time:</strong> ${currentTime}</p>
-        <p><strong>Planned Visit Time:</strong> ${formattedStartTime}</p>
         <p><strong>Contact Number:</strong> ${phoneNumber}</p>
       </div>
       
@@ -67,7 +70,7 @@ const handler = async (req: Request): Promise<Response> => {
 
     // Prepare email options
     const emailOptions: any = {
-      from: "Woodstock Security <onboarding@resend.dev>",
+      from: "Woodstock School Security - No Reply <noreply@resend.dev>",
       to: [staffEmail],
       subject: "New entry",
       html: emailHtml,
