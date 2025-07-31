@@ -28,6 +28,14 @@ const handler = async (req: Request): Promise<Response> => {
     const { staffEmail, visitorName, purpose, numberOfPeople, startTime, phoneNumber, pictureUrl }: StaffNotificationRequest = await req.json();
 
     console.log("Sending email to:", staffEmail);
+    console.log("Picture URL received:", pictureUrl);
+
+    // Use current time instead of start time for submission timestamp
+    const currentTime = new Date().toLocaleString('en-US', {
+      timeZone: 'Asia/Kolkata',
+      dateStyle: 'full',
+      timeStyle: 'short'
+    });
 
     const formattedStartTime = new Date(startTime).toLocaleString('en-US', {
       timeZone: 'Asia/Kolkata',
@@ -44,11 +52,12 @@ const handler = async (req: Request): Promise<Response> => {
         <p><strong>Visitor Name:</strong> ${visitorName}</p>
         <p><strong>Purpose:</strong> ${purpose}</p>
         <p><strong>Number of People:</strong> ${numberOfPeople}</p>
-        <p><strong>Visit Start Time:</strong> ${formattedStartTime}</p>
+        <p><strong>Registration Time:</strong> ${currentTime}</p>
+        <p><strong>Planned Visit Time:</strong> ${formattedStartTime}</p>
         <p><strong>Contact Number:</strong> ${phoneNumber}</p>
       </div>
       
-      ${pictureUrl ? '<p><strong>Note:</strong> Visitor photo is attached to this email.</p>' : ''}
+      ${pictureUrl ? '<p><strong>Note:</strong> Visitor photo is attached to this email.</p>' : '<p><strong>Note:</strong> No visitor photo provided.</p>'}
       
       <p>Please coordinate with security for the visitor's entry.</p>
       
@@ -67,15 +76,36 @@ const handler = async (req: Request): Promise<Response> => {
     // If picture URL exists, fetch and attach the image
     if (pictureUrl) {
       try {
-        console.log("Fetching visitor image from:", pictureUrl);
-        const imageResponse = await fetch(pictureUrl);
+        console.log("Attempting to fetch visitor image from:", pictureUrl);
+        
+        const imageResponse = await fetch(pictureUrl, {
+          method: 'GET',
+          headers: {
+            'User-Agent': 'Supabase-Edge-Function/1.0'
+          }
+        });
+        
+        console.log("Image fetch response status:", imageResponse.status);
         
         if (imageResponse.ok) {
-          const imageBuffer = await imageResponse.arrayBuffer();
-          const base64Image = btoa(String.fromCharCode(...new Uint8Array(imageBuffer)));
+          const imageArrayBuffer = await imageResponse.arrayBuffer();
+          const imageBytes = new Uint8Array(imageArrayBuffer);
+          
+          console.log("Image size:", imageBytes.length, "bytes");
+          
+          // Convert to base64
+          let binary = '';
+          const len = imageBytes.byteLength;
+          for (let i = 0; i < len; i++) {
+            binary += String.fromCharCode(imageBytes[i]);
+          }
+          const base64Image = btoa(binary);
+          
+          console.log("Base64 conversion completed, length:", base64Image.length);
           
           // Get file extension from URL or default to jpg
-          const fileExtension = pictureUrl.split('.').pop()?.toLowerCase() || 'jpg';
+          const urlParts = pictureUrl.split('.');
+          const fileExtension = urlParts[urlParts.length - 1]?.toLowerCase() || 'jpg';
           const mimeType = fileExtension === 'png' ? 'image/png' : 'image/jpeg';
           
           emailOptions.attachments = [{
@@ -85,14 +115,19 @@ const handler = async (req: Request): Promise<Response> => {
             disposition: 'attachment'
           }];
           
-          console.log("Image attached successfully");
+          console.log("Image attachment prepared successfully");
         } else {
-          console.warn("Failed to fetch image:", imageResponse.status);
+          console.error("Failed to fetch image. Status:", imageResponse.status, "Status Text:", imageResponse.statusText);
+          const errorText = await imageResponse.text();
+          console.error("Error response:", errorText);
         }
       } catch (error) {
         console.error("Error fetching image for attachment:", error);
+        console.error("Error details:", error.message);
         // Continue without attachment if image fetch fails
       }
+    } else {
+      console.log("No picture URL provided");
     }
 
     const emailResponse = await resend.emails.send(emailOptions);
