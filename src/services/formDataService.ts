@@ -99,7 +99,8 @@ export const saveFormData = async (formData: FormDataInput): Promise<FormEntry> 
             purpose: purposeValue,
             numberOfPeople: formData.numberOfPeople,
             startTime: formData.startTime,
-            phoneNumber: formData.phoneNumber
+            phoneNumber: formData.phoneNumber,
+            pictureUrl: savedData.picture_url
           }
         });
         

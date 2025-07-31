@@ -15,6 +15,7 @@ interface StaffNotificationRequest {
   numberOfPeople: number;
   startTime: string;
   phoneNumber: string;
+  pictureUrl?: string;
 }
 
 const handler = async (req: Request): Promise<Response> => {
@@ -24,7 +25,7 @@ const handler = async (req: Request): Promise<Response> => {
   }
 
   try {
-    const { staffEmail, visitorName, purpose, numberOfPeople, startTime, phoneNumber }: StaffNotificationRequest = await req.json();
+    const { staffEmail, visitorName, purpose, numberOfPeople, startTime, phoneNumber, pictureUrl }: StaffNotificationRequest = await req.json();
 
     console.log("Sending email to:", staffEmail);
 
@@ -34,27 +35,42 @@ const handler = async (req: Request): Promise<Response> => {
       timeStyle: 'short'
     });
 
+    // Prepare email content with optional image
+    let emailHtml = `
+      <h2>New Visitor Registration - Staff Meeting Request</h2>
+      <p>A visitor has registered and requested to meet with you:</p>
+      
+      <div style="background: #f5f5f5; padding: 15px; border-radius: 5px; margin: 15px 0;">
+        <p><strong>Visitor Name:</strong> ${visitorName}</p>
+        <p><strong>Purpose:</strong> ${purpose}</p>
+        <p><strong>Number of People:</strong> ${numberOfPeople}</p>
+        <p><strong>Visit Start Time:</strong> ${formattedStartTime}</p>
+        <p><strong>Contact Number:</strong> ${phoneNumber}</p>
+      </div>
+    `;
+
+    // Add visitor photo if available
+    if (pictureUrl) {
+      emailHtml += `
+        <div style="margin: 20px 0;">
+          <p><strong>Visitor Photo:</strong></p>
+          <img src="${pictureUrl}" alt="Visitor Photo" style="max-width: 300px; height: auto; border-radius: 8px; border: 2px solid #ddd;" />
+        </div>
+      `;
+    }
+
+    emailHtml += `
+      <p>Please coordinate with security for the visitor's entry.</p>
+      
+      <p>Best regards,<br>
+      Woodstock School Security</p>
+    `;
+
     const emailResponse = await resend.emails.send({
       from: "Woodstock Security <onboarding@resend.dev>",
       to: [staffEmail],
       subject: "New entry",
-      html: `
-        <h2>New Visitor Registration - Staff Meeting Request</h2>
-        <p>A visitor has registered and requested to meet with you:</p>
-        
-        <div style="background: #f5f5f5; padding: 15px; border-radius: 5px; margin: 15px 0;">
-          <p><strong>Visitor Name:</strong> ${visitorName}</p>
-          <p><strong>Purpose:</strong> ${purpose}</p>
-          <p><strong>Number of People:</strong> ${numberOfPeople}</p>
-          <p><strong>Visit Start Time:</strong> ${formattedStartTime}</p>
-          <p><strong>Contact Number:</strong> ${phoneNumber}</p>
-        </div>
-        
-        <p>Please coordinate with security for the visitor's entry.</p>
-        
-        <p>Best regards,<br>
-        Woodstock School Security</p>
-      `,
+      html: emailHtml,
     });
 
     console.log("Email sent successfully:", emailResponse);
