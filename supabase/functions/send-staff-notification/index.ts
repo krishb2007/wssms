@@ -35,8 +35,8 @@ const handler = async (req: Request): Promise<Response> => {
       timeStyle: 'short'
     });
 
-    // Prepare email content with optional image
-    let emailHtml = `
+    // Prepare email content
+    const emailHtml = `
       <h2>New Visitor Registration - Staff Meeting Request</h2>
       <p>A visitor has registered and requested to meet with you:</p>
       
@@ -47,31 +47,55 @@ const handler = async (req: Request): Promise<Response> => {
         <p><strong>Visit Start Time:</strong> ${formattedStartTime}</p>
         <p><strong>Contact Number:</strong> ${phoneNumber}</p>
       </div>
-    `;
-
-    // Add visitor photo if available
-    if (pictureUrl) {
-      emailHtml += `
-        <div style="margin: 20px 0;">
-          <p><strong>Visitor Photo:</strong></p>
-          <img src="${pictureUrl}" alt="Visitor Photo" style="max-width: 300px; height: auto; border-radius: 8px; border: 2px solid #ddd;" />
-        </div>
-      `;
-    }
-
-    emailHtml += `
+      
+      ${pictureUrl ? '<p><strong>Note:</strong> Visitor photo is attached to this email.</p>' : ''}
+      
       <p>Please coordinate with security for the visitor's entry.</p>
       
       <p>Best regards,<br>
       Woodstock School Security</p>
     `;
 
-    const emailResponse = await resend.emails.send({
+    // Prepare email options
+    const emailOptions: any = {
       from: "Woodstock Security <onboarding@resend.dev>",
       to: [staffEmail],
       subject: "New entry",
       html: emailHtml,
-    });
+    };
+
+    // If picture URL exists, fetch and attach the image
+    if (pictureUrl) {
+      try {
+        console.log("Fetching visitor image from:", pictureUrl);
+        const imageResponse = await fetch(pictureUrl);
+        
+        if (imageResponse.ok) {
+          const imageBuffer = await imageResponse.arrayBuffer();
+          const base64Image = btoa(String.fromCharCode(...new Uint8Array(imageBuffer)));
+          
+          // Get file extension from URL or default to jpg
+          const fileExtension = pictureUrl.split('.').pop()?.toLowerCase() || 'jpg';
+          const mimeType = fileExtension === 'png' ? 'image/png' : 'image/jpeg';
+          
+          emailOptions.attachments = [{
+            filename: `visitor-photo.${fileExtension}`,
+            content: base64Image,
+            type: mimeType,
+            disposition: 'attachment'
+          }];
+          
+          console.log("Image attached successfully");
+        } else {
+          console.warn("Failed to fetch image:", imageResponse.status);
+        }
+      } catch (error) {
+        console.error("Error fetching image for attachment:", error);
+        // Continue without attachment if image fetch fails
+      }
+    }
+
+    const emailResponse = await resend.emails.send(emailOptions);
 
     console.log("Email sent successfully:", emailResponse);
 
