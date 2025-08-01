@@ -63,7 +63,8 @@ export const useVisitorRegistrations = () => {
         registration.phonenumber.toLowerCase().includes(searchTerm.toLowerCase()) ||
         registration.purpose.toLowerCase().includes(searchTerm.toLowerCase()) ||
         registration.address?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        registration.schoolname?.toLowerCase().includes(searchTerm.toLowerCase())
+        registration.schoolname?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        registration.email?.toLowerCase().includes(searchTerm.toLowerCase())
       );
       const sortedFiltered = sortRegistrations(filtered);
       setFilteredRegistrations(sortedFiltered);
@@ -91,7 +92,7 @@ export const useVisitorRegistrations = () => {
         });
       } else if (data) {
         console.log(`Successfully fetched ${data.length} registrations`);
-        const sortedData = sortRegistrations(data);
+        const sortedData = sortRegistrations(data as unknown as VisitorRegistration[]);
         setRegistrations(sortedData);
         setFilteredRegistrations(sortedData);
       }

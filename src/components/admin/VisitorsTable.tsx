@@ -4,7 +4,7 @@ import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Pencil, Save, X, Eye, User, Building, Phone, MapPin, Clock } from "lucide-react";
+import { Pencil, Save, X, Eye, User, Building, Phone, MapPin, Clock, Mail } from "lucide-react";
 import { VisitorRegistration } from './types';
 import { SearchAndRefresh } from './SearchAndRefresh';
 import { VisitorDetailsModal } from './VisitorDetailsModal';
@@ -158,9 +158,17 @@ export const VisitorsTable: React.FC<VisitorsTableProps> = ({
                       </div>
                     </TableCell>
                     <TableCell className="py-4 border-r border-gray-700">
-                      <span className="inline-flex items-center px-3 py-1 rounded-full text-xs font-bold bg-amber-100 text-amber-800 border border-amber-200">
-                        {formatPurpose(registration.purpose)}
-                      </span>
+                      <div className="space-y-2">
+                        <span className="inline-flex items-center px-3 py-1 rounded-full text-xs font-bold bg-amber-100 text-amber-800 border border-amber-200">
+                          {formatPurpose(registration.purpose)}
+                        </span>
+                        {registration.email && (
+                          <div className="text-xs text-white font-medium flex items-center">
+                            <Mail className="h-3 w-3 mr-1" />
+                            {registration.email}
+                          </div>
+                        )}
+                      </div>
                     </TableCell>
                     <TableCell className="py-4 border-r border-gray-700">
                       <div>
