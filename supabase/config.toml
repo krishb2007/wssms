@@ -2,3 +2,6 @@ project_id = "efxeohyxpnwewhqwlahw"
 
 [functions.send-staff-notification]
 verify_jwt = false
+
+[functions.monthly-cleanup]
+verify_jwt = false
