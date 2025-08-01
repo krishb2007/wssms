@@ -101,6 +101,13 @@ export type Database = {
         Args: { data: string }
         Returns: string
       }
+      cleanup_old_visitor_registrations: {
+        Args: Record<PropertyKey, never>
+        Returns: {
+          deleted_count: number
+          bucket_name: string
+        }[]
+      }
       get_user_tables: {
         Args: Record<PropertyKey, never>
         Returns: {
