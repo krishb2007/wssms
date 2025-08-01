@@ -63,6 +63,7 @@ export const saveFormData = async (formData: FormDataInput): Promise<FormEntry> 
       signature: formData.signature,
       starttime: formData.startTime,
       endtime: formData.endTime,
+      email: formData.purpose === "meeting_school_staff" ? formData.staffEmail : null,
     };
 
     console.log("Calling saveVisitorRegistration with:", visitorData);
