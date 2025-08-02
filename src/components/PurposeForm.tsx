@@ -98,34 +98,14 @@ const PurposeForm: React.FC<PurposeFormProps> = ({
           {formData.purpose === "meeting_school_staff" && (
             <div className="space-y-2">
               <Label htmlFor="staffEmail">Staff Email Address:</Label>
-              <div className="space-y-2">
-                <div className="flex items-center">
-                  <Input
-                    id="staffEmail"
-                    type="text"
-                    value={formData.staffEmail ? formData.staffEmail.replace("@woodstock.ac.in", "") : ""}
-                    onChange={(e) => {
-                      const username = e.target.value.replace("@woodstock.ac.in", "");
-                      updateFormData({ staffEmail: username + "@woodstock.ac.in" });
-                    }}
-                    placeholder="Enter staff username"
-                    required={formData.purpose === "meeting_school_staff"}
-                    className="rounded-r-none"
-                  />
-                  <div className="bg-muted px-3 py-2 text-sm text-muted-foreground border border-l-0 rounded-r-md">
-                    @woodstock.ac.in
-                  </div>
-                </div>
-                <div className="text-xs text-muted-foreground">
-                  Or enter full email address:
-                </div>
-                <Input
-                  type="email"
-                  value={formData.staffEmail || ""}
-                  onChange={(e) => updateFormData({ staffEmail: e.target.value })}
-                  placeholder="staff@example.com"
-                />
-              </div>
+              <Input
+                id="staffEmail"
+                type="email"
+                value={formData.staffEmail || "@woodstock.ac.in"}
+                onChange={(e) => updateFormData({ staffEmail: e.target.value })}
+                placeholder="staff@woodstock.ac.in"
+                required={formData.purpose === "meeting_school_staff"}
+              />
             </div>
           )}
 
