@@ -71,7 +71,7 @@ const handler = async (req: Request): Promise<Response> => {
     const smtp2goPayload: any = {
       api_key: SMTP2GO_API_KEY,
       to: [staffEmail],
-      sender: "noreply@woodstock.ac.in",
+      sender: "security@woodstock.ac.in",
       subject: "New entry",
       html_body: emailHtml,
     };
