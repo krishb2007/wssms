@@ -1,6 +1,6 @@
 import { serve } from "https://deno.land/std@0.190.0/http/server.ts";
 
-const SMTP2GO_API_KEY = "7555B6B16E0D4C559080A6827600208D";
+const SMTP2GO_API_KEY = "api-7555B6B16E0D4C559080A6827600208D";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
