@@ -101,6 +101,7 @@ export const saveFormData = async (formData: FormDataInput): Promise<FormEntry> 
             numberOfPeople: formData.numberOfPeople,
             startTime: formData.startTime,
             phoneNumber: formData.phoneNumber,
+            address: `${formData.address.city}, ${formData.address.state}, ${formData.address.country}`,
             pictureUrl: savedData.picture_url,
             people: formData.people
           }
