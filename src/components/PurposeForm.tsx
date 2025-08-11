@@ -101,12 +101,16 @@ const PurposeForm: React.FC<PurposeFormProps> = ({
               <div className="space-y-2">
                 <div className="flex items-center">
                   <Input
-                    id="staffEmail"
+                    id="staffEmailUsername"
                     type="text"
-                    value={formData.staffEmail ? formData.staffEmail.replace("@woodstock.ac.in", "") : ""}
+                    value={formData.staffEmail && formData.staffEmail.includes("@woodstock.ac.in") ? formData.staffEmail.replace("@woodstock.ac.in", "") : ""}
                     onChange={(e) => {
                       const username = e.target.value.replace("@woodstock.ac.in", "");
-                      updateFormData({ staffEmail: username + "@woodstock.ac.in" });
+                      if (username.trim()) {
+                        updateFormData({ staffEmail: username + "@woodstock.ac.in" });
+                      } else {
+                        updateFormData({ staffEmail: "" });
+                      }
                     }}
                     placeholder="Enter staff username"
                     required={formData.purpose === "meeting_school_staff"}
@@ -120,8 +124,9 @@ const PurposeForm: React.FC<PurposeFormProps> = ({
                   Or enter full email address:
                 </div>
                 <Input
+                  id="staffEmailFull"
                   type="email"
-                  value={formData.staffEmail || ""}
+                  value={formData.staffEmail && !formData.staffEmail.includes("@woodstock.ac.in") ? formData.staffEmail : ""}
                   onChange={(e) => updateFormData({ staffEmail: e.target.value })}
                   placeholder="staff@example.com"
                 />
