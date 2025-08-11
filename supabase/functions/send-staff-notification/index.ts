@@ -14,6 +14,7 @@ interface StaffNotificationRequest {
   numberOfPeople: number;
   startTime: string;
   phoneNumber: string;
+  address: string;
   pictureUrl?: string;
   people?: Array<{ name: string; role: string }>;
 }
@@ -25,7 +26,7 @@ const handler = async (req: Request): Promise<Response> => {
   }
 
   try {
-    const { staffEmail, visitorName, purpose, numberOfPeople, startTime, phoneNumber, pictureUrl, people }: StaffNotificationRequest = await req.json();
+    const { staffEmail, visitorName, purpose, numberOfPeople, startTime, phoneNumber, address, pictureUrl, people }: StaffNotificationRequest = await req.json();
 
     console.log("Sending email to:", staffEmail);
     console.log("Picture URL received:", pictureUrl);
@@ -57,6 +58,7 @@ const handler = async (req: Request): Promise<Response> => {
         <p><strong>Number of People:</strong> ${peopleInfo}</p>
         <p><strong>Registration Time:</strong> ${currentTime}</p>
         <p><strong>Contact Number:</strong> ${phoneNumber}</p>
+        <p><strong>Address:</strong> ${address}</p>
       </div>
       
       ${pictureUrl ? '<p><strong>Note:</strong> Visitor photo is attached to this email.</p>' : '<p><strong>Note:</strong> No visitor photo provided.</p>'}
