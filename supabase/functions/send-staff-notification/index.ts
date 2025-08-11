@@ -1,7 +1,6 @@
 import { serve } from "https://deno.land/std@0.190.0/http/server.ts";
-import { Resend } from "npm:resend@2.0.0";
 
-const resend = new Resend(Deno.env.get("RESEND_API_KEY"));
+const SMTP2GO_API_KEY = "7555B6B16E0D4C559080A6827600208D";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -68,12 +67,13 @@ const handler = async (req: Request): Promise<Response> => {
       Woodstock School Security</p>
     `;
 
-    // Prepare email options
-    const emailOptions: any = {
-      from: "Woodstock School Security - No Reply <noreply@resend.dev>",
+    // Prepare SMTP2GO email payload
+    const smtp2goPayload: any = {
+      api_key: SMTP2GO_API_KEY,
       to: [staffEmail],
+      sender: "noreply@woodstock.ac.in",
       subject: "New entry",
-      html: emailHtml,
+      html_body: emailHtml,
     };
 
     // If picture URL exists, fetch and attach the image
@@ -111,11 +111,10 @@ const handler = async (req: Request): Promise<Response> => {
           const fileExtension = urlParts[urlParts.length - 1]?.toLowerCase() || 'jpg';
           const mimeType = fileExtension === 'png' ? 'image/png' : 'image/jpeg';
           
-          emailOptions.attachments = [{
+          smtp2goPayload.attachments = [{
             filename: `visitor-photo.${fileExtension}`,
-            content: base64Image,
-            type: mimeType,
-            disposition: 'attachment'
+            fileblob: base64Image,
+            mimetype: mimeType
           }];
           
           console.log("Image attachment prepared successfully");
@@ -133,11 +132,19 @@ const handler = async (req: Request): Promise<Response> => {
       console.log("No picture URL provided");
     }
 
-    const emailResponse = await resend.emails.send(emailOptions);
+    const emailResponse = await fetch('https://api.smtp2go.com/v3/email/send', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify(smtp2goPayload)
+    });
 
-    console.log("Email sent successfully:", emailResponse);
+    const responseData = await emailResponse.json();
 
-    return new Response(JSON.stringify({ success: true, emailResponse }), {
+    console.log("Email sent successfully:", responseData);
+
+    return new Response(JSON.stringify({ success: true, emailResponse: responseData }), {
       status: 200,
       headers: {
         "Content-Type": "application/json",
