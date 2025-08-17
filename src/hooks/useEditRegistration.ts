@@ -1,4 +1,3 @@
-
 import { useState } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from "@/components/ui/use-toast";
@@ -10,44 +9,36 @@ export const useEditRegistration = (updateRegistration: (id: string, updates: Pa
   const [saving, setSaving] = useState(false);
 
   const startEdit = (registration: VisitorRegistration) => {
-    console.log("Starting edit for registration:", registration.id);
     setEditingId(registration.id);
-    
+
     let currentEndTime: string;
-    
+
     if (registration.endtime) {
-      // Convert UTC time from database to IST for display
-      const utcDate = new Date(registration.endtime);
-      // Add 5.5 hours to convert UTC to IST
-      const istTimestamp = utcDate.getTime() + (5.5 * 60 * 60 * 1000);
-      const istDate = new Date(istTimestamp);
-      currentEndTime = istDate.toISOString().slice(0, 16);
-      console.log("Converted UTC to IST for display:", registration.endtime, "->", currentEndTime);
+      // Assume endtime is stored in IST and display as is for editing
+      currentEndTime = registration.endtime.slice(0, 16);
     } else {
-      // For new entries, use current IST time
+      // Use current IST time if no endtime exists
       const now = new Date();
-      const istTimestamp = now.getTime() + (5.5 * 60 * 60 * 1000);
-      const istDate = new Date(istTimestamp);
-      currentEndTime = istDate.toISOString().slice(0, 16);
-      console.log("Using current IST time:", currentEndTime);
+      // Get IST time by adding 5.5 hours to UTC
+      const utc = now.getTime() + (now.getTimezoneOffset() * 60000);
+      const ist = new Date(utc + (5.5 * 60 * 60 * 1000));
+      currentEndTime = ist.toISOString().slice(0, 16);
     }
-    
+
     setEditEndTime(currentEndTime);
   };
 
   const cancelEdit = () => {
-    console.log("Cancelling edit");
     setEditingId(null);
     setEditEndTime('');
   };
 
   const saveEdit = async (id: string) => {
     if (saving) return;
-    
+
     try {
       setSaving(true);
-      console.log("Saving end time for registration:", id, "datetime-local value:", editEndTime);
-      
+
       if (!editEndTime) {
         toast({
           title: "Error",
@@ -57,35 +48,26 @@ export const useEditRegistration = (updateRegistration: (id: string, updates: Pa
         return;
       }
 
-      // Convert datetime-local input (treated as IST) to UTC for storage
-      console.log("Original editEndTime from input (as IST):", editEndTime);
-      
-      // Parse the datetime-local string and treat it as IST
-      // Format: "2024-01-01T15:30" - this represents IST time
-      const istDateString = editEndTime + ':00.000Z'; // Add seconds and Z
-      const tempDate = new Date(istDateString);
-      
-      // This gives us a UTC timestamp, but we need to adjust because
-      // the input was actually IST, not UTC
-      // Subtract 5.5 hours to convert from IST to UTC
-      const utcTimestamp = tempDate.getTime() - (5.5 * 60 * 60 * 1000);
-      const utcDate = new Date(utcTimestamp);
-      const endTimeISO = utcDate.toISOString();
-      
-      console.log("Input treated as IST:", editEndTime);
-      console.log("Converted to UTC for storage:", endTimeISO);
-      console.log("UTC timestamp:", utcTimestamp);
+      // Parse the input as a local time and format as IST string
+      const localDate = new Date(editEndTime);
+
+      // Add IST offset (if the browser isn't already in IST)
+      const utc = localDate.getTime() + (localDate.getTimezoneOffset() * 60000);
+      const istDate = new Date(utc + (5.5 * 60 * 60 * 1000));
+
+      // Format as 'YYYY-MM-DDTHH:mm:ss' (no 'Z', no offset)
+      const pad = (n: number) => n.toString().padStart(2, '0');
+      const istString =
+        `${istDate.getFullYear()}-${pad(istDate.getMonth() + 1)}-${pad(istDate.getDate())}T` +
+        `${pad(istDate.getHours())}:${pad(istDate.getMinutes())}:${pad(istDate.getSeconds())}`;
 
       const { data, error } = await supabase
         .from('visitor_registrations')
-        .update({ endtime: endTimeISO })
+        .update({ endtime: istString })
         .eq('id', id)
         .select();
 
-      console.log("Update response:", { data, error });
-
       if (error) {
-        console.error("Update error:", error);
         toast({
           title: "Error",
           description: "Failed to update end time: " + error.message,
@@ -95,7 +77,6 @@ export const useEditRegistration = (updateRegistration: (id: string, updates: Pa
       }
 
       if (!data || data.length === 0) {
-        console.error("No rows updated");
         toast({
           title: "Error",
           description: "Update failed - registration not found",
@@ -104,21 +85,17 @@ export const useEditRegistration = (updateRegistration: (id: string, updates: Pa
         return;
       }
 
-      console.log("Successfully updated end time, updated record:", data[0]);
-      
-      // Update local state immediately
-      updateRegistration(id, { endtime: endTimeISO });
-      
+      updateRegistration(id, { endtime: istString });
+
       toast({
         title: "Success",
         description: "End time updated successfully",
       });
-      
+
       setEditingId(null);
       setEditEndTime('');
-      
+
     } catch (error) {
-      console.error("Unexpected error during update:", error);
       toast({
         title: "Error",
         description: "An unexpected error occurred while updating: " + (error as Error).message,
