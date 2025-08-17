@@ -4,7 +4,6 @@ import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Combobox } from "@/components/ui/combobox";
 import { MapPin } from "lucide-react";
 
 interface AddressFormProps {
@@ -118,14 +117,22 @@ const AddressForm: React.FC<AddressFormProps> = ({
         {selectedCountry === "India" && (
           <div className="space-y-2">
             <Label htmlFor="state">State</Label>
-            <Combobox
-              options={indianStates.map(state => ({ value: state, label: state }))}
+            <Select
               value={formData.address.state}
               onValueChange={(value) => handleAddressChange("state", value)}
-              placeholder="Select or search state..."
-              searchPlaceholder="Search states..."
-              emptyText="No state found."
-            />
+              required
+            >
+              <SelectTrigger id="state" className="w-full">
+                <SelectValue placeholder="Select state" />
+              </SelectTrigger>
+              <SelectContent>
+                {indianStates.map((state) => (
+                  <SelectItem key={state} value={state}>
+                    {state}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
           </div>
         )}
 
