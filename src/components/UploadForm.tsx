@@ -148,7 +148,7 @@ const UploadForm: React.FC<UploadFormProps> = ({
                     <img
                       src={picturePreview}
                       alt="Preview"
-                      className="h-64 w-full object-cover rounded-lg cursor-pointer"
+                      className="h-64 w-full object-contain rounded-lg cursor-pointer border border-gray-300"
                     />
                   </DialogTrigger>
                   <DialogContent className="max-w-3xl">
@@ -158,7 +158,7 @@ const UploadForm: React.FC<UploadFormProps> = ({
                     <img
                       src={picturePreview}
                       alt="Preview"
-                      className="w-full h-auto rounded-lg"
+                      className="w-full h-auto object-contain rounded-lg max-h-[80vh]"
                     />
                   </DialogContent>
                 </Dialog>

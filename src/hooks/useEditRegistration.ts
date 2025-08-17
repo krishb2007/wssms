@@ -40,8 +40,13 @@ export const useEditRegistration = (updateRegistration: (id: string, updates: Pa
         return;
       }
 
-      const endTimeISO = new Date(editEndTime).toISOString();
-      console.log("Converted to ISO string:", endTimeISO);
+      // Convert datetime-local to UTC for proper storage
+      const localDate = new Date(editEndTime);
+      // Adjust for IST offset (UTC+5:30) to store correct UTC time
+      const istOffset = 5.5 * 60 * 60 * 1000; // 5.5 hours in milliseconds
+      const utcTime = new Date(localDate.getTime() - istOffset);
+      const endTimeISO = utcTime.toISOString();
+      console.log("Local time:", editEndTime, "Converted to UTC:", endTimeISO);
 
       const { data, error } = await supabase
         .from('visitor_registrations')
