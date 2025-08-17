@@ -12,9 +12,22 @@ export const useEditRegistration = (updateRegistration: (id: string, updates: Pa
   const startEdit = (registration: VisitorRegistration) => {
     console.log("Starting edit for registration:", registration.id);
     setEditingId(registration.id);
-    const currentEndTime = registration.endtime 
-      ? new Date(registration.endtime).toISOString().slice(0, 16)
-      : new Date().toISOString().slice(0, 16);
+    
+    // Convert UTC time from database to IST for display
+    let currentEndTime;
+    if (registration.endtime) {
+      const utcDate = new Date(registration.endtime);
+      // Add IST offset (UTC+5:30) to get IST time
+      const istOffset = 5.5 * 60 * 60 * 1000; // 5.5 hours in milliseconds
+      const istDate = new Date(utcDate.getTime() + istOffset);
+      currentEndTime = istDate.toISOString().slice(0, 16);
+    } else {
+      const now = new Date();
+      const istOffset = 5.5 * 60 * 60 * 1000;
+      const istNow = new Date(now.getTime() + istOffset);
+      currentEndTime = istNow.toISOString().slice(0, 16);
+    }
+    
     setEditEndTime(currentEndTime);
   };
 
@@ -40,11 +53,11 @@ export const useEditRegistration = (updateRegistration: (id: string, updates: Pa
         return;
       }
 
-      // Convert datetime-local to UTC for proper storage
-      const localDate = new Date(editEndTime);
-      // Adjust for IST offset (UTC+5:30) to store correct UTC time
+      // Convert IST datetime-local input to UTC for storage
+      // The editEndTime is in IST, so we need to subtract IST offset to get UTC
       const istOffset = 5.5 * 60 * 60 * 1000; // 5.5 hours in milliseconds
-      const utcTime = new Date(localDate.getTime() - istOffset);
+      const istDate = new Date(editEndTime + ':00'); // Add seconds for complete ISO string
+      const utcTime = new Date(istDate.getTime() - istOffset);
       const endTimeISO = utcTime.toISOString();
       console.log("Local time:", editEndTime, "Converted to UTC:", endTimeISO);
 
