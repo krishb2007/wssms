@@ -1,3 +1,4 @@
+
 import React, { useState } from 'react';
 import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
@@ -23,16 +24,6 @@ interface VisitorsTableProps {
   onEditEndTimeChange: (value: string) => void;
 }
 
-// Helper function to format IST string
-function formatISTDate(istString: string | null): string {
-  if (!istString) return "N/A";
-  const [datePart, timePart] = istString.split("T");
-  if (!datePart || !timePart) return istString;
-  const [year, month, day] = datePart.split("-");
-  const [hour, minute] = timePart.split(":");
-  return `${day}-${month}-${year} ${hour}:${minute} IST`;
-}
-
 export const VisitorsTable: React.FC<VisitorsTableProps> = ({
   registrations,
   filteredRegistrations,
@@ -48,6 +39,19 @@ export const VisitorsTable: React.FC<VisitorsTableProps> = ({
   onEditEndTimeChange
 }) => {
   const [selectedRegistration, setSelectedRegistration] = useState<VisitorRegistration | null>(null);
+
+  const formatDate = (dateString: string | null) => {
+    if (!dateString) return 'N/A';
+    const date = new Date(dateString);
+    return date.toLocaleString('en-IN', {
+      month: 'short',
+      day: 'numeric',
+      year: 'numeric',
+      hour: '2-digit',
+      minute: '2-digit',
+      timeZone: 'Asia/Kolkata'
+    });
+  };
 
   const parsePeople = (peopleString: string) => {
     try {
@@ -180,7 +184,7 @@ export const VisitorsTable: React.FC<VisitorsTableProps> = ({
                       <div className="space-y-1">
                         <div className="flex items-center text-xs text-white font-medium">
                           <Clock className="h-3 w-3 mr-1" />
-                          Started: {formatISTDate(registration.created_at)}
+                          Started: {formatDate(registration.created_at)}
                         </div>
                         {editingId === registration.id ? (
                           <div className="space-y-1">
@@ -198,7 +202,7 @@ export const VisitorsTable: React.FC<VisitorsTableProps> = ({
                           </div>
                         ) : (
                           <div className="text-xs text-white font-medium">
-                            Ended: {registration.endtime ? formatISTDate(registration.endtime) : 'Active'}
+                            Ended: {registration.endtime ? formatDate(registration.endtime) : 'Active'}
                           </div>
                         )}
                       </div>

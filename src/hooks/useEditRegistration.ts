@@ -1,4 +1,3 @@
-
 import { useState } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from "@/components/ui/use-toast";
@@ -10,27 +9,36 @@ export const useEditRegistration = (updateRegistration: (id: string, updates: Pa
   const [saving, setSaving] = useState(false);
 
   const startEdit = (registration: VisitorRegistration) => {
-    console.log("Starting edit for registration:", registration.id);
     setEditingId(registration.id);
-    const currentEndTime = registration.endtime 
-      ? new Date(registration.endtime).toISOString().slice(0, 16)
-      : new Date().toISOString().slice(0, 16);
+
+    let currentEndTime: string;
+
+    if (registration.endtime) {
+      // Assume endtime is stored in IST and display as is for editing
+      currentEndTime = registration.endtime.slice(0, 16);
+    } else {
+      // Use current IST time if no endtime exists
+      const now = new Date();
+      // Get IST time by adding 5.5 hours to UTC
+      const utc = now.getTime() + (now.getTimezoneOffset() * 60000);
+      const ist = new Date(utc + (5.5 * 60 * 60 * 1000));
+      currentEndTime = ist.toISOString().slice(0, 16);
+    }
+
     setEditEndTime(currentEndTime);
   };
 
   const cancelEdit = () => {
-    console.log("Cancelling edit");
     setEditingId(null);
     setEditEndTime('');
   };
 
   const saveEdit = async (id: string) => {
     if (saving) return;
-    
+
     try {
       setSaving(true);
-      console.log("Saving end time for registration:", id, "datetime-local value:", editEndTime);
-      
+
       if (!editEndTime) {
         toast({
           title: "Error",
@@ -40,19 +48,26 @@ export const useEditRegistration = (updateRegistration: (id: string, updates: Pa
         return;
       }
 
-      const endTimeISO = new Date(editEndTime).toISOString();
-      console.log("Converted to ISO string:", endTimeISO);
+      // Parse the input as a local time and format as IST string
+      const localDate = new Date(editEndTime);
+
+      // Add IST offset (if the browser isn't already in IST)
+      const utc = localDate.getTime() + (localDate.getTimezoneOffset() * 60000);
+      const istDate = new Date(utc + (5.5 * 60 * 60 * 1000));
+
+      // Format as 'YYYY-MM-DDTHH:mm:ss' (no 'Z', no offset)
+      const pad = (n: number) => n.toString().padStart(2, '0');
+      const istString =
+        `${istDate.getFullYear()}-${pad(istDate.getMonth() + 1)}-${pad(istDate.getDate())}T` +
+        `${pad(istDate.getHours())}:${pad(istDate.getMinutes())}:${pad(istDate.getSeconds())}`;
 
       const { data, error } = await supabase
         .from('visitor_registrations')
-        .update({ endtime: endTimeISO })
+        .update({ endtime: istString })
         .eq('id', id)
         .select();
 
-      console.log("Update response:", { data, error });
-
       if (error) {
-        console.error("Update error:", error);
         toast({
           title: "Error",
           description: "Failed to update end time: " + error.message,
@@ -62,7 +77,6 @@ export const useEditRegistration = (updateRegistration: (id: string, updates: Pa
       }
 
       if (!data || data.length === 0) {
-        console.error("No rows updated");
         toast({
           title: "Error",
           description: "Update failed - registration not found",
@@ -71,21 +85,17 @@ export const useEditRegistration = (updateRegistration: (id: string, updates: Pa
         return;
       }
 
-      console.log("Successfully updated end time, updated record:", data[0]);
-      
-      // Update local state immediately
-      updateRegistration(id, { endtime: endTimeISO });
-      
+      updateRegistration(id, { endtime: istString });
+
       toast({
         title: "Success",
         description: "End time updated successfully",
       });
-      
+
       setEditingId(null);
       setEditEndTime('');
-      
+
     } catch (error) {
-      console.error("Unexpected error during update:", error);
       toast({
         title: "Error",
         description: "An unexpected error occurred while updating: " + (error as Error).message,
