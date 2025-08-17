@@ -12,20 +12,26 @@ export const useEditRegistration = (updateRegistration: (id: string, updates: Pa
   const startEdit = (registration: VisitorRegistration) => {
     console.log("Starting edit for registration:", registration.id);
     setEditingId(registration.id);
-    const currentEndTime = registration.endtime 
-      ? (() => {
-          // Convert UTC time from database to IST for display in datetime-local input
-          const utcDate = new Date(registration.endtime);
-          const istDate = new Date(utcDate.getTime() + (5.5 * 60 * 60 * 1000));
-          return istDate.toISOString().slice(0, 16);
-        })()
-      : (() => {
-          // Convert current UTC time to IST for display
-          const now = new Date();
-          const istNow = new Date(now.getTime() + (5.5 * 60 * 60 * 1000));
-          return istNow.toISOString().slice(0, 16);
-        })();
-    console.log("Setting editEndTime to:", currentEndTime);
+    
+    let currentEndTime: string;
+    
+    if (registration.endtime) {
+      // Convert UTC time from database to IST for display
+      const utcDate = new Date(registration.endtime);
+      // Add 5.5 hours to convert UTC to IST
+      const istTimestamp = utcDate.getTime() + (5.5 * 60 * 60 * 1000);
+      const istDate = new Date(istTimestamp);
+      currentEndTime = istDate.toISOString().slice(0, 16);
+      console.log("Converted UTC to IST for display:", registration.endtime, "->", currentEndTime);
+    } else {
+      // For new entries, use current IST time
+      const now = new Date();
+      const istTimestamp = now.getTime() + (5.5 * 60 * 60 * 1000);
+      const istDate = new Date(istTimestamp);
+      currentEndTime = istDate.toISOString().slice(0, 16);
+      console.log("Using current IST time:", currentEndTime);
+    }
+    
     setEditEndTime(currentEndTime);
   };
 
@@ -51,26 +57,24 @@ export const useEditRegistration = (updateRegistration: (id: string, updates: Pa
         return;
       }
 
-      // The datetime-local input gives us a string like "2024-01-01T15:30"
-      // We need to treat this as IST time and convert to UTC for storage
-      console.log("Original editEndTime from input:", editEndTime);
+      // Convert datetime-local input (treated as IST) to UTC for storage
+      console.log("Original editEndTime from input (as IST):", editEndTime);
       
-      // Parse the datetime-local string as IST
-      const [datePart, timePart] = editEndTime.split('T');
-      const [year, month, day] = datePart.split('-').map(Number);
-      const [hour, minute] = timePart.split(':').map(Number);
+      // Parse the datetime-local string and treat it as IST
+      // Format: "2024-01-01T15:30" - this represents IST time
+      const istDateString = editEndTime + ':00.000Z'; // Add seconds and Z
+      const tempDate = new Date(istDateString);
       
-      // Create date object explicitly in IST
-      const istDate = new Date();
-      istDate.setFullYear(year, month - 1, day); // month is 0-indexed
-      istDate.setHours(hour, minute, 0, 0);
-      
-      // Convert IST to UTC by subtracting 5.5 hours
-      const utcDate = new Date(istDate.getTime() - (5.5 * 60 * 60 * 1000));
+      // This gives us a UTC timestamp, but we need to adjust because
+      // the input was actually IST, not UTC
+      // Subtract 5.5 hours to convert from IST to UTC
+      const utcTimestamp = tempDate.getTime() - (5.5 * 60 * 60 * 1000);
+      const utcDate = new Date(utcTimestamp);
       const endTimeISO = utcDate.toISOString();
       
-      console.log("Parsed as IST:", istDate);
+      console.log("Input treated as IST:", editEndTime);
       console.log("Converted to UTC for storage:", endTimeISO);
+      console.log("UTC timestamp:", utcTimestamp);
 
       const { data, error } = await supabase
         .from('visitor_registrations')
