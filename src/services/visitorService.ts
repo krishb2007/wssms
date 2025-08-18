@@ -90,7 +90,17 @@ export const saveVisitorRegistration = async (formData: VisitorFormData) => {
       purpose: formData.purpose,
       address: addressString,
       schoolname: "Woodstock School",
-      starttime: formData.starttime || new Date().toISOString(),
+      starttime: formData.starttime || (() => {
+        // Get current IST time
+        const now = new Date();
+        const utc = now.getTime() + (now.getTimezoneOffset() * 60000);
+        const istTime = new Date(utc + (5.5 * 60 * 60 * 1000));
+        
+        // Format as 'YYYY-MM-DDTHH:mm:ss' (no 'Z', no offset) to store as IST
+        const pad = (n: number) => n.toString().padStart(2, '0');
+        return `${istTime.getFullYear()}-${pad(istTime.getMonth() + 1)}-${pad(istTime.getDate())}T` +
+               `${pad(istTime.getHours())}:${pad(istTime.getMinutes())}:${pad(istTime.getSeconds())}`;
+      })(),
       endtime: formData.endtime || null,
       picture_url: pictureUrl,
       signature_url: signatureUrl,
