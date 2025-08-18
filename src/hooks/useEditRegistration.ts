@@ -14,15 +14,17 @@ export const useEditRegistration = (updateRegistration: (id: string, updates: Pa
     let currentEndTime: string;
 
     if (registration.endtime) {
-      // Assume endtime is stored in IST and display as is for editing
-      currentEndTime = registration.endtime.slice(0, 16);
+      // Convert UTC time from Supabase to IST for display in datetime-local input
+      const utcDate = new Date(registration.endtime);
+      // Add 5.5 hours to convert UTC to IST
+      const istDate = new Date(utcDate.getTime() + (5.5 * 60 * 60 * 1000));
+      currentEndTime = istDate.toISOString().slice(0, 16);
     } else {
       // Use current IST time if no endtime exists
       const now = new Date();
-      // Get IST time by adding 5.5 hours to UTC
-      const utc = now.getTime() + (now.getTimezoneOffset() * 60000);
-      const ist = new Date(utc + (5.5 * 60 * 60 * 1000));
-      currentEndTime = ist.toISOString().slice(0, 16);
+      // Get current IST time
+      const istTime = new Date(now.getTime() + (5.5 * 60 * 60 * 1000));
+      currentEndTime = istTime.toISOString().slice(0, 16);
     }
 
     setEditEndTime(currentEndTime);
@@ -48,22 +50,18 @@ export const useEditRegistration = (updateRegistration: (id: string, updates: Pa
         return;
       }
 
-      // Parse the input as a local time and format as IST string
-      const localDate = new Date(editEndTime);
-
-      // Add IST offset (if the browser isn't already in IST)
-      const utc = localDate.getTime() + (localDate.getTimezoneOffset() * 60000);
-      const istDate = new Date(utc + (5.5 * 60 * 60 * 1000));
-
-      // Format as 'YYYY-MM-DDTHH:mm:ss' (no 'Z', no offset)
-      const pad = (n: number) => n.toString().padStart(2, '0');
-      const istString =
-        `${istDate.getFullYear()}-${pad(istDate.getMonth() + 1)}-${pad(istDate.getDate())}T` +
-        `${pad(istDate.getHours())}:${pad(istDate.getMinutes())}:${pad(istDate.getSeconds())}`;
+      // Parse the datetime-local input as IST and convert to UTC for Supabase
+      const istDate = new Date(editEndTime);
+      
+      // Convert IST to UTC by subtracting 5.5 hours
+      const utcDate = new Date(istDate.getTime() - (5.5 * 60 * 60 * 1000));
+      
+      // Format as ISO string for Supabase (will be stored as UTC)
+      const utcString = utcDate.toISOString();
 
       const { data, error } = await supabase
         .from('visitor_registrations')
-        .update({ endtime: istString })
+        .update({ endtime: utcString })
         .eq('id', id)
         .select();
 
@@ -85,7 +83,7 @@ export const useEditRegistration = (updateRegistration: (id: string, updates: Pa
         return;
       }
 
-      updateRegistration(id, { endtime: istString });
+      updateRegistration(id, { endtime: utcString });
 
       toast({
         title: "Success",
