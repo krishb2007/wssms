@@ -42,14 +42,14 @@ export const VisitorsTable: React.FC<VisitorsTableProps> = ({
 
   const formatDate = (dateString: string | null) => {
     if (!dateString) return 'N/A';
+    // Since Supabase stores time correctly, just parse and display as-is
     const date = new Date(dateString);
     return date.toLocaleString('en-IN', {
       month: 'short',
       day: 'numeric',
       year: 'numeric',
       hour: '2-digit',
-      minute: '2-digit',
-      timeZone: 'Asia/Kolkata'
+      minute: '2-digit'
     });
   };
 
