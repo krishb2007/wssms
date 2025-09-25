@@ -42,14 +42,26 @@ export const VisitorsTable: React.FC<VisitorsTableProps> = ({
 
   const formatDate = (dateString: string | null) => {
     if (!dateString) return 'N/A';
-    // Since Supabase stores time correctly, just parse and display as-is
-    const date = new Date(dateString);
+    
+    // Parse the IST string and display it correctly
+    // Since we store times as IST strings without timezone info, we need to handle them properly
+    let date: Date;
+    
+    if (dateString.includes('T') && !dateString.includes('Z') && !dateString.includes('+')) {
+      // This is an IST string like "2023-12-01T14:30:00" - treat it as IST
+      date = new Date(dateString + '+05:30');
+    } else {
+      // This is a full ISO string or other format
+      date = new Date(dateString);
+    }
+    
     return date.toLocaleString('en-IN', {
       month: 'short',
       day: 'numeric',
       year: 'numeric',
       hour: '2-digit',
-      minute: '2-digit'
+      minute: '2-digit',
+      timeZone: 'Asia/Kolkata'
     });
   };
 

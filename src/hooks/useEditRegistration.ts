@@ -85,6 +85,7 @@ export const useEditRegistration = (updateRegistration: (id: string, updates: Pa
         return;
       }
 
+      // Update local state with the IST string that was saved to Supabase
       updateRegistration(id, { endtime: istString });
 
       toast({
