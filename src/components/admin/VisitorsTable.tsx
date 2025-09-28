@@ -43,7 +43,22 @@ export const VisitorsTable: React.FC<VisitorsTableProps> = ({
   const formatDate = (dateString: string | null): string => {
     if (!dateString) return 'Not set';
     
-    // Handle all timestamp formats by creating a Date object and converting to IST
+    // Check if the date string already contains IST timezone info
+    if (dateString.includes('IST') || dateString.includes('+05:30')) {
+      // If it's already in IST format, parse it directly without timezone conversion
+      const date = new Date(dateString);
+      if (isNaN(date.getTime())) return 'Invalid date';
+      
+      return date.toLocaleString('en-IN', {
+        month: 'short',
+        day: 'numeric',
+        year: 'numeric',
+        hour: '2-digit',
+        minute: '2-digit'
+      });
+    }
+    
+    // For UTC timestamps, convert to IST
     const date = new Date(dateString);
     
     // Check if the date is valid
