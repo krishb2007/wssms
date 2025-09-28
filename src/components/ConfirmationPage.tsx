@@ -27,7 +27,7 @@ interface ConfirmationPageProps {
     purpose: string;
     otherPurpose: string;
     startTime: string;
-    endTime: string | null;
+    
   };
   prevStep: () => void;
   handleSubmit: () => void;
@@ -107,9 +107,8 @@ const ConfirmationPage: React.FC<ConfirmationPageProps> = ({
             </div>
 
             <div>
-              <h4 className="font-semibold">Visit Duration</h4>
+              <h4 className="font-semibold">Visit Start Time</h4>
               <p className="text-sm">Start: {formatDate(formData.startTime)}</p>
-              <p className="text-sm">End: {formatDate(formData.endTime)}</p>
             </div>
 
             <div>

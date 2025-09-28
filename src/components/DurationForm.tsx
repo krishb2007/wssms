@@ -9,9 +9,9 @@ import { format, differenceInMinutes } from "date-fns";
 interface DurationFormProps {
   formData: {
     startTime: string;
-    endTime?: string | null;
+    
   };
-  updateFormData: (data: Partial<{ startTime: string; endTime?: string | null }>) => void;
+  updateFormData: (data: Partial<{ startTime: string }>) => void;
   nextStep: () => void;
   prevStep: () => void;
 }
@@ -37,33 +37,15 @@ const DurationForm: React.FC<DurationFormProps> = ({
     }
   }, []);
 
-  // Calculate duration whenever start or end time changes
   useEffect(() => {
-    if (formData.startTime && formData.endTime) {
-      const start = new Date(formData.startTime);
-      const end = new Date(formData.endTime);
-      
-      if (end > start) {
-        const diffMinutes = differenceInMinutes(end, start);
-        const hours = Math.floor(diffMinutes / 60);
-        const minutes = diffMinutes % 60;
-        
-        let durationText = "";
-        if (hours > 0) {
-          durationText += `${hours} hour${hours > 1 ? 's' : ''}`;
-        }
-        if (minutes > 0) {
-          durationText += `${hours > 0 ? ' ' : ''}${minutes} minute${minutes > 1 ? 's' : ''}`;
-        }
-        
-        setDuration(durationText || "Less than a minute");
-      } else {
-        setDuration("End time must be after start time");
-      }
-    } else {
-      setDuration("");
+    const now = new Date();
+    const istDate = new Date(now.getTime() + (5.5 * 60 * 60 * 1000));
+    const istTime = istDate.toISOString().slice(0, 16);
+    
+    if (!formData.startTime) {
+      updateFormData({ startTime: istTime });
     }
-  }, [formData.startTime, formData.endTime]);
+  }, []);
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -102,32 +84,6 @@ const DurationForm: React.FC<DurationFormProps> = ({
           </div>
           <p className="text-xs text-gray-500">
             Your visit starts now
-          </p>
-        </div>
-        
-        <div className="space-y-2">
-          <Label htmlFor="endTime">End Time (Optional)</Label>
-          <Input
-            id="endTime"
-            type="time"
-            value={formData.endTime ? new Date(formData.endTime).toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit', hour12: false }).substring(0, 5) : ""}
-            onChange={(e) => {
-              if (e.target.value) {
-                // Get current date in IST
-                const now = new Date();
-                const istDate = new Date(now.getTime() + (5.5 * 60 * 60 * 1000));
-                const dateStr = istDate.toISOString().split('T')[0];
-                
-                // Combine date with selected time
-                const endDateTime = `${dateStr}T${e.target.value}:00`;
-                updateFormData({ endTime: endDateTime });
-              } else {
-                updateFormData({ endTime: null });
-              }
-            }}
-          />
-          <p className="text-xs text-gray-500">
-            When will your visit end today? (Leave blank if unknown)
           </p>
         </div>
         
