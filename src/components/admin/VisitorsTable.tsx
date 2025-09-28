@@ -40,20 +40,14 @@ export const VisitorsTable: React.FC<VisitorsTableProps> = ({
 }) => {
   const [selectedRegistration, setSelectedRegistration] = useState<VisitorRegistration | null>(null);
 
-  const formatDate = (dateString: string | null) => {
-    if (!dateString) return 'N/A';
+  const formatDate = (dateString: string | null): string => {
+    if (!dateString) return 'Not set';
     
-    // Parse the IST string and display it correctly
-    // Since we store times as IST strings without timezone info, we need to handle them properly
-    let date: Date;
+    // Handle all timestamp formats by creating a Date object and converting to IST
+    const date = new Date(dateString);
     
-    if (dateString.includes('T') && !dateString.includes('Z') && !dateString.includes('+')) {
-      // This is an IST string like "2023-12-01T14:30:00" - treat it as IST
-      date = new Date(dateString + '+05:30');
-    } else {
-      // This is a full ISO string or other format
-      date = new Date(dateString);
-    }
+    // Check if the date is valid
+    if (isNaN(date.getTime())) return 'Invalid date';
     
     return date.toLocaleString('en-IN', {
       month: 'short',

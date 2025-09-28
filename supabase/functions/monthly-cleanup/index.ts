@@ -83,7 +83,7 @@ Deno.serve(async (req) => {
       console.error('Error deleting visitor records:', deleteRecordsError)
     } else {
       console.log('Successfully deleted all visitor registration records')
-      deletedRecords = deletedData?.length || 0
+      deletedRecords = 0; // Supabase delete doesn't return the count of deleted records
     }
 
     const summary = {
@@ -106,7 +106,7 @@ Deno.serve(async (req) => {
     
     return new Response(JSON.stringify({
       success: false,
-      error: error.message,
+      error: error instanceof Error ? error.message : 'Unknown error',
       timestamp: new Date().toISOString()
     }), {
       headers: { ...corsHeaders, 'Content-Type': 'application/json' },

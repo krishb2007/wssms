@@ -47,26 +47,58 @@ const handler = async (req: Request): Promise<Response> => {
       }
     }
 
+    // Generate unique response URLs
+    const baseUrl = "https://efxeohyxpnwewhqwlahw.supabase.co/functions/v1/handle-visit-response";
+    const approveUrl = `${baseUrl}?action=approve&visitorName=${encodeURIComponent(visitorName)}&staffEmail=${encodeURIComponent(staffEmail)}&registrationTime=${encodeURIComponent(currentTime)}`;
+    const denyUrl = `${baseUrl}?action=deny&visitorName=${encodeURIComponent(visitorName)}&staffEmail=${encodeURIComponent(staffEmail)}&registrationTime=${encodeURIComponent(currentTime)}`;
+
     // Prepare email content
     const emailHtml = `
-      <h2>New Visitor Registration - Staff Meeting Request</h2>
-      <p>A visitor has registered and requested to meet with you:</p>
-      
-      <div style="background: #f5f5f5; padding: 15px; border-radius: 5px; margin: 15px 0;">
-        <p><strong>Visitor Name:</strong> ${visitorName}</p>
-        <p><strong>Purpose:</strong> ${purpose}</p>
-        <p><strong>Number of People:</strong> ${peopleInfo}</p>
-        <p><strong>Registration Time:</strong> ${currentTime}</p>
-        <p><strong>Contact Number:</strong> ${phoneNumber}</p>
-        <p><strong>Address:</strong> ${address}</p>
+      <div style="max-width: 600px; margin: 0 auto; font-family: Arial, sans-serif;">
+        <h2 style="color: #333; border-bottom: 2px solid #007bff; padding-bottom: 10px;">New Visitor Registration - Staff Meeting Request</h2>
+        <p>A visitor has registered and requested to meet with you:</p>
+        
+        <div style="background: #f8f9fa; padding: 20px; border-radius: 8px; margin: 20px 0; border-left: 4px solid #007bff;">
+          <h3 style="margin-top: 0; color: #007bff;">Visitor Details</h3>
+          <p><strong>Visitor Name:</strong> ${visitorName}</p>
+          <p><strong>Purpose:</strong> ${purpose}</p>
+          <p><strong>Number of People:</strong> ${peopleInfo}</p>
+          <p><strong>Registration Time:</strong> ${currentTime}</p>
+          <p><strong>Contact Number:</strong> ${phoneNumber}</p>
+          <p><strong>Address:</strong> ${address}</p>
+        </div>
+        
+        ${pictureUrl ? '<p style="color: #28a745;"><strong>✓ Note:</strong> Visitor photo is attached to this email.</p>' : '<p style="color: #ffc107;"><strong>⚠ Note:</strong> No visitor photo provided.</p>'}
+        
+        <div style="background: #fff3cd; border: 1px solid #ffeaa7; padding: 20px; border-radius: 8px; margin: 30px 0;">
+          <h3 style="margin-top: 0; color: #856404;">Response Required</h3>
+          <p>Please click one of the buttons below to approve or deny this visitor request:</p>
+          
+          <div style="text-align: center; margin: 25px 0;">
+            <a href="${approveUrl}" 
+               style="background-color: #28a745; color: white; padding: 12px 25px; text-decoration: none; border-radius: 5px; margin: 0 10px; font-weight: bold; display: inline-block;">
+              ✓ APPROVE VISIT
+            </a>
+            <a href="${denyUrl}" 
+               style="background-color: #dc3545; color: white; padding: 12px 25px; text-decoration: none; border-radius: 5px; margin: 0 10px; font-weight: bold; display: inline-block;">
+              ✗ DENY VISIT
+            </a>
+          </div>
+          
+          <p style="font-size: 12px; color: #856404;">
+            Clicking either button will send a confirmation to the security team.
+          </p>
+        </div>
+        
+        <p>Please coordinate with security for the visitor's entry once you've made your decision.</p>
+        
+        <hr style="border: none; border-top: 1px solid #dee2e6; margin: 30px 0;">
+        <p style="color: #6c757d; font-size: 12px;">
+          Best regards,<br>
+          Woodstock School Security<br>
+          <em>This is an automated notification from the Visitor Management System.</em>
+        </p>
       </div>
-      
-      ${pictureUrl ? '<p><strong>Note:</strong> Visitor photo is attached to this email.</p>' : '<p><strong>Note:</strong> No visitor photo provided.</p>'}
-      
-      <p>Please coordinate with security for the visitor's entry.</p>
-      
-      <p>Best regards,<br>
-      Woodstock School Security</p>
     `;
 
     // Prepare SMTP2GO email payload
@@ -127,7 +159,9 @@ const handler = async (req: Request): Promise<Response> => {
         }
       } catch (error) {
         console.error("Error fetching image for attachment:", error);
-        console.error("Error details:", error.message);
+        if (error instanceof Error) {
+          console.error("Error details:", error.message);
+        }
         // Continue without attachment if image fetch fails
       }
     } else {
@@ -156,7 +190,7 @@ const handler = async (req: Request): Promise<Response> => {
   } catch (error: any) {
     console.error("Error in send-staff-notification function:", error);
     return new Response(
-      JSON.stringify({ error: error.message }),
+      JSON.stringify({ error: error instanceof Error ? error.message : 'Unknown error' }),
       {
         status: 500,
         headers: { "Content-Type": "application/json", ...corsHeaders },
