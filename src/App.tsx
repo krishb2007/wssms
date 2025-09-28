@@ -10,6 +10,7 @@ import Index from "./pages/Index";
 import NotFound from "./pages/NotFound";
 import AdminDashboard from "./pages/AdminDashboard";
 import AdminLogin from "./pages/AdminLogin";
+import ExitPage from "./pages/ExitPage";
 import NavBar from "./components/NavBar";
 import { getCurrentUser, signOut, AuthUser } from "./services/authService";
 
@@ -72,6 +73,7 @@ const App: React.FC = () => {
               <NavBar />
               <Routes>
                 <Route path="/" element={<Index />} />
+                <Route path="/exit" element={<ExitPage />} />
                 <Route path="/admin-login" element={<AdminLogin />} />
                 <Route
                   path="/admin-dashboard"
