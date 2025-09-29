@@ -89,7 +89,7 @@ const handler = async (req: Request): Promise<Response> => {
     const responseData = await emailResponse.json();
     console.log("Response email sent successfully:", responseData);
 
-    // Return a user-friendly confirmation page
+    // Return a user-friendly confirmation page that auto-closes
     const confirmationHtml = `
       <!DOCTYPE html>
       <html>
@@ -115,7 +115,26 @@ const handler = async (req: Request): Promise<Response> => {
           .success { color: #28a745; }
           .danger { color: #dc3545; }
           .icon { font-size: 48px; margin-bottom: 20px; }
+          .countdown { font-weight: bold; color: #6c757d; }
         </style>
+        <script>
+          let countdown = 3;
+          function updateCountdown() {
+            const element = document.getElementById('countdown');
+            if (element) {
+              element.textContent = countdown;
+              countdown--;
+              if (countdown < 0) {
+                window.close();
+              } else {
+                setTimeout(updateCountdown, 1000);
+              }
+            }
+          }
+          window.onload = function() {
+            updateCountdown();
+          };
+        </script>
       </head>
       <body>
         <div class="container">
@@ -130,7 +149,7 @@ const handler = async (req: Request): Promise<Response> => {
             <p><strong>Recorded At:</strong> ${currentTime}</p>
           </div>
           <p style="color: #6c757d; font-size: 14px;">
-            You can safely close this window.
+            This window will close automatically in <span id="countdown" class="countdown">3</span> seconds.
           </p>
         </div>
       </body>
