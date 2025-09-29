@@ -89,105 +89,20 @@ const handler = async (req: Request): Promise<Response> => {
     const responseData = await emailResponse.json();
     console.log("Response email sent successfully:", responseData);
 
-    // Return a user-friendly confirmation page that auto-closes
-    const confirmationHtml = `
-      <!DOCTYPE html>
-      <html>
-      <head>
-        <meta charset="utf-8">
-        <meta name="viewport" content="width=device-width, initial-scale=1">
-        <title>Response Recorded</title>
-        <style>
-          body { 
-            font-family: Arial, sans-serif; 
-            max-width: 600px; 
-            margin: 50px auto; 
-            padding: 20px; 
-            background-color: #f8f9fa;
-          }
-          .container { 
-            background: white; 
-            padding: 40px; 
-            border-radius: 10px; 
-            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
-            text-align: center;
-          }
-          .success { color: #28a745; }
-          .danger { color: #dc3545; }
-          .icon { font-size: 48px; margin-bottom: 20px; }
-          .countdown { font-weight: bold; color: #6c757d; }
-        </style>
-        <script>
-          let countdown = 3;
-          function updateCountdown() {
-            const element = document.getElementById('countdown');
-            if (element) {
-              element.textContent = countdown;
-              countdown--;
-              if (countdown < 0) {
-                window.close();
-              } else {
-                setTimeout(updateCountdown, 1000);
-              }
-            }
-          }
-          window.onload = function() {
-            updateCountdown();
-          };
-        </script>
-      </head>
-      <body>
-        <div class="container">
-          <div class="icon">${action === 'approve' ? '✅' : '❌'}</div>
-          <h1 class="${action === 'approve' ? 'success' : 'danger'}">
-            Visit Request ${actionText}
-          </h1>
-          <p>Thank you for your response. The security team has been notified.</p>
-          <div style="background: #f8f9fa; padding: 20px; border-radius: 5px; margin: 20px 0;">
-            <p><strong>Visitor:</strong> ${visitorName}</p>
-            <p><strong>Your Decision:</strong> <span class="${action === 'approve' ? 'success' : 'danger'}">${actionText}</span></p>
-            <p><strong>Recorded At:</strong> ${currentTime}</p>
-          </div>
-          <p style="color: #6c757d; font-size: 14px;">
-            This window will close automatically in <span id="countdown" class="countdown">3</span> seconds.
-          </p>
-        </div>
-      </body>
-      </html>
-    `;
-
-    return new Response(confirmationHtml, {
+    // Return a simple response without opening a tab
+    return new Response('OK', {
       status: 200,
       headers: {
-        "Content-Type": "text/html",
+        "Content-Type": "text/plain",
         ...corsHeaders,
       },
     });
   } catch (error: any) {
     console.error("Error in handle-visit-response function:", error);
     
-    const errorHtml = `
-      <!DOCTYPE html>
-      <html>
-      <head>
-        <title>Error</title>
-        <style>
-          body { font-family: Arial, sans-serif; max-width: 600px; margin: 50px auto; padding: 20px; }
-          .error { color: #dc3545; text-align: center; }
-        </style>
-      </head>
-      <body>
-        <div class="error">
-          <h1>Error Processing Response</h1>
-          <p>There was an error processing your response. Please contact the security team directly.</p>
-        </div>
-      </body>
-      </html>
-    `;
-
-    return new Response(errorHtml, {
+    return new Response('Error processing response', {
       status: 500,
-      headers: { "Content-Type": "text/html", ...corsHeaders },
+      headers: { "Content-Type": "text/plain", ...corsHeaders },
     });
   }
 };
