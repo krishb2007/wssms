@@ -5,3 +5,6 @@ verify_jwt = false
 
 [functions.monthly-cleanup]
 verify_jwt = false
+
+[functions.handle-visit-response]
+verify_jwt = false
