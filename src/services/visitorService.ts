@@ -90,6 +90,7 @@ export const saveVisitorRegistration = async (formData: VisitorFormData) => {
       purpose: formData.purpose,
       address: addressString,
       schoolname: "Woodstock School",
+      user_id: null, // Explicitly set to null for anonymous visitor registrations
       starttime: formData.starttime || (() => {
         // Get current IST time
         const now = new Date();
