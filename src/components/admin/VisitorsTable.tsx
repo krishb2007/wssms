@@ -43,28 +43,18 @@ export const VisitorsTable: React.FC<VisitorsTableProps> = ({
   const formatDate = (dateString: string | null): string => {
     if (!dateString) return 'Not set';
     
-    // Check if the date string already contains IST timezone info
-    if (dateString.includes('IST') || dateString.includes('+05:30')) {
-      // If it's already in IST format, parse it directly without timezone conversion
-      const date = new Date(dateString);
-      if (isNaN(date.getTime())) return 'Invalid date';
-      
-      return date.toLocaleString('en-IN', {
-        month: 'short',
-        day: 'numeric',
-        year: 'numeric',
-        hour: '2-digit',
-        minute: '2-digit'
-      });
-    }
+    // Times are stored as plain datetime strings without timezone (e.g., "2025-11-20T23:21")
+    // These are already in IST, so we need to parse them as IST and display them as IST
     
-    // For UTC timestamps, convert to IST
-    const date = new Date(dateString);
+    // Parse the datetime string and treat it as IST
+    // Add 'Z' would make it UTC, so instead we'll manually create the IST date
+    const istDate = new Date(dateString + '+05:30'); // Append IST offset
     
     // Check if the date is valid
-    if (isNaN(date.getTime())) return 'Invalid date';
+    if (isNaN(istDate.getTime())) return 'Invalid date';
     
-    return date.toLocaleString('en-IN', {
+    // Format and display in IST
+    return istDate.toLocaleString('en-IN', {
       month: 'short',
       day: 'numeric',
       year: 'numeric',
