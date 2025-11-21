@@ -52,7 +52,7 @@ export const VisitorsTable: React.FC<VisitorsTableProps> = ({
     } else {
       // Plain datetime string without timezone (stored as IST)
       // Append IST offset to parse correctly
-      date = new Date(dateString + '+0');
+      date = new Date(dateString + '+05:30');
     }
     
     // Check if the date is valid
