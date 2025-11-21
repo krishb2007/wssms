@@ -1,3 +1,4 @@
+
 import React from 'react';
 import {
   Dialog,
@@ -20,29 +21,16 @@ export const VisitorDetailsModal: React.FC<VisitorDetailsModalProps> = ({
   isOpen,
   onOpenChange
 }) => {
-  // Normalizes and formats timestamps consistently for display in IST.
-  // If timestamp lacks timezone, treat it as UTC (append 'Z' before parsing).
-  const normalizeIsoDate = (raw: string | null): Date | null => {
-    if (!raw) return null;
-    const s = String(raw).trim();
-    if (!s || s.toLowerCase() === 'null' || s.toLowerCase() === 'undefined') return null;
-
-    const hasTimezone = /[Zz]$/.test(s) || /[+\-]\d{2}:\d{2}$/.test(s);
-    const iso = hasTimezone ? s : `${s}Z`;
-    const d = new Date(iso);
-    return isNaN(d.getTime()) ? null : d;
-  };
-
   const formatDate = (dateString: string | null) => {
-    const d = normalizeIsoDate(dateString);
-    if (!d) return 'N/A';
-    return d.toLocaleString('en-IN', {
-      timeZone: 'Asia/Kolkata',
+    if (!dateString) return 'N/A';
+    const date = new Date(dateString);
+    return date.toLocaleString('en-IN', {
       month: 'short',
       day: 'numeric',
       year: 'numeric',
       hour: '2-digit',
-      minute: '2-digit'
+      minute: '2-digit',
+      timeZone: 'Asia/Kolkata'
     });
   };
 
@@ -134,7 +122,7 @@ export const VisitorDetailsModal: React.FC<VisitorDetailsModalProps> = ({
                     className="w-full h-80 object-contain rounded-lg bg-gray-600 border border-gray-500 cursor-pointer hover:opacity-80 transition-opacity"
                     onError={(e) => {
                       const target = e.target as HTMLImageElement;
-                      target.src = 'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMzAwIiBoZWlnaHQ9IjM4NCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48cmVjdCB3aWR0aD0iMTAwJSIgaGVpZ2h0PSIxMDAlIiBmaWxsPSIjN0E3QTdBIi8+PC9zdmc+';
+                      target.src = 'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMzAwIiBoZWlnaHQ9IjM4NCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48cmVjdCB3aWR0aD0iMTAwJSIgaGVpZ2h0PSIxMDAlIiBmaWxsPSIjNGY0ZjRmIi8+PHRleHQgeD0iNTAlIiB5PSI1MCUiIGZvbnQtZmFtaWx5PSJBcmlhbCIgZm9udC1zaXplPSIxNiIgZmlsbD0iIzllYTNhOCIgdGV4dC1hbmNob3I9Im1pZGRsZSIgZHk9Ii4zZW0iPk5vIGltYWdlIGF2YWlsYWJsZTwvdGV4dD48L3N2Zz4=';
                     }}
                     onClick={() => window.open(getImageUrl(registration.picture_url), '_blank')}
                   />
@@ -164,15 +152,11 @@ export const VisitorDetailsModal: React.FC<VisitorDetailsModalProps> = ({
                   </div>
                   <div>
                     <p className="text-sm text-white font-medium">Start Time</p>
-                    <p className="text-white font-bold">
-                      {formatDate(registration.created_at)}
-                    </p>
+                    <p className="text-white font-bold">{formatDate(registration.created_at)}</p>
                   </div>
                   <div>
                     <p className="text-sm text-white font-medium">End Time</p>
-                    <p className="text-white font-bold">
-                      {registration.endtime ? formatDate(registration.endtime) : 'Active'}
-                    </p>
+                    <p className="text-white font-bold">{formatDate(registration.endtime)}</p>
                   </div>
                   <div>
                     <p className="text-sm text-white font-medium">Registered On</p>
@@ -194,7 +178,7 @@ export const VisitorDetailsModal: React.FC<VisitorDetailsModalProps> = ({
                     className="w-full h-80 object-contain rounded-lg bg-gray-600 border border-gray-500 cursor-pointer hover:opacity-80 transition-opacity"
                     onError={(e) => {
                       const target = e.target as HTMLImageElement;
-                      target.src = 'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMzAwIiBoZWlnaHQ9IjM4NCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48cmVjdCB3aWR0aD0iMTAwJSIgaGVpZ2h0PSIxMDAlIiBmaWxsPSIjN0E3QTdBIi8+PC9zdmc+';
+                      target.src = 'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMzAwIiBoZWlnaHQ9IjM4NCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48cmVjdCB3aWR0aD0iMTAwJSIgaGVpZ2h0PSIxMDAlIiBmaWxsPSIjNGY0ZjRmIi8+PHRleHQgeD0iNTAlIiB5PSI1MCUiIGZvbnQtZmFtaWx5PSJBcmlhbCIgZm9udC1zaXplPSIxNiIgZmlsbD0iIzllYTNhOCIgdGV4dC1hbmNob3I9Im1pZGRsZSIgZHk9Ii4zZW0iPk5vIHNpZ25hdHVyZSBhdmFpbGFibGU8L3RleHQ+PC9zdmc+';
                     }}
                     onClick={() => window.open(getImageUrl(registration.signature_url), '_blank')}
                   />
