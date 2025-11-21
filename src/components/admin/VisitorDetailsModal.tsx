@@ -20,25 +20,23 @@ export const VisitorDetailsModal: React.FC<VisitorDetailsModalProps> = ({
   isOpen,
   onOpenChange
 }) => {
-  // Robust formatter that:
-  // - accepts ISO strings with Z or offsets,
-  // - accepts naive timestamps (no timezone) and treats them as UTC,
-  // - returns a localized string in IST (Asia/Kolkata).
-  const formatDate = (dateString: string | null) => {
-    if (!dateString) return 'N/A';
+  // Normalizes and formats timestamps consistently for display in IST.
+  // If timestamp lacks timezone, treat it as UTC (append 'Z' before parsing).
+  const normalizeIsoDate = (raw: string | null): Date | null => {
+    if (!raw) return null;
+    const s = String(raw).trim();
+    if (!s || s.toLowerCase() === 'null' || s.toLowerCase() === 'undefined') return null;
 
-    const s = String(dateString).trim();
-    if (!s || s.toLowerCase() === 'null' || s.toLowerCase() === 'undefined') return 'N/A';
-
-    // If it already has a timezone designator (Z or +/-HH:MM) keep as-is.
-    // Otherwise assume the timestamp is UTC and append 'Z' so Date parses it as UTC.
     const hasTimezone = /[Zz]$/.test(s) || /[+\-]\d{2}:\d{2}$/.test(s);
     const iso = hasTimezone ? s : `${s}Z`;
+    const d = new Date(iso);
+    return isNaN(d.getTime()) ? null : d;
+  };
 
-    const date = new Date(iso);
-    if (isNaN(date.getTime())) return 'Invalid date';
-
-    return date.toLocaleString('en-IN', {
+  const formatDate = (dateString: string | null) => {
+    const d = normalizeIsoDate(dateString);
+    if (!d) return 'N/A';
+    return d.toLocaleString('en-IN', {
       timeZone: 'Asia/Kolkata',
       month: 'short',
       day: 'numeric',
