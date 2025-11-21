@@ -43,21 +43,35 @@ export const VisitorsTable: React.FC<VisitorsTableProps> = ({
   const formatDate = (dateString: string | null): string => {
     if (!dateString) return 'Not set';
     
-    // Parse just the date and time parts, ignoring timezone
-    const dateTimePart = dateString.split('+')[0].split('.')[0];
-    const [datePart, timePart] = dateTimePart.split('T');
-    const [year, month, day] = datePart.split('-');
-    const [hours24, minutes] = timePart.split(':');
+    // Check if the date string already contains IST timezone info
+    if (dateString.includes('IST') || dateString.includes('+05:30')) {
+      // If it's already in IST format, parse it directly without timezone conversion
+      const date = new Date(dateString);
+      if (isNaN(date.getTime())) return 'Invalid date';
+      
+      return date.toLocaleString('en-IN', {
+        month: 'short',
+        day: 'numeric',
+        year: 'numeric',
+        hour: '2-digit',
+        minute: '2-digit'
+      });
+    }
     
-    // Convert to 12-hour format
-    const hours = parseInt(hours24);
-    const hours12 = hours % 12 || 12;
-    const ampm = hours >= 12 ? 'PM' : 'AM';
+    // For UTC timestamps, convert to IST
+    const date = new Date(dateString);
     
-    const monthNames = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
-    const monthName = monthNames[parseInt(month) - 1];
+    // Check if the date is valid
+    if (isNaN(date.getTime())) return 'Invalid date';
     
-    return `${monthName} ${parseInt(day)}, ${year}, ${hours12}:${minutes} ${ampm}`;
+    return date.toLocaleString('en-IN', {
+      month: 'short',
+      day: 'numeric',
+      year: 'numeric',
+      hour: '2-digit',
+      minute: '2-digit',
+      timeZone: 'Asia/Kolkata'
+    });
   };
 
   const parsePeople = (peopleString: string) => {
