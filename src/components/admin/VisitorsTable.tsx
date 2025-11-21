@@ -50,11 +50,11 @@ export const VisitorsTable: React.FC<VisitorsTableProps> = ({
     if (isNaN(date.getTime())) return 'Invalid date';
     
     // Get UTC components and display them directly (the stored time)
-    const month = date.toLocaleString('en-US', { month: 'short', timeZone: 'IST' });
-    const day = date.getISTDate();
-    const year = date.getISTFullYear();
-    const hours = date.getISTHours().toString().padStart(2, '0');
-    const minutes = date.getISTMinutes().toString().padStart(2, '0');
+    const month = date.toLocaleString('en-US', { month: 'short', timeZone: 'UTC' });
+    const day = date.getUTCDate();
+    const year = date.getUTCFullYear();
+    const hours = date.getUTCHours().toString().padStart(2, '0');
+    const minutes = date.getUTCMinutes().toString().padStart(2, '0');
     
     return `${month} ${day}, ${year}, ${hours}:${minutes}`;
   };
