@@ -43,17 +43,8 @@ export const VisitorsTable: React.FC<VisitorsTableProps> = ({
   const formatDate = (dateString: string | null): string => {
     if (!dateString) return 'Not set';
     
-    let date: Date;
-    
-    // Check if the date string already has timezone info (Z, +, or -)
-    if (dateString.includes('Z') || dateString.includes('+') || dateString.match(/-\d{2}:\d{2}$/)) {
-      // Already has timezone info, parse as is
-      date = new Date(dateString);
-    } else {
-      // Plain datetime string without timezone (stored as IST)
-      // Append IST offset to parse correctly
-      date = new Date(dateString + '+05:30');
-    }
+    // Parse the date as-is without any timezone manipulation
+    const date = new Date(dateString);
     
     // Check if the date is valid
     if (isNaN(date.getTime())) return 'Invalid date';
