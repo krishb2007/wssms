@@ -17,9 +17,11 @@ interface VisitorsTableProps {
   editingId: string | null;
   editEndTime: string;
   saving: boolean;
+  // NOTE: onSaveEdit now accepts the id and an optional ISO UTC endtime string.
+  // Parent should be updated to accept the second parameter and use it when saving.
   onStartEdit: (registration: VisitorRegistration) => void;
   onCancelEdit: () => void;
-  onSaveEdit: (id: string) => void;
+  onSaveEdit: (id: string, endtimeIso?: string) => void;
   onEditEndTimeChange: (value: string) => void;
 }
 
@@ -42,7 +44,6 @@ export const VisitorsTable: React.FC<VisitorsTableProps> = ({
   // Format an ISO/UTC timestamp and display it in IST (Asia/Kolkata)
   const formatDate = (dateString: string | null): string => {
     if (!dateString) return 'Not set';
-
     const d = new Date(dateString);
     if (isNaN(d.getTime())) return 'Invalid date';
 
@@ -59,7 +60,7 @@ export const VisitorsTable: React.FC<VisitorsTableProps> = ({
     return d.toLocaleString('en-US', options);
   };
 
-  // Helper: convert an ISO/UTC timestamp into a value suitable for <input type="datetime-local">
+  // Convert an ISO/UTC timestamp into a value suitable for <input type="datetime-local">
   // formatted as YYYY-MM-DDTHH:mm in IST. Use this to prefill the datetime-local input with IST time.
   const toDateTimeLocalValueInIST = (dateString: string | null): string => {
     if (!dateString) return '';
@@ -92,9 +93,29 @@ export const VisitorsTable: React.FC<VisitorsTableProps> = ({
     return `${year}-${month}-${day}T${hour}:${minute}`;
   };
 
+  // Convert a datetime-local value that represents IST (YYYY-MM-DDTHH:mm)
+  // into an ISO UTC string (e.g. "2025-11-21T04:30:00.000Z").
+  // We treat the provided string as Asia/Kolkata local time and compute the corresponding UTC instant.
+  const convertDateTimeLocalISTToUTCISOString = (dateTimeLocalIST: string): string | null => {
+    if (!dateTimeLocalIST) return null;
+    // Expecting "YYYY-MM-DDTHH:mm" (no seconds)
+    const [datePart, timePart] = dateTimeLocalIST.split('T');
+    if (!datePart || !timePart) return null;
+    const [y, m, d] = datePart.split('-').map(Number);
+    const [hh, mm] = timePart.split(':').map(Number);
+    if ([y, m, d, hh, mm].some((v) => Number.isNaN(v))) return null;
+
+    // IST offset in minutes
+    const IST_OFFSET_MIN = 5 * 60 + 30; // 330
+
+    // Create a UTC timestamp for the given Y-M-D hh:mm as if it were UTC, then subtract IST offset minutes
+    // to get the real UTC time corresponding to that IST local time.
+    const utcMillis = Date.UTC(y, m - 1, d, hh, mm) - IST_OFFSET_MIN * 60 * 1000;
+    return new Date(utcMillis).toISOString();
+  };
+
   // Wrap onStartEdit so we initialize the datetime-local input value (editEndTime) with IST value
   const handleStartEdit = (registration: VisitorRegistration) => {
-    // Initialize the input with IST representation of endtime or created_at
     const initial = toDateTimeLocalValueInIST(registration.endtime || registration.created_at);
     onEditEndTimeChange(initial);
     onStartEdit(registration);
@@ -272,7 +293,12 @@ export const VisitorsTable: React.FC<VisitorsTableProps> = ({
                           <div className="flex space-x-1">
                             <Button
                               size="sm"
-                              onClick={() => onSaveEdit(registration.id)}
+                              onClick={() => {
+                                // convert the current editEndTime (which is in IST datetime-local format)
+                                // to ISO UTC before saving and pass it to the parent save handler.
+                                const utcIso = convertDateTimeLocalISTToUTCISOString(editEndTime);
+                                onSaveEdit(registration.id, utcIso || undefined);
+                              }}
                               disabled={saving}
                               className="h-8 w-8 p-0 bg-emerald-600 hover:bg-emerald-700 text-white disabled:opacity-50"
                             >
