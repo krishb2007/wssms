@@ -39,34 +39,24 @@ export const VisitorsTable: React.FC<VisitorsTableProps> = ({
 }) => {
   const [selectedRegistration, setSelectedRegistration] = useState<VisitorRegistration | null>(null);
 
-  // NOTE: Keep existing formatDate (used by endtime) unchanged per your request.
-  const formatDate = (dateString: string | null): string => {
-    if (!dateString) return 'Not set';
-    
-    // Parse just the date and time parts, ignoring timezone
-    const dateTimePart = dateString.split('+')[0].split('.')[0];
-    const [datePart, timePart] = dateTimePart.split('T');
-    const [year, month, day] = datePart.split('-');
-    const [hours24, minutes] = timePart.split(':');
-    
-    // Convert to 12-hour format
-    const hours = parseInt(hours24);
-    const hours12 = hours % 12 || 12;
-    const ampm = hours >= 12 ? 'PM' : 'AM';
-    
-    const monthNames = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
-    const monthName = monthNames[parseInt(month) - 1];
-    
-    return `${monthName} ${parseInt(day)}, ${year}, ${hours12}:${minutes} ${ampm}`;
+  // normalizeIsoDate: accept various ISO-like strings; if no timezone present, treat as UTC.
+  const normalizeIsoDate = (raw: string | null): Date | null => {
+    if (!raw) return null;
+    const s = String(raw).trim();
+    if (!s || s.toLowerCase() === 'null' || s.toLowerCase() === 'undefined') return null;
+
+    // If string already has timezone designator (Z or ±HH:MM), parse as-is.
+    const hasTimezone = /[Zz]$/.test(s) || /[+\-]\d{2}:\d{2}$/.test(s);
+    const iso = hasTimezone ? s : `${s}Z`; // assume naive timestamps are UTC
+
+    const d = new Date(iso);
+    return isNaN(d.getTime()) ? null : d;
   };
 
-  // New: formatStartDate - parse the ISO UTC created_at and display in IST (Asia/Kolkata).
-  // This function only affects the "Started:" display and leaves endtime formatting untouched.
-  const formatStartDate = (dateString: string | null): string => {
-    if (!dateString) return 'Not set';
-    const d = new Date(dateString); // parse ISO (UTC) string
-    if (isNaN(d.getTime())) return 'Invalid date';
-
+  // Format a timestamp to IST for display.
+  const formatToIST = (dateString: string | null): string => {
+    const d = normalizeIsoDate(dateString);
+    if (!d) return 'Not set';
     const options: Intl.DateTimeFormatOptions = {
       timeZone: 'Asia/Kolkata',
       year: 'numeric',
@@ -76,10 +66,10 @@ export const VisitorsTable: React.FC<VisitorsTableProps> = ({
       minute: '2-digit',
       hour12: true
     };
-
     return d.toLocaleString('en-US', options);
   };
 
+  // Keep existing parsePeople, formatPurpose, getStatusBadge etc.
   const parsePeople = (peopleString: string) => {
     try {
       const people = JSON.parse(peopleString);
@@ -118,6 +108,10 @@ export const VisitorsTable: React.FC<VisitorsTableProps> = ({
       </span>
     );
   };
+
+  // If you still want to initialize editEndTime from the registration (in IST),
+  // you can convert using format-to-YYYY-MM-DDTHH:mm if needed in parent.
+  // (Not changing endtime conversion logic here per your earlier note.)
 
   return (
     <>
@@ -211,7 +205,7 @@ export const VisitorsTable: React.FC<VisitorsTableProps> = ({
                       <div className="space-y-1">
                         <div className="flex items-center text-xs text-white font-medium">
                           <Clock className="h-3 w-3 mr-1" />
-                          Started: {formatStartDate(registration.created_at)}
+                          Started: {formatToIST(registration.created_at)}
                         </div>
                         {editingId === registration.id ? (
                           <div className="space-y-1">
@@ -229,7 +223,7 @@ export const VisitorsTable: React.FC<VisitorsTableProps> = ({
                           </div>
                         ) : (
                           <div className="text-xs text-white font-medium">
-                            Ended: {registration.endtime ? formatDate(registration.endtime) : 'Active'}
+                            Ended: {registration.endtime ? formatToIST(registration.endtime) : 'Active'}
                           </div>
                         )}
                       </div>
