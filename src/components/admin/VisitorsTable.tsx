@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
@@ -40,24 +39,65 @@ export const VisitorsTable: React.FC<VisitorsTableProps> = ({
 }) => {
   const [selectedRegistration, setSelectedRegistration] = useState<VisitorRegistration | null>(null);
 
+  // Format an ISO/UTC timestamp and display it in IST (Asia/Kolkata)
   const formatDate = (dateString: string | null): string => {
     if (!dateString) return 'Not set';
-    
-    // Parse just the date and time parts, ignoring timezone
-    const dateTimePart = dateString.split('+')[0].split('.')[0];
-    const [datePart, timePart] = dateTimePart.split('T');
-    const [year, month, day] = datePart.split('-');
-    const [hours24, minutes] = timePart.split(':');
-    
-    // Convert to 12-hour format
-    const hours = parseInt(hours24);
-    const hours12 = hours % 12 || 12;
-    const ampm = hours >= 12 ? 'PM' : 'AM';
-    
-    const monthNames = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
-    const monthName = monthNames[parseInt(month) - 1];
-    
-    return `${monthName} ${parseInt(day)}, ${year}, ${hours12}:${minutes} ${ampm}`;
+
+    const d = new Date(dateString);
+    if (isNaN(d.getTime())) return 'Invalid date';
+
+    const options: Intl.DateTimeFormatOptions = {
+      timeZone: 'Asia/Kolkata',
+      year: 'numeric',
+      month: 'short',
+      day: 'numeric',
+      hour: 'numeric',
+      minute: '2-digit',
+      hour12: true
+    };
+
+    return d.toLocaleString('en-US', options);
+  };
+
+  // Helper: convert an ISO/UTC timestamp into a value suitable for <input type="datetime-local">
+  // formatted as YYYY-MM-DDTHH:mm in IST. Use this to prefill the datetime-local input with IST time.
+  const toDateTimeLocalValueInIST = (dateString: string | null): string => {
+    if (!dateString) return '';
+
+    const d = new Date(dateString);
+    if (isNaN(d.getTime())) return '';
+
+    // Use Intl to get components in Asia/Kolkata reliably
+    const fmt = new Intl.DateTimeFormat('en-GB', {
+      timeZone: 'Asia/Kolkata',
+      year: 'numeric',
+      month: '2-digit',
+      day: '2-digit',
+      hour: '2-digit',
+      minute: '2-digit',
+      hour12: false
+    });
+
+    const parts = fmt.formatToParts(d).reduce((acc: Record<string, string>, part) => {
+      if (part.type !== 'literal') acc[part.type] = part.value;
+      return acc;
+    }, {});
+
+    const year = parts.year;
+    const month = parts.month;
+    const day = parts.day;
+    const hour = parts.hour;
+    const minute = parts.minute;
+
+    return `${year}-${month}-${day}T${hour}:${minute}`;
+  };
+
+  // Wrap onStartEdit so we initialize the datetime-local input value (editEndTime) with IST value
+  const handleStartEdit = (registration: VisitorRegistration) => {
+    // Initialize the input with IST representation of endtime or created_at
+    const initial = toDateTimeLocalValueInIST(registration.endtime || registration.created_at);
+    onEditEndTimeChange(initial);
+    onStartEdit(registration);
   };
 
   const parsePeople = (peopleString: string) => {
@@ -252,7 +292,7 @@ export const VisitorsTable: React.FC<VisitorsTableProps> = ({
                           <Button
                             size="sm"
                             variant="outline"
-                            onClick={() => onStartEdit(registration)}
+                            onClick={() => handleStartEdit(registration)}
                             className="h-8 w-8 p-0 border-2 border-orange-500 text-orange-400 hover:bg-orange-500 hover:text-white"
                           >
                             <Pencil className="h-4 w-4" />
