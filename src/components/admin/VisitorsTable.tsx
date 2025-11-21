@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
@@ -73,6 +72,38 @@ export const VisitorsTable: React.FC<VisitorsTableProps> = ({
       timeZone: 'Asia/Kolkata'
     });
   };
+
+  // --- NEW: robust normalizer + formatter used only for End Time display ---
+  // Treat naive timestamps (no timezone) as UTC, parse properly,
+  // then format in IST so the dashboard shows the correct local time.
+  const normalizeIsoDateAsUTC = (raw: string | null): Date | null => {
+    if (!raw) return null;
+    const s = String(raw).trim();
+    if (!s || s.toLowerCase() === 'null' || s.toLowerCase() === 'undefined') return null;
+
+    // If string already contains timezone (Z or ±HH:MM), parse as-is.
+    // Otherwise assume the stored timestamp is UTC and append 'Z' so Date parses it as UTC.
+    const hasTimezone = /[Zz]$/.test(s) || /[+\-]\d{2}:\d{2}$/.test(s);
+    const iso = hasTimezone ? s : `${s}Z`;
+
+    const d = new Date(iso);
+    if (isNaN(d.getTime())) return null;
+    return d;
+  };
+
+  const formatEndTimeToIST = (dateString: string | null): string => {
+    const d = normalizeIsoDateAsUTC(dateString);
+    if (!d) return 'Not set';
+    return d.toLocaleString('en-IN', {
+      timeZone: 'Asia/Kolkata',
+      month: 'short',
+      day: 'numeric',
+      year: 'numeric',
+      hour: '2-digit',
+      minute: '2-digit'
+    });
+  };
+  // --- END new end-time helpers ---
 
   const parsePeople = (peopleString: string) => {
     try {
@@ -223,7 +254,8 @@ export const VisitorsTable: React.FC<VisitorsTableProps> = ({
                           </div>
                         ) : (
                           <div className="text-xs text-white font-medium">
-                            Ended: {registration.endtime ? formatDate(registration.endtime) : 'Active'}
+                            {/* Use the new end-time formatter to display endtime in IST */}
+                            Ended: {registration.endtime ? formatEndTimeToIST(registration.endtime) : 'Active'}
                           </div>
                         )}
                       </div>
