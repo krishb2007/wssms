@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
@@ -40,6 +39,7 @@ export const VisitorsTable: React.FC<VisitorsTableProps> = ({
 }) => {
   const [selectedRegistration, setSelectedRegistration] = useState<VisitorRegistration | null>(null);
 
+  // NOTE: Keep existing formatDate (used by endtime) unchanged per your request.
   const formatDate = (dateString: string | null): string => {
     if (!dateString) return 'Not set';
     
@@ -58,6 +58,26 @@ export const VisitorsTable: React.FC<VisitorsTableProps> = ({
     const monthName = monthNames[parseInt(month) - 1];
     
     return `${monthName} ${parseInt(day)}, ${year}, ${hours12}:${minutes} ${ampm}`;
+  };
+
+  // New: formatStartDate - parse the ISO UTC created_at and display in IST (Asia/Kolkata).
+  // This function only affects the "Started:" display and leaves endtime formatting untouched.
+  const formatStartDate = (dateString: string | null): string => {
+    if (!dateString) return 'Not set';
+    const d = new Date(dateString); // parse ISO (UTC) string
+    if (isNaN(d.getTime())) return 'Invalid date';
+
+    const options: Intl.DateTimeFormatOptions = {
+      timeZone: 'Asia/Kolkata',
+      year: 'numeric',
+      month: 'short',
+      day: 'numeric',
+      hour: 'numeric',
+      minute: '2-digit',
+      hour12: true
+    };
+
+    return d.toLocaleString('en-US', options);
   };
 
   const parsePeople = (peopleString: string) => {
@@ -191,7 +211,7 @@ export const VisitorsTable: React.FC<VisitorsTableProps> = ({
                       <div className="space-y-1">
                         <div className="flex items-center text-xs text-white font-medium">
                           <Clock className="h-3 w-3 mr-1" />
-                          Started: {formatDate(registration.created_at)}
+                          Started: {formatStartDate(registration.created_at)}
                         </div>
                         {editingId === registration.id ? (
                           <div className="space-y-1">
