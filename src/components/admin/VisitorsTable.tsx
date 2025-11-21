@@ -43,21 +43,20 @@ export const VisitorsTable: React.FC<VisitorsTableProps> = ({
   const formatDate = (dateString: string | null): string => {
     if (!dateString) return 'Not set';
     
-    // Parse the date as-is without any timezone manipulation
+    // Parse the datetime string and display as-is without timezone conversion
     const date = new Date(dateString);
     
     // Check if the date is valid
     if (isNaN(date.getTime())) return 'Invalid date';
     
-    // Format and display in IST
-    return date.toLocaleString('en-IN', {
-      month: 'short',
-      day: 'numeric',
-      year: 'numeric',
-      hour: '2-digit',
-      minute: '2-digit',
-      timeZone: 'Asia/Kolkata'
-    });
+    // Get UTC components and display them directly (the stored time)
+    const month = date.toLocaleString('en-US', { month: 'short', timeZone: 'UTC' });
+    const day = date.getUTCDate();
+    const year = date.getUTCFullYear();
+    const hours = date.getUTCHours().toString().padStart(2, '0');
+    const minutes = date.getUTCMinutes().toString().padStart(2, '0');
+    
+    return `${month} ${day}, ${year}, ${hours}:${minutes}`;
   };
 
   const parsePeople = (peopleString: string) => {
