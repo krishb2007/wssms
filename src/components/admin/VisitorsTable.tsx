@@ -39,60 +39,28 @@ export const VisitorsTable: React.FC<VisitorsTableProps> = ({
 }) => {
   const [selectedRegistration, setSelectedRegistration] = useState<VisitorRegistration | null>(null);
 
-  const formatDate = (dateString: string | null): string => {
-    if (!dateString) return 'Not set';
-    
-    // Check if the date string already contains IST timezone info
-    if (dateString.includes('IST') || dateString.includes('+05:30')) {
-      // If it's already in IST format, parse it directly without timezone conversion
-      const date = new Date(dateString);
-      if (isNaN(date.getTime())) return 'Invalid date';
-      
-      return date.toLocaleString('en-IN', {
-        month: 'short',
-        day: 'numeric',
-        year: 'numeric',
-        hour: '2-digit',
-        minute: '2-digit'
-      });
+  // Robust parser: accepts Date instance, objects with toISOString (e.g. Supabase returned Date),
+  // or string ISO-like timestamps. If the string has no timezone, assume UTC (append 'Z') so parsing is UTC.
+  const parseToDate = (raw: any): Date | null => {
+    if (raw == null) return null;
+    if (raw instanceof Date) return raw;
+    if (typeof raw === 'object' && typeof raw.toISOString === 'function') {
+      try { return new Date(raw.toISOString()); } catch { /* fallthrough */ }
     }
-    
-    // For UTC timestamps, convert to IST
-    const date = new Date(dateString);
-    
-    // Check if the date is valid
-    if (isNaN(date.getTime())) return 'Invalid date';
-    
-    return date.toLocaleString('en-IN', {
-      month: 'short',
-      day: 'numeric',
-      year: 'numeric',
-      hour: '2-digit',
-      minute: '2-digit',
-      timeZone: 'Asia/Kolkata'
-    });
-  };
-
-  // --- NEW: robust normalizer + formatter used only for End Time display ---
-  // Treat naive timestamps (no timezone) as UTC, parse properly,
-  // then format in IST so the dashboard shows the correct local time.
-  const normalizeIsoDateAsUTC = (raw: string | null): Date | null => {
-    if (!raw) return null;
     const s = String(raw).trim();
-    if (!s || s.toLowerCase() === 'null' || s.toLowerCase() === 'undefined') return null;
+    if (!s) return null;
 
-    // If string already contains timezone (Z or ±HH:MM), parse as-is.
-    // Otherwise assume the stored timestamp is UTC and append 'Z' so Date parses it as UTC.
-    const hasTimezone = /[Zz]$/.test(s) || /[+\-]\d{2}:\d{2}$/.test(s);
-    const iso = hasTimezone ? s : `${s}Z`;
+    // If contains timezone info (Z or ±HH:MM) parse as-is, else assume UTC and append 'Z'
+    const hasTZ = /[Zz]$/.test(s) || /[+\-]\d{2}:\d{2}$/.test(s);
+    const iso = hasTZ ? s : `${s}Z`;
 
     const d = new Date(iso);
-    if (isNaN(d.getTime())) return null;
-    return d;
+    return isNaN(d.getTime()) ? null : d;
   };
 
-  const formatEndTimeToIST = (dateString: string | null): string => {
-    const d = normalizeIsoDateAsUTC(dateString);
+  // Format Date/ISO to IST string for display
+  const formatToIST = (raw: any): string => {
+    const d = parseToDate(raw);
     if (!d) return 'Not set';
     return d.toLocaleString('en-IN', {
       timeZone: 'Asia/Kolkata',
@@ -103,8 +71,8 @@ export const VisitorsTable: React.FC<VisitorsTableProps> = ({
       minute: '2-digit'
     });
   };
-  // --- END new end-time helpers ---
 
+  // Keep parsePeople, formatPurpose, getStatusBadge unchanged
   const parsePeople = (peopleString: string) => {
     try {
       const people = JSON.parse(peopleString);
@@ -236,7 +204,8 @@ export const VisitorsTable: React.FC<VisitorsTableProps> = ({
                       <div className="space-y-1">
                         <div className="flex items-center text-xs text-white font-medium">
                           <Clock className="h-3 w-3 mr-1" />
-                          Started: {formatDate(registration.created_at)}
+                          {/* Start time displayed in IST (converted from UTC) */}
+                          Started: {formatToIST(registration.created_at)}
                         </div>
                         {editingId === registration.id ? (
                           <div className="space-y-1">
@@ -254,8 +223,8 @@ export const VisitorsTable: React.FC<VisitorsTableProps> = ({
                           </div>
                         ) : (
                           <div className="text-xs text-white font-medium">
-                            {/* Use the new end-time formatter to display endtime in IST */}
-                            Ended: {registration.endtime ? formatEndTimeToIST(registration.endtime) : 'Active'}
+                            {/* End time displayed in IST (converted from UTC) */}
+                            Ended: {registration.endtime ? formatToIST(registration.endtime) : 'Active'}
                           </div>
                         )}
                       </div>
