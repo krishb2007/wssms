@@ -1,3 +1,4 @@
+
 import React, { useState } from 'react';
 import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
@@ -39,40 +40,26 @@ export const VisitorsTable: React.FC<VisitorsTableProps> = ({
 }) => {
   const [selectedRegistration, setSelectedRegistration] = useState<VisitorRegistration | null>(null);
 
-  // Robust parser: accepts Date instance, objects with toISOString (e.g. Supabase returned Date),
-  // or string ISO-like timestamps. If the string has no timezone, assume UTC (append 'Z') so parsing is UTC.
-  const parseToDate = (raw: any): Date | null => {
-    if (raw == null) return null;
-    if (raw instanceof Date) return raw;
-    if (typeof raw === 'object' && typeof raw.toISOString === 'function') {
-      try { return new Date(raw.toISOString()); } catch { /* fallthrough */ }
-    }
-    const s = String(raw).trim();
-    if (!s) return null;
-
-    // If contains timezone info (Z or ±HH:MM) parse as-is, else assume UTC and append 'Z'
-    const hasTZ = /[Zz]$/.test(s) || /[+\-]\d{2}:\d{2}$/.test(s);
-    const iso = hasTZ ? s : `${s}Z`;
-
-    const d = new Date(iso);
-    return isNaN(d.getTime()) ? null : d;
+  const formatDate = (dateString: string | null): string => {
+    if (!dateString) return 'Not set';
+    
+    // Parse just the date and time parts, ignoring timezone
+    const dateTimePart = dateString.split('+')[0].split('.')[0];
+    const [datePart, timePart] = dateTimePart.split('T');
+    const [year, month, day] = datePart.split('-');
+    const [hours24, minutes] = timePart.split(':');
+    
+    // Convert to 12-hour format
+    const hours = parseInt(hours24);
+    const hours12 = hours % 12 || 12;
+    const ampm = hours >= 12 ? 'PM' : 'AM';
+    
+    const monthNames = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+    const monthName = monthNames[parseInt(month) - 1];
+    
+    return `${monthName} ${parseInt(day)}, ${year}, ${hours12}:${minutes} ${ampm}`;
   };
 
-  // Format Date/ISO to IST string for display
-  const formatToIST = (raw: any): string => {
-    const d = parseToDate(raw);
-    if (!d) return 'Not set';
-    return d.toLocaleString('en-IN', {
-      timeZone: 'Asia/Kolkata',
-      month: 'short',
-      day: 'numeric',
-      year: 'numeric',
-      hour: '2-digit',
-      minute: '2-digit'
-    });
-  };
-
-  // Keep parsePeople, formatPurpose, getStatusBadge unchanged
   const parsePeople = (peopleString: string) => {
     try {
       const people = JSON.parse(peopleString);
@@ -204,8 +191,7 @@ export const VisitorsTable: React.FC<VisitorsTableProps> = ({
                       <div className="space-y-1">
                         <div className="flex items-center text-xs text-white font-medium">
                           <Clock className="h-3 w-3 mr-1" />
-                          {/* Start time displayed in IST (converted from UTC) */}
-                          Started: {formatToIST(registration.created_at)}
+                          Started: {formatDate(registration.created_at)}
                         </div>
                         {editingId === registration.id ? (
                           <div className="space-y-1">
@@ -223,8 +209,7 @@ export const VisitorsTable: React.FC<VisitorsTableProps> = ({
                           </div>
                         ) : (
                           <div className="text-xs text-white font-medium">
-                            {/* End time displayed in IST (converted from UTC) */}
-                            Ended: {registration.endtime ? formatToIST(registration.endtime) : 'Active'}
+                            Ended: {registration.endtime ? formatDate(registration.endtime) : 'Active'}
                           </div>
                         )}
                       </div>
