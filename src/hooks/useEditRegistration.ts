@@ -48,18 +48,9 @@ export const useEditRegistration = (updateRegistration: (id: string, updates: Pa
         return;
       }
 
-      // Parse the input as a local time and format as IST string
-      const localDate = new Date(editEndTime);
-
-      // Add IST offset (if the browser isn't already in IST)
-      const utc = localDate.getTime() + (localDate.getTimezoneOffset() * 60000);
-      const istDate = new Date(utc + (5.5 * 60 * 60 * 1000));
-
-      // Format as 'YYYY-MM-DDTHH:mm:ss' (no 'Z', no offset)
+      // Take the datetime-local input as-is (already in IST) and format it
       const pad = (n: number) => n.toString().padStart(2, '0');
-      const istString =
-        `${istDate.getFullYear()}-${pad(istDate.getMonth() + 1)}-${pad(istDate.getDate())}T` +
-        `${pad(istDate.getHours())}:${pad(istDate.getMinutes())}:${pad(istDate.getSeconds())}`;
+      const istString = `${editEndTime}:00`; // Add seconds to match format
 
       const { data, error } = await supabase
         .from('visitor_registrations')

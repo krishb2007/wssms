@@ -64,7 +64,12 @@ export const VisitorsTable: React.FC<VisitorsTableProps> = ({
   const parsePeople = (peopleString: string) => {
     try {
       const people = JSON.parse(peopleString);
-      return people.map((person: any) => `${person.name} (${person.role})`).join(', ');
+      return people.map((person: any) => {
+        if (person.role) {
+          return `${person.name} (${person.role})`;
+        }
+        return person.name;
+      }).join(', ');
     } catch {
       return peopleString;
     }
