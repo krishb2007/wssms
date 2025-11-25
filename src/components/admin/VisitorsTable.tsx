@@ -42,12 +42,12 @@ export const VisitorsTable: React.FC<VisitorsTableProps> = ({
   const formatDate = (dateString: string | null): string => {
     if (!dateString) return 'Not set';
     
-    // Check if the datetime has timezone info (UTC)
-    const hasTimezone = dateString.includes('Z') || dateString.includes('+') || dateString.includes('T') && dateString.split('T')[1].length > 8;
+    // Check if it's UTC (has Z at end or timezone offset like +00:00)
+    const isUTC = dateString.endsWith('Z') || /[+-]\d{2}:\d{2}$/.test(dateString);
     
     let year: number, month: number, day: number, hours24: number, minutes: number;
     
-    if (hasTimezone) {
+    if (isUTC) {
       // It's UTC, convert to IST by adding 5:30
       const date = new Date(dateString);
       date.setMinutes(date.getMinutes() + 330); // Add 5:30 hours in minutes
