@@ -24,23 +24,39 @@ export const VisitorDetailsModal: React.FC<VisitorDetailsModalProps> = ({
   const formatDate = (dateString: string | null) => {
     if (!dateString) return 'N/A';
     
-    // Parse the datetime string (already in IST, no timezone conversion needed)
-    const parts = dateString.split('T');
-    if (parts.length !== 2) return 'Invalid date';
+    // Check if the datetime has timezone info (UTC)
+    const hasTimezone = dateString.includes('Z') || dateString.includes('+') || dateString.includes('T') && dateString.split('T')[1].length > 8;
     
-    const [datePart, timePart] = parts;
-    const [year, month, day] = datePart.split('-');
-    const [hours24, minutes] = timePart.split(':');
+    let year: number, month: number, day: number, hours24: number, minutes: number;
+    
+    if (hasTimezone) {
+      // It's UTC, convert to IST by adding 5:30
+      const date = new Date(dateString);
+      date.setMinutes(date.getMinutes() + 330); // Add 5:30 hours in minutes
+      
+      year = date.getUTCFullYear();
+      month = date.getUTCMonth() + 1;
+      day = date.getUTCDate();
+      hours24 = date.getUTCHours();
+      minutes = date.getUTCMinutes();
+    } else {
+      // It's already IST, parse directly
+      const parts = dateString.split('T');
+      if (parts.length !== 2) return 'Invalid date';
+      
+      const [datePart, timePart] = parts;
+      [year, month, day] = datePart.split('-').map(Number);
+      [hours24, minutes] = timePart.split(':').map(Number);
+    }
     
     // Convert to 12-hour format
-    const hours = parseInt(hours24);
-    const hours12 = hours % 12 || 12;
-    const ampm = hours >= 12 ? 'PM' : 'AM';
+    const hours12 = hours24 % 12 || 12;
+    const ampm = hours24 >= 12 ? 'PM' : 'AM';
     
     const monthNames = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
-    const monthName = monthNames[parseInt(month) - 1];
+    const monthName = monthNames[month - 1];
     
-    return `${monthName} ${parseInt(day)}, ${year}, ${hours12}:${minutes} ${ampm}`;
+    return `${monthName} ${day}, ${year}, ${hours12}:${minutes.toString().padStart(2, '0')} ${ampm}`;
   };
 
   const parsePeople = (peopleString: string) => {
