@@ -42,35 +42,23 @@ export const VisitorsTable: React.FC<VisitorsTableProps> = ({
   const formatDate = (dateString: string | null): string => {
     if (!dateString) return 'Not set';
     
-    // Check if the date string already contains IST timezone info
-    if (dateString.includes('IST') || dateString.includes('+05:30')) {
-      // If it's already in IST format, parse it directly without timezone conversion
-      const date = new Date(dateString);
-      if (isNaN(date.getTime())) return 'Invalid date';
-      
-      return date.toLocaleString('en-IN', {
-        month: 'short',
-        day: 'numeric',
-        year: 'numeric',
-        hour: '2-digit',
-        minute: '2-digit'
-      });
-    }
+    // Parse the datetime string (already in IST, no timezone conversion needed)
+    const parts = dateString.split('T');
+    if (parts.length !== 2) return 'Invalid date';
     
-    // For UTC timestamps, convert to IST
-    const date = new Date(dateString);
+    const [datePart, timePart] = parts;
+    const [year, month, day] = datePart.split('-');
+    const [hours24, minutes] = timePart.split(':');
     
-    // Check if the date is valid
-    if (isNaN(date.getTime())) return 'Invalid date';
+    // Convert to 12-hour format
+    const hours = parseInt(hours24);
+    const hours12 = hours % 12 || 12;
+    const ampm = hours >= 12 ? 'PM' : 'AM';
     
-    return date.toLocaleString('en-IN', {
-      month: 'short',
-      day: 'numeric',
-      year: 'numeric',
-      hour: '2-digit',
-      minute: '2-digit',
-      timeZone: 'Asia/Kolkata'
-    });
+    const monthNames = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+    const monthName = monthNames[parseInt(month) - 1];
+    
+    return `${monthName} ${parseInt(day)}, ${year}, ${hours12}:${minutes} ${ampm}`;
   };
 
   const parsePeople = (peopleString: string) => {
