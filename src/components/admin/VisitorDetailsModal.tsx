@@ -23,15 +23,24 @@ export const VisitorDetailsModal: React.FC<VisitorDetailsModalProps> = ({
 }) => {
   const formatDate = (dateString: string | null) => {
     if (!dateString) return 'N/A';
-    const date = new Date(dateString);
-    return date.toLocaleString('en-IN', {
-      month: 'short',
-      day: 'numeric',
-      year: 'numeric',
-      hour: '2-digit',
-      minute: '2-digit',
-      timeZone: 'Asia/Kolkata'
-    });
+    
+    // Parse the datetime string (already in IST, no timezone conversion needed)
+    const parts = dateString.split('T');
+    if (parts.length !== 2) return 'Invalid date';
+    
+    const [datePart, timePart] = parts;
+    const [year, month, day] = datePart.split('-');
+    const [hours24, minutes] = timePart.split(':');
+    
+    // Convert to 12-hour format
+    const hours = parseInt(hours24);
+    const hours12 = hours % 12 || 12;
+    const ampm = hours >= 12 ? 'PM' : 'AM';
+    
+    const monthNames = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+    const monthName = monthNames[parseInt(month) - 1];
+    
+    return `${monthName} ${parseInt(day)}, ${year}, ${hours12}:${minutes} ${ampm}`;
   };
 
   const parsePeople = (peopleString: string) => {
