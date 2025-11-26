@@ -167,7 +167,7 @@ export const VisitorDetailsModal: React.FC<VisitorDetailsModalProps> = ({
                   </div>
                   <div>
                     <p className="text-sm text-white font-medium">Start Time</p>
-                    <p className="text-white font-bold">{formatDate(registration.created_at)}</p>
+                    <p className="text-white font-bold">{formatDate(registration.starttime || registration.created_at)}</p>
                   </div>
                   <div>
                     <p className="text-sm text-white font-medium">End Time</p>

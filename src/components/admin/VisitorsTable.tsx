@@ -198,7 +198,7 @@ export const VisitorsTable: React.FC<VisitorsTableProps> = ({
                       <div className="space-y-1">
                         <div className="flex items-center text-xs text-white font-medium">
                           <Clock className="h-3 w-3 mr-1" />
-                          Started: {formatDate(registration.created_at)}
+                          Started: {formatDate(registration.starttime || registration.created_at)}
                         </div>
                         {editingId === registration.id ? (
                           <div className="space-y-1">
