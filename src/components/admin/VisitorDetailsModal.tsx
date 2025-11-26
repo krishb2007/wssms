@@ -24,22 +24,22 @@ export const VisitorDetailsModal: React.FC<VisitorDetailsModalProps> = ({
   const formatDate = (dateString: string | null) => {
     if (!dateString) return 'N/A';
     
-    // Create date object and extract IST time components directly
-    const date = new Date(dateString);
+    // Parse the datetime string directly without Date object to avoid timezone conversions
+    // Expected format: "2025-11-25T09:19:00" or with timezone info
+    const cleanString = dateString.split('.')[0].replace('Z', ''); // Remove milliseconds and Z
+    const parts = cleanString.split('T');
+    if (parts.length !== 2) return 'Invalid date';
     
-    // Get the date/time components
-    const year = date.getFullYear();
-    const month = date.getMonth();
-    const day = date.getDate();
-    const hours24 = date.getHours();
-    const minutes = date.getMinutes();
+    const [datePart, timePart] = parts;
+    const [year, month, day] = datePart.split('-').map(Number);
+    const [hours24, minutes] = timePart.split(':').map(Number);
     
     // Convert to 12-hour format
     const hours12 = hours24 % 12 || 12;
     const ampm = hours24 >= 12 ? 'PM' : 'AM';
     
     const monthNames = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
-    const monthName = monthNames[month];
+    const monthName = monthNames[month - 1];
     
     return `${monthName} ${day}, ${year}, ${hours12}:${minutes.toString().padStart(2, '0')} ${ampm}`;
   };
