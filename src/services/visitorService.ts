@@ -110,19 +110,24 @@ export const saveVisitorRegistration = async (formData: VisitorFormData) => {
 
     console.log("Attempting to insert into visitor_registrations table:", insertData);
 
-    const { data, error } = await supabase
+    const { error } = await supabase
       .from('visitor_registrations')
-      .insert([insertData])
-      .select()
-      .single();
+      .insert([insertData]);
 
     if (error) {
       console.error("Database insert error:", error);
       throw new Error(`Failed to save registration: ${error.message}`);
     }
 
-    console.log("Visitor registration saved successfully to database:", data);
-    return data;
+    // Return the inserted data directly since anon users can't SELECT
+    const returnData = {
+      ...insertData,
+      id: crypto.randomUUID(),
+      created_at: new Date().toISOString(),
+    };
+
+    console.log("Visitor registration saved successfully to database:", returnData);
+    return returnData;
   } catch (error) {
     console.error("Error in saveVisitorRegistration:", error);
     throw error;
