@@ -27,12 +27,14 @@ const CombinedNamePeopleForm: React.FC<CombinedNamePeopleFormProps> = ({
   nextStep,
   prevStep,
 }) => {
-  // Initialize first person with visitor's name
+  // Keep first person's name synced with visitor's name
   useEffect(() => {
-    if (formData.visitorName && formData.people.length > 0 && !formData.people[0].name) {
+    if (formData.visitorName && formData.people.length > 0) {
       const updatedPeople = [...formData.people];
-      updatedPeople[0] = { ...updatedPeople[0], name: formData.visitorName };
-      updateFormData({ people: updatedPeople });
+      if (updatedPeople[0].name !== formData.visitorName) {
+        updatedPeople[0] = { ...updatedPeople[0], name: formData.visitorName };
+        updateFormData({ people: updatedPeople });
+      }
     }
   }, [formData.visitorName]);
 
