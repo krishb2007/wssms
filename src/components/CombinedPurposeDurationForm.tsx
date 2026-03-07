@@ -1,5 +1,5 @@
 
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useRef, useMemo } from "react";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
@@ -8,6 +8,10 @@ import { CardContent } from "@/components/ui/card";
 import { toast } from "@/components/ui/use-toast";
 import { Clock, ArrowRightLeft } from "lucide-react";
 import { format, differenceInMinutes } from "date-fns";
+
+const STAFF_NAMES = [
+  "AanchalNegi","AaronShangne","AbdulRehman","AbhishekKumar","AdityaManral","AfrozAnjum","AishwaryaDasappa","AjayNegi","AkashKar","AkashTuli","AkshayShah","AlokeMaiti","AlpanaPathak","AmritaJohn","AndrewDas","AndrewStuart-Watson","AndriyYanovych","AniruddhUpadhyay","AnjanaMenon","AnjanaSharma","AnneMcgregor","AnthonyHyde","AntonioMelgar","AnupamaMukherjee","AnushaTuli","AnusuyaVijay","AnveshThapa","ArpanaFernandes","ArpanaMalhotra","AshishLuthra","AzadSingh","BlairLee","BormaniDevi","BrigitteConcessio","BrijeshTyagi","CeciliaCastro","ChelseaKorth","ChrisantaEly","ChristopherMartin","ClaireBrady","ComfortAnkutse","CristianRuiz","CristinaSantiago","DanKoopLiechty","DarabNagarwalla","DavidFrederick","DavidWilliamson","DeborrahMondle","DeunKim","DharmendraBhandari","DheeraSingla","DipikaSharma","DishaAggarwal","DuncanOwich","EktaJohn","EldriMeintjes","EnoshThomas","EshaGeorge","EthanBaker","GauravRawat","GirirajShekhawat","GodwinKomora","GurdeepGrover","HarshBajaj","HimanshuHalve","HutenLaldailova","ImtiazRai","IngMariePutka","JaclynDuellman","JacobHorsey","JamesTuffs","JenniferBelz","JenniferFrederick","JerushaMissal","JessicaLall","JitendraSingh","JoelFord","JoonaSheel","JordanKorth","JustineOliver","KalpanaSingh","KamalThapa","KarenLloyd","KaterinaVackova","KetanSwami","KiranSingh","KleinVerHill","KristenRichardson","KuldeepBhandari","KuvengoluKhamo","LanieGaitan","LaureneGuirette","LekhaMukherjee","LimeeshiBhaskaram","MaggieHolmesheoran","ManishaDogra","MariaLusardi","MariaPrieto","MarkCrowell","MarkWindsor","MartaSzypczynska","MerlineJesudoss","MilanSudzuk","ModesteDate","MohammadJamaal","MohdYousuf","MohitHolmesheoran","NalayiniNantha","NehaSingh","NehaSwami","OksanaSielina","PeshumhringHuten","PholkanLukhu","PoojaAggarwal","PoojaSharma","PoonamSharma","PoushaliBanerjee","PrabinRai","PrarthanaSingh","PrasannaBoddapati","PrashantSingh","PrateekSantram","PravinJelaji","PreetiBhandari","PrernaGadve","PriyankaNagalia","PriyaRollins","PruthiviPanda","RaakheeGumireddy","RachnaPeter","RahimaThomas","RajatBhog","RangariraiMagudu","RaveeshDogra","RaviArthur","RenuOberoi","RohitSharma","RonitaDaniel","RuthBroome","RuthKalsang","SaffronToms","SamuelDzongor","SanchaliChakraborty","SandeepRawat","SangayOhm","SangeetaBhandari","SanketShitole","SarahKhan","SarahThomas","SareenaPun","SenoluDawhuo","ShadabBegum","ShailenderBhandari","ShaileshGarg","SheetalWaller","ShivaniSapehia","ShoaibAli","ShreyNagalia","SonamThomas","SonamTshering","SondeepPeter","SongSeokin","SrinivasGopal","StellaDate","SudhirMendiratta","SumanMitra","SunilBaloni","SunilKumar","SunitaPanwar","SureshChand","SwatiRoy","SwetaGarg","TafadzwaChibade","TanuPathak","TanyaGurung","TanyaMarathe","TheresaJoseph","ThomasJacob","TriptiRathore","TseringMalik","TwylaSpiller","UpasnaGhale","VimmiDang","VinodBhandari","VipulVashistha","VishalNegi","VivekWilliam","YunJiKwak","ZohraJohn"
+];
 
 interface CombinedPurposeDurationFormProps {
   formData: {
@@ -34,6 +38,33 @@ const CombinedPurposeDurationForm: React.FC<CombinedPurposeDurationFormProps> = 
   prevStep,
 }) => {
   const [duration, setDuration] = useState<string>("");
+  const [staffSearch, setStaffSearch] = useState<string>("");
+  const [showDropdown, setShowDropdown] = useState(false);
+  const dropdownRef = useRef<HTMLDivElement>(null);
+
+  // Initialize staffSearch from formData
+  useEffect(() => {
+    if (formData.staffEmail?.includes("@woodstock.ac.in")) {
+      setStaffSearch(formData.staffEmail.replace("@woodstock.ac.in", ""));
+    }
+  }, []);
+
+  // Close dropdown on outside click
+  useEffect(() => {
+    const handleClick = (e: MouseEvent) => {
+      if (dropdownRef.current && !dropdownRef.current.contains(e.target as Node)) {
+        setShowDropdown(false);
+      }
+    };
+    document.addEventListener("mousedown", handleClick);
+    return () => document.removeEventListener("mousedown", handleClick);
+  }, []);
+
+  const filteredStaff = useMemo(() => {
+    if (!staffSearch) return STAFF_NAMES.slice(0, 10);
+    const lower = staffSearch.toLowerCase();
+    return STAFF_NAMES.filter(name => name.toLowerCase().includes(lower)).slice(0, 10);
+  }, [staffSearch]);
 
   // Set the start time to current time in IST if not already set
   useEffect(() => {
@@ -150,26 +181,50 @@ const CombinedPurposeDurationForm: React.FC<CombinedPurposeDurationFormProps> = 
           <div className="space-y-2">
             <Label htmlFor="staffEmail">Staff Email Address:</Label>
             <div className="space-y-2">
-              <div className="flex items-center">
-                <Input
-                  id="staffEmailUsername"
-                  type="text"
-                  value={formData.staffEmail && formData.staffEmail.includes("@woodstock.ac.in") ? formData.staffEmail.replace("@woodstock.ac.in", "") : ""}
-                  onChange={(e) => {
-                    const username = e.target.value.replace("@woodstock.ac.in", "");
-                    if (username.trim()) {
-                      updateFormData({ staffEmail: username + "@woodstock.ac.in" });
-                    } else {
-                      updateFormData({ staffEmail: "" });
-                    }
-                  }}
-                  placeholder="Enter staff username"
-                  required={formData.purpose === "meeting_school_staff"}
-                  className="rounded-r-none"
-                />
-                <div className="bg-muted px-3 py-2 text-sm text-muted-foreground border border-l-0 rounded-r-md">
-                  @woodstock.ac.in
+              <div className="relative" ref={dropdownRef}>
+                <div className="flex items-center">
+                  <Input
+                    id="staffEmailUsername"
+                    type="text"
+                    value={staffSearch}
+                    onChange={(e) => {
+                      const username = e.target.value.replace("@woodstock.ac.in", "");
+                      setStaffSearch(username);
+                      setShowDropdown(true);
+                      if (username.trim()) {
+                        updateFormData({ staffEmail: username + "@woodstock.ac.in" });
+                      } else {
+                        updateFormData({ staffEmail: "" });
+                      }
+                    }}
+                    onFocus={() => setShowDropdown(true)}
+                    placeholder="Type staff name..."
+                    required={formData.purpose === "meeting_school_staff"}
+                    className="rounded-r-none"
+                    autoComplete="off"
+                  />
+                  <div className="bg-muted px-3 py-2 text-sm text-muted-foreground border border-l-0 rounded-r-md whitespace-nowrap">
+                    @woodstock.ac.in
+                  </div>
                 </div>
+                {showDropdown && filteredStaff.length > 0 && (
+                  <div className="absolute z-50 w-full mt-1 bg-popover border border-border rounded-md shadow-lg max-h-48 overflow-y-auto">
+                    {filteredStaff.map((name) => (
+                      <button
+                        key={name}
+                        type="button"
+                        className="w-full text-left px-3 py-2 text-sm hover:bg-accent hover:text-accent-foreground transition-colors"
+                        onClick={() => {
+                          setStaffSearch(name);
+                          updateFormData({ staffEmail: name + "@woodstock.ac.in" });
+                          setShowDropdown(false);
+                        }}
+                      >
+                        {name}
+                      </button>
+                    ))}
+                  </div>
+                )}
               </div>
               <div className="text-xs text-muted-foreground">
                 Or enter full email address:
@@ -178,7 +233,10 @@ const CombinedPurposeDurationForm: React.FC<CombinedPurposeDurationFormProps> = 
                 id="staffEmailFull"
                 type="email"
                 value={formData.staffEmail && !formData.staffEmail.includes("@woodstock.ac.in") ? formData.staffEmail : ""}
-                onChange={(e) => updateFormData({ staffEmail: e.target.value })}
+                onChange={(e) => {
+                  updateFormData({ staffEmail: e.target.value });
+                  setStaffSearch("");
+                }}
                 placeholder="staff@example.com"
               />
             </div>
