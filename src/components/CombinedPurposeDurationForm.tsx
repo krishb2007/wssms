@@ -38,6 +38,33 @@ const CombinedPurposeDurationForm: React.FC<CombinedPurposeDurationFormProps> = 
   prevStep,
 }) => {
   const [duration, setDuration] = useState<string>("");
+  const [staffSearch, setStaffSearch] = useState<string>("");
+  const [showDropdown, setShowDropdown] = useState(false);
+  const dropdownRef = useRef<HTMLDivElement>(null);
+
+  // Initialize staffSearch from formData
+  useEffect(() => {
+    if (formData.staffEmail?.includes("@woodstock.ac.in")) {
+      setStaffSearch(formData.staffEmail.replace("@woodstock.ac.in", ""));
+    }
+  }, []);
+
+  // Close dropdown on outside click
+  useEffect(() => {
+    const handleClick = (e: MouseEvent) => {
+      if (dropdownRef.current && !dropdownRef.current.contains(e.target as Node)) {
+        setShowDropdown(false);
+      }
+    };
+    document.addEventListener("mousedown", handleClick);
+    return () => document.removeEventListener("mousedown", handleClick);
+  }, []);
+
+  const filteredStaff = useMemo(() => {
+    if (!staffSearch) return STAFF_NAMES.slice(0, 10);
+    const lower = staffSearch.toLowerCase();
+    return STAFF_NAMES.filter(name => name.toLowerCase().includes(lower)).slice(0, 10);
+  }, [staffSearch]);
 
   // Set the start time to current time in IST if not already set
   useEffect(() => {
