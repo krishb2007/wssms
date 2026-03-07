@@ -181,26 +181,50 @@ const CombinedPurposeDurationForm: React.FC<CombinedPurposeDurationFormProps> = 
           <div className="space-y-2">
             <Label htmlFor="staffEmail">Staff Email Address:</Label>
             <div className="space-y-2">
-              <div className="flex items-center">
-                <Input
-                  id="staffEmailUsername"
-                  type="text"
-                  value={formData.staffEmail && formData.staffEmail.includes("@woodstock.ac.in") ? formData.staffEmail.replace("@woodstock.ac.in", "") : ""}
-                  onChange={(e) => {
-                    const username = e.target.value.replace("@woodstock.ac.in", "");
-                    if (username.trim()) {
-                      updateFormData({ staffEmail: username + "@woodstock.ac.in" });
-                    } else {
-                      updateFormData({ staffEmail: "" });
-                    }
-                  }}
-                  placeholder="Enter staff username"
-                  required={formData.purpose === "meeting_school_staff"}
-                  className="rounded-r-none"
-                />
-                <div className="bg-muted px-3 py-2 text-sm text-muted-foreground border border-l-0 rounded-r-md">
-                  @woodstock.ac.in
+              <div className="relative" ref={dropdownRef}>
+                <div className="flex items-center">
+                  <Input
+                    id="staffEmailUsername"
+                    type="text"
+                    value={staffSearch}
+                    onChange={(e) => {
+                      const username = e.target.value.replace("@woodstock.ac.in", "");
+                      setStaffSearch(username);
+                      setShowDropdown(true);
+                      if (username.trim()) {
+                        updateFormData({ staffEmail: username + "@woodstock.ac.in" });
+                      } else {
+                        updateFormData({ staffEmail: "" });
+                      }
+                    }}
+                    onFocus={() => setShowDropdown(true)}
+                    placeholder="Type staff name..."
+                    required={formData.purpose === "meeting_school_staff"}
+                    className="rounded-r-none"
+                    autoComplete="off"
+                  />
+                  <div className="bg-muted px-3 py-2 text-sm text-muted-foreground border border-l-0 rounded-r-md whitespace-nowrap">
+                    @woodstock.ac.in
+                  </div>
                 </div>
+                {showDropdown && filteredStaff.length > 0 && (
+                  <div className="absolute z-50 w-full mt-1 bg-popover border border-border rounded-md shadow-lg max-h-48 overflow-y-auto">
+                    {filteredStaff.map((name) => (
+                      <button
+                        key={name}
+                        type="button"
+                        className="w-full text-left px-3 py-2 text-sm hover:bg-accent hover:text-accent-foreground transition-colors"
+                        onClick={() => {
+                          setStaffSearch(name);
+                          updateFormData({ staffEmail: name + "@woodstock.ac.in" });
+                          setShowDropdown(false);
+                        }}
+                      >
+                        {name}
+                      </button>
+                    ))}
+                  </div>
+                )}
               </div>
               <div className="text-xs text-muted-foreground">
                 Or enter full email address:
@@ -209,7 +233,10 @@ const CombinedPurposeDurationForm: React.FC<CombinedPurposeDurationFormProps> = 
                 id="staffEmailFull"
                 type="email"
                 value={formData.staffEmail && !formData.staffEmail.includes("@woodstock.ac.in") ? formData.staffEmail : ""}
-                onChange={(e) => updateFormData({ staffEmail: e.target.value })}
+                onChange={(e) => {
+                  updateFormData({ staffEmail: e.target.value });
+                  setStaffSearch("");
+                }}
                 placeholder="staff@example.com"
               />
             </div>
