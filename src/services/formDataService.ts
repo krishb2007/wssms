@@ -43,6 +43,8 @@ export interface FormDataInput {
   startTime: string;
   endTime: string | null;
   phoneNumber: string;
+  idType: string;
+  idNumber: string;
   acceptedPolicy?: boolean;
 }
 
