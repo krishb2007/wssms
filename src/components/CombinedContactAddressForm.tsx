@@ -45,11 +45,35 @@ const CombinedContactAddressForm: React.FC<CombinedContactAddressFormProps> = ({
   prevStep,
 }) => {
   const [selectedCountry, setSelectedCountry] = useState(formData.address.country || "India");
+  const [stateSearch, setStateSearch] = useState(formData.address.state || "");
+  const [showStateDropdown, setShowStateDropdown] = useState(false);
+  const stateDropdownRef = useRef<HTMLDivElement>(null);
 
   // Initialize state when component loads
   useEffect(() => {
     setSelectedCountry(formData.address.country || "India");
   }, [formData.address.country]);
+
+  useEffect(() => {
+    setStateSearch(formData.address.state || "");
+  }, [formData.address.state]);
+
+  // Close dropdown on outside click
+  useEffect(() => {
+    const handleClick = (e: MouseEvent) => {
+      if (stateDropdownRef.current && !stateDropdownRef.current.contains(e.target as Node)) {
+        setShowStateDropdown(false);
+      }
+    };
+    document.addEventListener("mousedown", handleClick);
+    return () => document.removeEventListener("mousedown", handleClick);
+  }, []);
+
+  const filteredStates = useMemo(() => {
+    if (!stateSearch) return indianStates;
+    const lower = stateSearch.toLowerCase();
+    return indianStates.filter(s => s.toLowerCase().includes(lower));
+  }, [stateSearch]);
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
