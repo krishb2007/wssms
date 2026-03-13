@@ -93,6 +93,8 @@ const Index = () => {
         startTime: "",
         endTime: null,
         phoneNumber: "",
+        idType: "",
+        idNumber: "",
         address: {
           city: "",
           state: "",

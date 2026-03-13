@@ -175,6 +175,50 @@ const CombinedContactAddressForm: React.FC<CombinedContactAddressFormProps> = ({
           </p>
         </div>
 
+        {/* ID Type Selection */}
+        <div className="space-y-2">
+          <Label>Identity Document <span className="text-red-500">*</span></Label>
+          <Select
+            value={formData.idType || ""}
+            onValueChange={(value) => {
+              updateFormData({ idType: value, idNumber: "" });
+            }}
+            required
+          >
+            <SelectTrigger className="w-full">
+              <SelectValue placeholder="Select ID type" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="aadhaar">Aadhaar Card</SelectItem>
+              <SelectItem value="passport">Passport</SelectItem>
+            </SelectContent>
+          </Select>
+        </div>
+
+        {formData.idType && (
+          <div className="space-y-2">
+            <Label htmlFor="idNumber">
+              {formData.idType === "aadhaar" ? "Aadhaar Number (12 digits)" : "Passport Number (8-9 characters)"}
+            </Label>
+            <Input
+              id="idNumber"
+              type="text"
+              value={formData.idNumber || ""}
+              onChange={(e) => {
+                if (formData.idType === "aadhaar") {
+                  const val = e.target.value.replace(/\D/g, '').substring(0, 12);
+                  updateFormData({ idNumber: val });
+                } else {
+                  const val = e.target.value.toUpperCase().substring(0, 9);
+                  updateFormData({ idNumber: val });
+                }
+              }}
+              placeholder={formData.idType === "aadhaar" ? "Enter 12-digit Aadhaar number" : "Enter passport number"}
+              required
+            />
+          </div>
+        )}
+
         <div className="pt-4 border-t border-gray-200 mt-6">
           <h4 className="text-lg font-medium">Address Information</h4>
           
