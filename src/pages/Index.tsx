@@ -18,19 +18,21 @@ const Index = () => {
   const [submissionError, setSubmissionError] = useState<string | null>(null);
   const [formData, setFormData] = useState<FormDataInput & {acceptedPolicy?: boolean}>({
     visitorName: "",
-    schoolName: "Woodstock School", // Default school name
+    schoolName: "Woodstock School",
     numberOfPeople: 1,
     people: [{ name: "", role: "" }],
     purpose: "",
     otherPurpose: "",
     staffEmail: "",
     startTime: "",
-    endTime: null as string | null, // Optional end time
+    endTime: null as string | null,
     phoneNumber: "",
+    idType: "",
+    idNumber: "",
     address: {
       city: "",
       state: "",
-      country: "India", // Default country selection
+      country: "India",
     },
     picture: null as File | string | null,
     signature: null as File | string | null,
