@@ -239,6 +239,7 @@ export type Database = {
         Args: { curlopt: string; value: string }
         Returns: boolean
       }
+      record_visitor_exit: { Args: { p_phonenumber: string }; Returns: Json }
       text_to_bytea: { Args: { data: string }; Returns: string }
       urlencode:
         | { Args: { data: Json }; Returns: string }
