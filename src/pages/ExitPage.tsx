@@ -23,54 +23,32 @@ const ExitPage = () => {
 
     setIsLoading(true);
     try {
-      // Find the visitor with matching phone number who hasn't exited yet
-      const { data: visitors, error: fetchError } = await supabase
-        .from('visitor_registrations')
-        .select('*')
-        .eq('phonenumber', phoneNumber.trim())
-        .is('endtime', null)
-        .order('created_at', { ascending: false })
-        .limit(1);
+      // Use SECURITY DEFINER function to bypass RLS
+      const { data, error } = await supabase.rpc('record_visitor_exit', {
+        p_phonenumber: phoneNumber.trim()
+      });
 
-      if (fetchError) {
-        throw new Error(`Failed to find visitor: ${fetchError.message}`);
+      if (error) {
+        throw new Error(`Failed to record exit: ${error.message}`);
       }
 
-      if (!visitors || visitors.length === 0) {
+      const result = data as { success: boolean; error?: string; visitor?: any };
+
+      if (!result.success) {
         toast({
           title: "Visitor Not Found",
-          description: "No active visitor found with this phone number",
+          description: result.error || "No active visitor found with this phone number",
           variant: "destructive",
         });
         return;
       }
 
-      const visitor = visitors[0];
-
-      // Mark end time as current IST time
-      const now = new Date();
-      const utc = now.getTime() + (now.getTimezoneOffset() * 60000);
-      const istTime = new Date(utc + (5.5 * 60 * 60 * 1000));
-      
-      const pad = (n: number) => n.toString().padStart(2, '0');
-      const istString = `${istTime.getFullYear()}-${pad(istTime.getMonth() + 1)}-${pad(istTime.getDate())}T` +
-                       `${pad(istTime.getHours())}:${pad(istTime.getMinutes())}:${pad(istTime.getSeconds())}`;
-
-      const { error: updateError } = await supabase
-        .from('visitor_registrations')
-        .update({ endtime: istString })
-        .eq('id', visitor.id);
-
-      if (updateError) {
-        throw new Error(`Failed to update exit time: ${updateError.message}`);
-      }
-
-      setExitedVisitor({ ...visitor, endtime: istString });
+      setExitedVisitor(result.visitor);
       setPhoneNumber('');
       
       toast({
         title: "Exit Successful",
-        description: `Thank you ${visitor.visitorname}! Your exit has been recorded.`,
+        description: `Thank you ${result.visitor.visitorname}! Your exit has been recorded.`,
       });
 
     } catch (error) {
