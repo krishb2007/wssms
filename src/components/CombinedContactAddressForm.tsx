@@ -165,22 +165,48 @@ const CombinedContactAddressForm: React.FC<CombinedContactAddressFormProps> = ({
             {selectedCountry === "India" && (
               <div className="space-y-2">
                 <Label htmlFor="state">State</Label>
-                <Select
-                  value={formData.address.state}
-                  onValueChange={(value) => handleAddressChange("state", value)}
-                  required
-                >
-                  <SelectTrigger id="state" className="w-full">
-                    <SelectValue placeholder="Select state" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {indianStates.map((state) => (
-                      <SelectItem key={state} value={state}>
-                        {state}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
+                <div className="relative" ref={stateDropdownRef}>
+                  <Input
+                    id="state"
+                    type="text"
+                    value={stateSearch}
+                    onChange={(e) => {
+                      setStateSearch(e.target.value);
+                      setShowStateDropdown(true);
+                      // Clear the saved state if user is typing
+                      if (!indianStates.includes(e.target.value)) {
+                        handleAddressChange("state", "");
+                      }
+                    }}
+                    onFocus={() => setShowStateDropdown(true)}
+                    placeholder="Type to search state..."
+                    required
+                    autoComplete="off"
+                  />
+                  {showStateDropdown && filteredStates.length > 0 && (
+                    <div className="absolute z-50 w-full mt-1 bg-popover border border-border rounded-md shadow-lg max-h-48 overflow-y-auto">
+                      {filteredStates.map((state) => (
+                        <button
+                          key={state}
+                          type="button"
+                          className="w-full text-left px-3 py-2 text-sm hover:bg-accent hover:text-accent-foreground transition-colors"
+                          onClick={() => {
+                            setStateSearch(state);
+                            handleAddressChange("state", state);
+                            setShowStateDropdown(false);
+                          }}
+                        >
+                          {state}
+                        </button>
+                      ))}
+                    </div>
+                  )}
+                  {showStateDropdown && filteredStates.length === 0 && stateSearch && (
+                    <div className="absolute z-50 w-full mt-1 bg-popover border border-border rounded-md shadow-lg p-3 text-sm text-muted-foreground">
+                      No state found.
+                    </div>
+                  )}
+                </div>
               </div>
             )}
 
