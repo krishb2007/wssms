@@ -9,6 +9,8 @@ import { toast } from "@/components/ui/use-toast";
 interface CombinedContactAddressFormProps {
   formData: {
     phoneNumber: string;
+    idType: string;
+    idNumber: string;
     address: {
       city: string;
       state: string;
@@ -17,6 +19,8 @@ interface CombinedContactAddressFormProps {
   };
   updateFormData: (data: Partial<{ 
     phoneNumber: string;
+    idType: string;
+    idNumber: string;
     address: { city: string; state: string; country: string } 
   }>) => void;
   nextStep: () => void;
