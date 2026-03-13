@@ -48,7 +48,7 @@ const ExitPage = () => {
       
       toast({
         title: "Exit Successful",
-        description: `Thank you ${visitor.visitorname}! Your exit has been recorded.`,
+        description: `Thank you ${result.visitor.visitorname}! Your exit has been recorded.`,
       });
 
     } catch (error) {
