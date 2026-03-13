@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef, useMemo } from "react";
 import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -45,11 +45,35 @@ const CombinedContactAddressForm: React.FC<CombinedContactAddressFormProps> = ({
   prevStep,
 }) => {
   const [selectedCountry, setSelectedCountry] = useState(formData.address.country || "India");
+  const [stateSearch, setStateSearch] = useState(formData.address.state || "");
+  const [showStateDropdown, setShowStateDropdown] = useState(false);
+  const stateDropdownRef = useRef<HTMLDivElement>(null);
 
   // Initialize state when component loads
   useEffect(() => {
     setSelectedCountry(formData.address.country || "India");
   }, [formData.address.country]);
+
+  useEffect(() => {
+    setStateSearch(formData.address.state || "");
+  }, [formData.address.state]);
+
+  // Close dropdown on outside click
+  useEffect(() => {
+    const handleClick = (e: MouseEvent) => {
+      if (stateDropdownRef.current && !stateDropdownRef.current.contains(e.target as Node)) {
+        setShowStateDropdown(false);
+      }
+    };
+    document.addEventListener("mousedown", handleClick);
+    return () => document.removeEventListener("mousedown", handleClick);
+  }, []);
+
+  const filteredStates = useMemo(() => {
+    if (!stateSearch) return indianStates;
+    const lower = stateSearch.toLowerCase();
+    return indianStates.filter(s => s.toLowerCase().includes(lower));
+  }, [stateSearch]);
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -141,22 +165,48 @@ const CombinedContactAddressForm: React.FC<CombinedContactAddressFormProps> = ({
             {selectedCountry === "India" && (
               <div className="space-y-2">
                 <Label htmlFor="state">State</Label>
-                <Select
-                  value={formData.address.state}
-                  onValueChange={(value) => handleAddressChange("state", value)}
-                  required
-                >
-                  <SelectTrigger id="state" className="w-full">
-                    <SelectValue placeholder="Select state" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {indianStates.map((state) => (
-                      <SelectItem key={state} value={state}>
-                        {state}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
+                <div className="relative" ref={stateDropdownRef}>
+                  <Input
+                    id="state"
+                    type="text"
+                    value={stateSearch}
+                    onChange={(e) => {
+                      setStateSearch(e.target.value);
+                      setShowStateDropdown(true);
+                      // Clear the saved state if user is typing
+                      if (!indianStates.includes(e.target.value)) {
+                        handleAddressChange("state", "");
+                      }
+                    }}
+                    onFocus={() => setShowStateDropdown(true)}
+                    placeholder="Type to search state..."
+                    required
+                    autoComplete="off"
+                  />
+                  {showStateDropdown && filteredStates.length > 0 && (
+                    <div className="absolute z-50 w-full mt-1 bg-popover border border-border rounded-md shadow-lg max-h-48 overflow-y-auto">
+                      {filteredStates.map((state) => (
+                        <button
+                          key={state}
+                          type="button"
+                          className="w-full text-left px-3 py-2 text-sm hover:bg-accent hover:text-accent-foreground transition-colors"
+                          onClick={() => {
+                            setStateSearch(state);
+                            handleAddressChange("state", state);
+                            setShowStateDropdown(false);
+                          }}
+                        >
+                          {state}
+                        </button>
+                      ))}
+                    </div>
+                  )}
+                  {showStateDropdown && filteredStates.length === 0 && stateSearch && (
+                    <div className="absolute z-50 w-full mt-1 bg-popover border border-border rounded-md shadow-lg p-3 text-sm text-muted-foreground">
+                      No state found.
+                    </div>
+                  )}
+                </div>
               </div>
             )}
 
