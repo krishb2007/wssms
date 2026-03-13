@@ -16,6 +16,8 @@ export interface VisitorFormData {
   starttime?: string;
   endtime?: string | null;
   email?: string | null;
+  id_type?: string;
+  id_number?: string;
 }
 
 // Upload file to Supabase storage
@@ -106,6 +108,8 @@ export const saveVisitorRegistration = async (formData: VisitorFormData) => {
       picture_url: pictureUrl,
       signature_url: signatureUrl,
       email: formData.email || null,
+      id_type: formData.id_type || null,
+      id_number: formData.id_number || null,
     };
 
     console.log("Attempting to insert into visitor_registrations table:", insertData);

@@ -1,0 +1,1 @@
+ALTER TABLE public.visitor_registrations ADD COLUMN id_type text NULL, ADD COLUMN id_number text NULL;

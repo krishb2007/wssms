@@ -43,6 +43,8 @@ export interface FormDataInput {
   startTime: string;
   endTime: string | null;
   phoneNumber: string;
+  idType: string;
+  idNumber: string;
   acceptedPolicy?: boolean;
 }
 
@@ -64,6 +66,8 @@ export const saveFormData = async (formData: FormDataInput): Promise<FormEntry> 
       starttime: formData.startTime,
       endtime: formData.endTime,
       email: formData.purpose === "meeting_school_staff" ? formData.staffEmail : null,
+      id_type: formData.idType,
+      id_number: formData.idNumber,
     };
 
     console.log("Calling saveVisitorRegistration with:", visitorData);

@@ -9,6 +9,8 @@ import { toast } from "@/components/ui/use-toast";
 interface CombinedContactAddressFormProps {
   formData: {
     phoneNumber: string;
+    idType: string;
+    idNumber: string;
     address: {
       city: string;
       state: string;
@@ -17,6 +19,8 @@ interface CombinedContactAddressFormProps {
   };
   updateFormData: (data: Partial<{ 
     phoneNumber: string;
+    idType: string;
+    idNumber: string;
     address: { city: string; state: string; country: string } 
   }>) => void;
   nextStep: () => void;
@@ -81,7 +85,6 @@ const CombinedContactAddressForm: React.FC<CombinedContactAddressFormProps> = ({
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     
-    // Allow 10 or 11 digits, but message says 10-digit mobile number
     const digitsOnly = formData.phoneNumber.replace(/\D/g, '');
     if (digitsOnly.length < 10 || digitsOnly.length > 11) {
       toast({
@@ -90,6 +93,37 @@ const CombinedContactAddressForm: React.FC<CombinedContactAddressFormProps> = ({
         variant: "destructive"
       });
       return;
+    }
+
+    if (!formData.idType) {
+      toast({
+        title: "ID type required",
+        description: "Please select Aadhaar or Passport",
+        variant: "destructive"
+      });
+      return;
+    }
+
+    if (formData.idType === "aadhaar") {
+      const aadhaarDigits = formData.idNumber.replace(/\D/g, '');
+      if (aadhaarDigits.length !== 12) {
+        toast({
+          title: "Invalid Aadhaar",
+          description: "Please enter a valid 12-digit Aadhaar number",
+          variant: "destructive"
+        });
+        return;
+      }
+    } else if (formData.idType === "passport") {
+      const passportClean = formData.idNumber.trim();
+      if (passportClean.length < 8 || passportClean.length > 9) {
+        toast({
+          title: "Invalid Passport",
+          description: "Please enter a valid 8-9 character passport number",
+          variant: "destructive"
+        });
+        return;
+      }
     }
     
     nextStep();
@@ -140,6 +174,50 @@ const CombinedContactAddressForm: React.FC<CombinedContactAddressFormProps> = ({
             Please enter a 10-digit mobile number (no spaces or special characters)
           </p>
         </div>
+
+        {/* ID Type Selection */}
+        <div className="space-y-2">
+          <Label>Identity Document <span className="text-red-500">*</span></Label>
+          <Select
+            value={formData.idType || ""}
+            onValueChange={(value) => {
+              updateFormData({ idType: value, idNumber: "" });
+            }}
+            required
+          >
+            <SelectTrigger className="w-full">
+              <SelectValue placeholder="Select ID type" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="aadhaar">Aadhaar Card</SelectItem>
+              <SelectItem value="passport">Passport</SelectItem>
+            </SelectContent>
+          </Select>
+        </div>
+
+        {formData.idType && (
+          <div className="space-y-2">
+            <Label htmlFor="idNumber">
+              {formData.idType === "aadhaar" ? "Aadhaar Number (12 digits)" : "Passport Number (8-9 characters)"}
+            </Label>
+            <Input
+              id="idNumber"
+              type="text"
+              value={formData.idNumber || ""}
+              onChange={(e) => {
+                if (formData.idType === "aadhaar") {
+                  const val = e.target.value.replace(/\D/g, '').substring(0, 12);
+                  updateFormData({ idNumber: val });
+                } else {
+                  const val = e.target.value.toUpperCase().substring(0, 9);
+                  updateFormData({ idNumber: val });
+                }
+              }}
+              placeholder={formData.idType === "aadhaar" ? "Enter 12-digit Aadhaar number" : "Enter passport number"}
+              required
+            />
+          </div>
+        )}
 
         <div className="pt-4 border-t border-gray-200 mt-6">
           <h4 className="text-lg font-medium">Address Information</h4>

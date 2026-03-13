@@ -168,59 +168,50 @@ const SignatureForm: React.FC<SignatureFormProps> = ({
           <p className="text-sm text-gray-500 mt-1">Please sign the Student Protection Form</p>
         </div>
         
-        <Accordion type="single" collapsible className="w-full">
-          <AccordionItem value="policy">
-            <AccordionTrigger className="text-blue-600">
-              Read Student Protection Policy
-            </AccordionTrigger>
-            <AccordionContent>
-              <div className="text-sm text-gray-700 space-y-3 px-1 py-2">
-                <p>
-                  <strong>Woodstock School Student Protection Policy</strong>
-                </p>
-                <p>
-                  I hereby acknowledge and understand the Importance of adhering to
-                  Woodstock School's Child Protection Policy and the provisions of the POCSO Act 2012.
-                  I commit to following the guidelines outlined below:
-                </p>
-                <ol className="list-decimal ml-4 mt-2 space-y-1">
-                  <li>
-                    Protection of Children: The POCSO Act Is designed to protect children
-                    (under 18 years of age) from sexual offences, including sexual harassment,
-                    assault, and exploitation.
-                  </li>
-                  <li>
-                    Mandatory Reporting: Any suspicion or knowledge of an offence against a child must
-                    be reported to the authorities. Failure to report such an incident is a punishable offence.
-                  </li>
-                  <li>
-                    Child-Friendly Procedures: The Act ensures that all legal proceedings are conducted
-                    in a manner that is child-friendly and that the privacy and dignity of the child are respected.
-                  </li>
-                  <li>
-                    Punishable Offences: The Act covers a wide range of offences, including penetrative
-                    sexual assault, sexual harassment, and use of a child for pornography, all of which carry
-                    severe penalties.
-                  </li>
-                  <li>
-                    No Tolerance Policy: The school maintains a strict no-tolerance policy regarding any
-                    form of child abuse or exploitation or behavior that's unacceptable in the presence of
-                    children like smoking, using abusive and inappropriate language, consuming alcohol, or
-                    visiting the campus in an inebriated condition.
-                  </li>
-                </ol>
-                <p className="mt-2">
-                  Please be mindful of privacy (taking pictures and uploading them on social media)
-                  and physical contact with children.
-                </p>
-                <p>
-                  The school reserves the right to refuse or terminate your visit at any time if these
-                  guidelines are not respected.
-                </p>
-              </div>
-            </AccordionContent>
-          </AccordionItem>
-        </Accordion>
+        <div className="text-sm text-gray-700 space-y-3 border border-gray-200 rounded-lg p-4 max-h-64 overflow-y-auto bg-gray-50">
+          <p>
+            <strong>Woodstock School Student Protection Policy</strong>
+          </p>
+          <p>
+            I hereby acknowledge and understand the Importance of adhering to
+            Woodstock School's Child Protection Policy and the provisions of the POCSO Act 2012.
+            I commit to following the guidelines outlined below:
+          </p>
+          <ol className="list-decimal ml-4 mt-2 space-y-1">
+            <li>
+              Protection of Children: The POCSO Act Is designed to protect children
+              (under 18 years of age) from sexual offences, including sexual harassment,
+              assault, and exploitation.
+            </li>
+            <li>
+              Mandatory Reporting: Any suspicion or knowledge of an offence against a child must
+              be reported to the authorities. Failure to report such an incident is a punishable offence.
+            </li>
+            <li>
+              Child-Friendly Procedures: The Act ensures that all legal proceedings are conducted
+              in a manner that is child-friendly and that the privacy and dignity of the child are respected.
+            </li>
+            <li>
+              Punishable Offences: The Act covers a wide range of offences, including penetrative
+              sexual assault, sexual harassment, and use of a child for pornography, all of which carry
+              severe penalties.
+            </li>
+            <li>
+              No Tolerance Policy: The school maintains a strict no-tolerance policy regarding any
+              form of child abuse or exploitation or behavior that's unacceptable in the presence of
+              children like smoking, using abusive and inappropriate language, consuming alcohol, or
+              visiting the campus in an inebriated condition.
+            </li>
+          </ol>
+          <p className="mt-2">
+            Please be mindful of privacy (taking pictures and uploading them on social media)
+            and physical contact with children.
+          </p>
+          <p>
+            The school reserves the right to refuse or terminate your visit at any time if these
+            guidelines are not respected.
+          </p>
+        </div>
         
         <div className="flex items-center space-x-2">
           <Checkbox 
