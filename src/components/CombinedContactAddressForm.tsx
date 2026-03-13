@@ -85,7 +85,6 @@ const CombinedContactAddressForm: React.FC<CombinedContactAddressFormProps> = ({
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     
-    // Allow 10 or 11 digits, but message says 10-digit mobile number
     const digitsOnly = formData.phoneNumber.replace(/\D/g, '');
     if (digitsOnly.length < 10 || digitsOnly.length > 11) {
       toast({
@@ -94,6 +93,37 @@ const CombinedContactAddressForm: React.FC<CombinedContactAddressFormProps> = ({
         variant: "destructive"
       });
       return;
+    }
+
+    if (!formData.idType) {
+      toast({
+        title: "ID type required",
+        description: "Please select Aadhaar or Passport",
+        variant: "destructive"
+      });
+      return;
+    }
+
+    if (formData.idType === "aadhaar") {
+      const aadhaarDigits = formData.idNumber.replace(/\D/g, '');
+      if (aadhaarDigits.length !== 12) {
+        toast({
+          title: "Invalid Aadhaar",
+          description: "Please enter a valid 12-digit Aadhaar number",
+          variant: "destructive"
+        });
+        return;
+      }
+    } else if (formData.idType === "passport") {
+      const passportClean = formData.idNumber.trim();
+      if (passportClean.length < 8 || passportClean.length > 9) {
+        toast({
+          title: "Invalid Passport",
+          description: "Please enter a valid 8-9 character passport number",
+          variant: "destructive"
+        });
+        return;
+      }
     }
     
     nextStep();
