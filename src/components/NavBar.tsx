@@ -11,15 +11,6 @@ const NavBar: React.FC = () => {
           Woodstock School
         </Link>
         <div className="flex items-center space-x-3">
-          <Link to="/exit">
-            <Button 
-              variant="outline" 
-              size="sm"
-              className="text-white bg-red-600 border-red-600 hover:bg-red-700 hover:border-red-700 transition-all duration-200 font-medium px-4 py-2 rounded-md"
-            >
-              Exit
-            </Button>
-          </Link>
           <Link to="/admin-login">
             <Button 
               variant="outline" 
