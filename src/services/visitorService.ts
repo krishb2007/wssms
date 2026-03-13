@@ -16,6 +16,8 @@ export interface VisitorFormData {
   starttime?: string;
   endtime?: string | null;
   email?: string | null;
+  id_type?: string;
+  id_number?: string;
 }
 
 // Upload file to Supabase storage
