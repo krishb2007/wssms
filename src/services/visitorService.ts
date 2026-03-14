@@ -18,6 +18,7 @@ export interface VisitorFormData {
   email?: string | null;
   id_type?: string;
   id_number?: string;
+  extra_info?: string | null;
 }
 
 // Upload file to Supabase storage
