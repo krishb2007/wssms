@@ -204,7 +204,7 @@ export const VisitorDetailsModal: React.FC<VisitorDetailsModalProps> = ({
             </div>
 
             {/* Staff Members & Extra Info Row */}
-            {(staffEmails.length > 0 || registration.extra_info) && (
+            {(staffEmails.length > 0 && (
               <div className="grid grid-cols-2 gap-8">
                 {/* Staff Members */}
                 {staffEmails.length > 0 && (
