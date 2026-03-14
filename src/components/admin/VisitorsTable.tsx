@@ -40,7 +40,37 @@ export const VisitorsTable: React.FC<VisitorsTableProps> = ({
   onEditEndTimeChange
 }) => {
   const [selectedRegistration, setSelectedRegistration] = useState<VisitorRegistration | null>(null);
+  const [endingMeetingId, setEndingMeetingId] = useState<string | null>(null);
 
+  const handleMeetingEnded = async (registration: VisitorRegistration) => {
+    if (registration.endtime) return;
+    setEndingMeetingId(registration.id);
+    try {
+      const now = new Date();
+      const utc = now.getTime() + (now.getTimezoneOffset() * 60000);
+      const ist = new Date(utc + (5.5 * 60 * 60 * 1000));
+      const pad = (n: number) => n.toString().padStart(2, '0');
+      const istString = `${ist.getFullYear()}-${pad(ist.getMonth() + 1)}-${pad(ist.getDate())}T${pad(ist.getHours())}:${pad(ist.getMinutes())}:${pad(ist.getSeconds())}`;
+
+      const { error } = await supabase
+        .from('visitor_registrations')
+        .update({ endtime: istString })
+        .eq('id', registration.id);
+
+      if (error) throw error;
+
+      onStartEdit(registration);
+      onEditEndTimeChange(istString.slice(0, 16));
+      onSaveEdit(registration.id);
+
+      toast({ title: "Meeting Ended", description: `Meeting with ${registration.visitorname} has been marked as concluded.` });
+      onRefresh();
+    } catch (err) {
+      toast({ title: "Error", description: "Failed to end meeting", variant: "destructive" });
+    } finally {
+      setEndingMeetingId(null);
+    }
+  };
   const formatDate = (dateString: string | null): string => {
     if (!dateString) return 'Not set';
     
