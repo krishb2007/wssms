@@ -24,6 +24,8 @@ const Index = () => {
     purpose: "",
     otherPurpose: "",
     staffEmail: "",
+    staffEmails: [] as string[],
+    extraInfo: "",
     startTime: "",
     endTime: null as string | null,
     phoneNumber: "",
