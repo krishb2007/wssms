@@ -51,6 +51,7 @@ const handler = async (req: Request): Promise<Response> => {
     const baseUrl = "https://efxeohyxpnwewhqwlahw.supabase.co/functions/v1/handle-visit-response";
     const approveUrl = `${baseUrl}?action=approve&visitorName=${encodeURIComponent(visitorName)}&staffEmail=${encodeURIComponent(staffEmail)}&registrationTime=${encodeURIComponent(currentTime)}`;
     const denyUrl = `${baseUrl}?action=deny&visitorName=${encodeURIComponent(visitorName)}&staffEmail=${encodeURIComponent(staffEmail)}&registrationTime=${encodeURIComponent(currentTime)}`;
+    const meetingEndedUrl = `${baseUrl}?action=meeting_ended&visitorName=${encodeURIComponent(visitorName)}&staffEmail=${encodeURIComponent(staffEmail)}&registrationTime=${encodeURIComponent(currentTime)}`;
 
     // Prepare email content
     const emailHtml = `
