@@ -14,7 +14,6 @@ export interface VisitorRegistration {
   picture_url: string | null;
   signature_url: string | null;
   email: string | null;
-  extra_info: string | null;
   id_type: string | null;
   id_number: string | null;
 }
