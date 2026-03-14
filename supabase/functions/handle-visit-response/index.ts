@@ -22,7 +22,7 @@ const handler = async (req: Request): Promise<Response> => {
 
   try {
     const url = new URL(req.url);
-    const action = url.searchParams.get('action') as 'approve' | 'deny';
+    const action = url.searchParams.get('action') as 'approve' | 'deny' | 'meeting_ended';
     const visitorName = url.searchParams.get('visitorName');
     const staffEmail = url.searchParams.get('staffEmail');
     const registrationTime = url.searchParams.get('registrationTime');
