@@ -125,16 +125,15 @@ export const saveFormData = async (formData: FormDataInput): Promise<FormEntry> 
               pictureUrl: savedData.picture_url,
               people: formData.people
             }
-          });
-        
-        if (emailResponse.error) {
-          console.error("Error sending staff notification:", emailResponse.error);
-        } else {
-          console.log("Staff notification sent successfully");
+          
+          if (emailResponse.error) {
+            console.error("Error sending staff notification:", emailResponse.error);
+          } else {
+            console.log("Staff notification sent successfully to:", staffEmail);
+          }
+        } catch (emailError) {
+          console.error("Failed to send staff notification email:", emailError);
         }
-      } catch (emailError) {
-        console.error("Failed to send staff notification email:", emailError);
-        // Don't throw error - we don't want to fail the registration if email fails
       }
     }
 
