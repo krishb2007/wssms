@@ -223,17 +223,6 @@ export const VisitorDetailsModal: React.FC<VisitorDetailsModalProps> = ({
                     </ul>
                   </div>
                 )}
-
-                {/* Extra Info */}
-                {registration.extra_info && (
-                  <div className="bg-gray-700 rounded-lg p-6 border border-gray-600">
-                    <h3 className="text-lg font-bold text-white mb-4 flex items-center">
-                      <Info className="h-5 w-5 mr-2" />
-                      Extra Visitor Information
-                    </h3>
-                    <p className="text-white font-bold whitespace-pre-wrap">{registration.extra_info}</p>
-                  </div>
-                )}
               </div>
             )}
           </div>
