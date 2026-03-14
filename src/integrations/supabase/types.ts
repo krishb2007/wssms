@@ -42,7 +42,7 @@ export type Database = {
           created_at: string | null
           email: string | null
           endtime: string | null
-          extra_info: string | null
+          
           id: string
           id_number: string | null
           id_type: string | null
@@ -64,7 +64,6 @@ export type Database = {
           created_at?: string | null
           email?: string | null
           endtime?: string | null
-          extra_info?: string | null
           id?: string
           id_number?: string | null
           id_type?: string | null
@@ -86,7 +85,6 @@ export type Database = {
           created_at?: string | null
           email?: string | null
           endtime?: string | null
-          extra_info?: string | null
           id?: string
           id_number?: string | null
           id_type?: string | null
