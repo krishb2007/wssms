@@ -108,23 +108,24 @@ export const saveFormData = async (formData: FormDataInput): Promise<FormEntry> 
       visitCount: 1
     };
 
-    // Send email notification if meeting school staff
-    if (formData.purpose === "meeting_school_staff" && formData.staffEmail) {
-      try {
-        console.log("Sending staff notification email to:", formData.staffEmail);
-        const emailResponse = await supabase.functions.invoke('send-staff-notification', {
-          body: {
-            staffEmail: formData.staffEmail,
-            visitorName: formData.visitorName,
-            purpose: purposeValue,
-            numberOfPeople: formData.numberOfPeople,
-            startTime: formData.startTime,
-            phoneNumber: formData.phoneNumber,
-            address: `${formData.address.city}, ${formData.address.state}, ${formData.address.country}`,
-            pictureUrl: savedData.picture_url,
-            people: formData.people
-          }
-        });
+    // Send email notification to all staff members
+    if (formData.purpose === "meeting_school_staff" && allStaffEmails.length > 0) {
+      for (const staffEmail of allStaffEmails) {
+        try {
+          console.log("Sending staff notification email to:", staffEmail);
+          const emailResponse = await supabase.functions.invoke('send-staff-notification', {
+            body: {
+              staffEmail,
+              visitorName: formData.visitorName,
+              purpose: purposeValue,
+              numberOfPeople: formData.numberOfPeople,
+              startTime: formData.startTime,
+              phoneNumber: formData.phoneNumber,
+              address: `${formData.address.city}, ${formData.address.state}, ${formData.address.country}`,
+              pictureUrl: savedData.picture_url,
+              people: formData.people
+            }
+          });
         
         if (emailResponse.error) {
           console.error("Error sending staff notification:", emailResponse.error);
