@@ -39,8 +39,9 @@ const handler = async (req: Request): Promise<Response> => {
       timeStyle: 'short'
     });
 
-    const actionText = action === 'approve' ? 'APPROVED' : 'DENIED';
-    const statusColor = action === 'approve' ? '#28a745' : '#dc3545';
+    const actionTextMap: Record<string, string> = { approve: 'APPROVED', deny: 'DENIED', meeting_ended: 'MEETING ENDED' };
+    const actionText = actionTextMap[action] || action.toUpperCase();
+    const statusColor = action === 'approve' ? '#28a745' : action === 'deny' ? '#dc3545' : '#6c757d';
 
     // Send confirmation email to security
     const emailHtml = `
