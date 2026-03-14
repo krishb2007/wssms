@@ -219,18 +219,6 @@ const CombinedContactAddressForm: React.FC<CombinedContactAddressFormProps> = ({
           </div>
         )}
 
-        {/* Extra Visitor Information - Optional */}
-        <div className="space-y-2">
-          <Label htmlFor="extraInfo">Extra Visitor Information <span className="text-xs text-gray-400">(Optional)</span></Label>
-          <Textarea
-            id="extraInfo"
-            value={formData.extraInfo || ""}
-            onChange={(e) => updateFormData({ extraInfo: e.target.value })}
-            placeholder="Any additional information about the visit..."
-            rows={3}
-          />
-        </div>
-
         <div className="pt-4 border-t border-gray-200 mt-6">
           <h4 className="text-lg font-medium">Address Information</h4>
           
