@@ -1,0 +1,1 @@
+ALTER TABLE public.visitor_registrations ADD COLUMN IF NOT EXISTS extra_info text NULL;
