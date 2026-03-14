@@ -297,6 +297,20 @@ export const VisitorsTable: React.FC<VisitorsTableProps> = ({
                             <Pencil className="h-4 w-4" />
                           </Button>
                         )}
+                        
+                        {/* Meeting Ended Button */}
+                        {!registration.endtime && (
+                          <Button
+                            size="sm"
+                            variant="outline"
+                            onClick={() => handleMeetingEnded(registration)}
+                            disabled={endingMeetingId === registration.id}
+                            className="h-8 px-2 border-2 border-emerald-500 text-emerald-400 hover:bg-emerald-500 hover:text-white text-xs"
+                            title="Mark meeting as ended"
+                          >
+                            <CheckCircle className="h-4 w-4" />
+                          </Button>
+                        )}
                       </div>
                     </TableCell>
                   </TableRow>
