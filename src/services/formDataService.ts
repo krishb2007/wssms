@@ -80,7 +80,7 @@ export const saveFormData = async (formData: FormDataInput): Promise<FormEntry> 
       email: emailValue,
       id_type: formData.idType,
       id_number: formData.idNumber,
-      extra_info: formData.extraInfo || null,
+
     };
 
     console.log("Calling saveVisitorRegistration with:", visitorData);
@@ -97,7 +97,6 @@ export const saveFormData = async (formData: FormDataInput): Promise<FormEntry> 
       otherPurpose: formData.purpose === "other" ? formData.otherPurpose : "",
       staffEmail: formData.purpose === "meeting_school_staff" ? formData.staffEmail : "",
       staffEmails: allStaffEmails,
-      extraInfo: formData.extraInfo || "",
       address: formData.address,
       picture: savedData.picture_url,
       signature: savedData.signature_url,
