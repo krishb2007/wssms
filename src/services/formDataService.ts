@@ -35,6 +35,8 @@ export interface FormDataInput {
   purpose: string;
   otherPurpose: string;
   staffEmail: string;
+  staffEmails: string[];
+  extraInfo: string;
   address: {
     city: string;
     state: string;

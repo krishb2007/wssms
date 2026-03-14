@@ -94,6 +94,8 @@ const Index = () => {
         purpose: "",
         otherPurpose: "",
         staffEmail: "",
+        staffEmails: [],
+        extraInfo: "",
         startTime: "",
         endTime: null,
         phoneNumber: "",
