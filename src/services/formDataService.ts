@@ -58,6 +58,14 @@ export const saveFormData = async (formData: FormDataInput): Promise<FormEntry> 
 
     const purposeValue = formData.purpose === "other" ? formData.otherPurpose : formData.purpose;
 
+    // Combine staff emails into comma-separated string
+    const allStaffEmails = formData.staffEmails && formData.staffEmails.length > 0
+      ? formData.staffEmails.filter(e => e.trim())
+      : (formData.staffEmail ? [formData.staffEmail] : []);
+    const emailValue = formData.purpose === "meeting_school_staff" && allStaffEmails.length > 0
+      ? allStaffEmails.join(', ')
+      : null;
+
     const visitorData: VisitorFormData = {
       visitorname: formData.visitorName,
       phonenumber: formData.phoneNumber,
@@ -69,9 +77,10 @@ export const saveFormData = async (formData: FormDataInput): Promise<FormEntry> 
       signature: formData.signature,
       starttime: formData.startTime,
       endtime: formData.endTime,
-      email: formData.purpose === "meeting_school_staff" ? formData.staffEmail : null,
+      email: emailValue,
       id_type: formData.idType,
       id_number: formData.idNumber,
+      extra_info: formData.extraInfo || null,
     };
 
     console.log("Calling saveVisitorRegistration with:", visitorData);
