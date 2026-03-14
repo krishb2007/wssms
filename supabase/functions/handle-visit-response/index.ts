@@ -8,7 +8,7 @@ const corsHeaders = {
 };
 
 interface ResponseRequest {
-  action: 'approve' | 'deny';
+  action: 'approve' | 'deny' | 'meeting_ended';
   visitorName: string;
   staffEmail: string;
   registrationTime: string;
