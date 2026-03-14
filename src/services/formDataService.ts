@@ -11,6 +11,8 @@ export interface FormEntry {
   purpose: string;
   otherPurpose: string;
   staffEmail: string;
+  staffEmails: string[];
+  extraInfo: string;
   address: {
     city: string;
     state: string;
