@@ -96,6 +96,8 @@ export const saveFormData = async (formData: FormDataInput): Promise<FormEntry> 
       purpose: savedData.purpose,
       otherPurpose: formData.purpose === "other" ? formData.otherPurpose : "",
       staffEmail: formData.purpose === "meeting_school_staff" ? formData.staffEmail : "",
+      staffEmails: allStaffEmails,
+      extraInfo: formData.extraInfo || "",
       address: formData.address,
       picture: savedData.picture_url,
       signature: savedData.signature_url,
