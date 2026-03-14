@@ -51,6 +51,7 @@ const handler = async (req: Request): Promise<Response> => {
     const baseUrl = "https://efxeohyxpnwewhqwlahw.supabase.co/functions/v1/handle-visit-response";
     const approveUrl = `${baseUrl}?action=approve&visitorName=${encodeURIComponent(visitorName)}&staffEmail=${encodeURIComponent(staffEmail)}&registrationTime=${encodeURIComponent(currentTime)}`;
     const denyUrl = `${baseUrl}?action=deny&visitorName=${encodeURIComponent(visitorName)}&staffEmail=${encodeURIComponent(staffEmail)}&registrationTime=${encodeURIComponent(currentTime)}`;
+    const meetingEndedUrl = `${baseUrl}?action=meeting_ended&visitorName=${encodeURIComponent(visitorName)}&staffEmail=${encodeURIComponent(staffEmail)}&registrationTime=${encodeURIComponent(currentTime)}`;
 
     // Prepare email content
     const emailHtml = `
@@ -76,12 +77,16 @@ const handler = async (req: Request): Promise<Response> => {
           
           <div style="text-align: center; margin: 25px 0;">
             <a href="${approveUrl}" 
-               style="background-color: #28a745; color: white; padding: 12px 25px; text-decoration: none; border-radius: 5px; margin: 0 10px; font-weight: bold; display: inline-block;">
+               style="background-color: #28a745; color: white; padding: 12px 25px; text-decoration: none; border-radius: 5px; margin: 0 5px; font-weight: bold; display: inline-block;">
               ✓ APPROVE VISIT
             </a>
             <a href="${denyUrl}" 
-               style="background-color: #dc3545; color: white; padding: 12px 25px; text-decoration: none; border-radius: 5px; margin: 0 10px; font-weight: bold; display: inline-block;">
+               style="background-color: #dc3545; color: white; padding: 12px 25px; text-decoration: none; border-radius: 5px; margin: 0 5px; font-weight: bold; display: inline-block;">
               ✗ DENY VISIT
+            </a>
+            <a href="${meetingEndedUrl}" 
+               style="background-color: #6c757d; color: white; padding: 12px 25px; text-decoration: none; border-radius: 5px; margin: 0 5px; font-weight: bold; display: inline-block; margin-top: 10px;">
+              ⏹ MEETING ENDED
             </a>
           </div>
           

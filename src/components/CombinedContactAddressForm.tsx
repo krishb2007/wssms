@@ -2,15 +2,18 @@ import React, { useState, useEffect, useRef, useMemo } from "react";
 import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { MapPin, PhoneCall } from "lucide-react";
+import { MapPin } from "lucide-react";
 import { toast } from "@/components/ui/use-toast";
+import { ALL_COUNTRIES } from "@/data/countries";
 
 interface CombinedContactAddressFormProps {
   formData: {
     phoneNumber: string;
     idType: string;
     idNumber: string;
+    extraInfo: string;
     address: {
       city: string;
       state: string;
@@ -21,17 +24,12 @@ interface CombinedContactAddressFormProps {
     phoneNumber: string;
     idType: string;
     idNumber: string;
+    extraInfo: string;
     address: { city: string; state: string; country: string } 
   }>) => void;
   nextStep: () => void;
   prevStep: () => void;
 }
-
-// Country list - just a sample of major countries
-const countries = [
-  "India", "United States", "United Kingdom", "Canada", "Australia", 
-  "Germany", "France", "Japan", "China", "Brazil", "Other"
-];
 
 // Major Indian states
 const indianStates = [
@@ -40,7 +38,6 @@ const indianStates = [
   "Kerala", "Madhya Pradesh", "Maharashtra", "Manipur", "Meghalaya", "Mizoram",
   "Nagaland", "Odisha", "Punjab", "Rajasthan", "Sikkim", "Tamil Nadu", 
   "Telangana", "Tripura", "Uttar Pradesh", "Uttarakhand", "West Bengal",
-  // Union Territories
   "Andaman and Nicobar Islands", "Chandigarh", "Dadra and Nagar Haveli and Daman and Diu",
   "Delhi", "Jammu and Kashmir", "Ladakh", "Lakshadweep", "Puducherry"
 ].sort();
@@ -54,22 +51,28 @@ const CombinedContactAddressForm: React.FC<CombinedContactAddressFormProps> = ({
   const [selectedCountry, setSelectedCountry] = useState(formData.address.country || "India");
   const [stateSearch, setStateSearch] = useState(formData.address.state || "");
   const [showStateDropdown, setShowStateDropdown] = useState(false);
+  const [countrySearch, setCountrySearch] = useState(formData.address.country || "India");
+  const [showCountryDropdown, setShowCountryDropdown] = useState(false);
   const stateDropdownRef = useRef<HTMLDivElement>(null);
+  const countryDropdownRef = useRef<HTMLDivElement>(null);
 
-  // Initialize state when component loads
   useEffect(() => {
     setSelectedCountry(formData.address.country || "India");
+    setCountrySearch(formData.address.country || "India");
   }, [formData.address.country]);
 
   useEffect(() => {
     setStateSearch(formData.address.state || "");
   }, [formData.address.state]);
 
-  // Close dropdown on outside click
+  // Close dropdowns on outside click
   useEffect(() => {
     const handleClick = (e: MouseEvent) => {
       if (stateDropdownRef.current && !stateDropdownRef.current.contains(e.target as Node)) {
         setShowStateDropdown(false);
+      }
+      if (countryDropdownRef.current && !countryDropdownRef.current.contains(e.target as Node)) {
+        setShowCountryDropdown(false);
       }
     };
     document.addEventListener("mousedown", handleClick);
@@ -82,6 +85,12 @@ const CombinedContactAddressForm: React.FC<CombinedContactAddressFormProps> = ({
     return indianStates.filter(s => s.toLowerCase().includes(lower));
   }, [stateSearch]);
 
+  const filteredCountries = useMemo(() => {
+    if (!countrySearch) return ALL_COUNTRIES;
+    const lower = countrySearch.toLowerCase();
+    return ALL_COUNTRIES.filter(c => c.toLowerCase().includes(lower));
+  }, [countrySearch]);
+
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     
@@ -90,15 +99,6 @@ const CombinedContactAddressForm: React.FC<CombinedContactAddressFormProps> = ({
       toast({
         title: "Invalid mobile number",
         description: "Please enter a valid 10-digit mobile number",
-        variant: "destructive"
-      });
-      return;
-    }
-
-    if (!formData.idType) {
-      toast({
-        title: "ID type required",
-        description: "Please select Aadhaar or Passport",
         variant: "destructive"
       });
       return;
@@ -130,7 +130,6 @@ const CombinedContactAddressForm: React.FC<CombinedContactAddressFormProps> = ({
   };
 
   const handlePhoneChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    // Only allow digits and limit to 11 characters
     const value = e.target.value.replace(/\D/g, '').substring(0, 11);
     updateFormData({ phoneNumber: value });
   };
@@ -144,13 +143,14 @@ const CombinedContactAddressForm: React.FC<CombinedContactAddressFormProps> = ({
     });
   };
 
-  const handleCountryChange = (value: string) => {
-    setSelectedCountry(value);
-    handleAddressChange("country", value);
-    
-    // Reset state if country changes and it's not India
-    if (value !== "India") {
+  const handleCountrySelect = (country: string) => {
+    setSelectedCountry(country);
+    setCountrySearch(country);
+    handleAddressChange("country", country);
+    setShowCountryDropdown(false);
+    if (country !== "India") {
       handleAddressChange("state", "");
+      setStateSearch("");
     }
   };
 
@@ -175,27 +175,27 @@ const CombinedContactAddressForm: React.FC<CombinedContactAddressFormProps> = ({
           </p>
         </div>
 
-        {/* ID Type Selection */}
+        {/* Optional ID Type Selection */}
         <div className="space-y-2">
-          <Label>Identity Document <span className="text-red-500">*</span></Label>
+          <Label>Identity Document <span className="text-xs text-gray-400">(Optional)</span></Label>
           <Select
-            value={formData.idType || ""}
+            value={formData.idType || "none"}
             onValueChange={(value) => {
-              updateFormData({ idType: value, idNumber: "" });
+              updateFormData({ idType: value === "none" ? "" : value, idNumber: "" });
             }}
-            required
           >
             <SelectTrigger className="w-full">
-              <SelectValue placeholder="Select ID type" />
+              <SelectValue placeholder="Select ID type (optional)" />
             </SelectTrigger>
             <SelectContent>
+              <SelectItem value="none">No ID</SelectItem>
               <SelectItem value="aadhaar">Aadhaar Card</SelectItem>
               <SelectItem value="passport">Passport</SelectItem>
             </SelectContent>
           </Select>
         </div>
 
-        {formData.idType && (
+        {formData.idType && formData.idType !== "none" && (
           <div className="space-y-2">
             <Label htmlFor="idNumber">
               {formData.idType === "aadhaar" ? "Aadhaar Number (12 digits)" : "Passport Number (8-9 characters)"}
@@ -219,28 +219,62 @@ const CombinedContactAddressForm: React.FC<CombinedContactAddressFormProps> = ({
           </div>
         )}
 
+        {/* Extra Visitor Information - Optional */}
+        <div className="space-y-2">
+          <Label htmlFor="extraInfo">Extra Visitor Information <span className="text-xs text-gray-400">(Optional)</span></Label>
+          <Textarea
+            id="extraInfo"
+            value={formData.extraInfo || ""}
+            onChange={(e) => updateFormData({ extraInfo: e.target.value })}
+            placeholder="Any additional information about the visit..."
+            rows={3}
+          />
+        </div>
+
         <div className="pt-4 border-t border-gray-200 mt-6">
           <h4 className="text-lg font-medium">Address Information</h4>
           
           <div className="space-y-4 mt-4">
+            {/* Searchable Country Dropdown */}
             <div className="space-y-2">
               <Label htmlFor="country">Country</Label>
-              <Select 
-                value={selectedCountry} 
-                onValueChange={handleCountryChange}
-                required
-              >
-                <SelectTrigger id="country" className="w-full">
-                  <SelectValue placeholder="Select country" />
-                </SelectTrigger>
-                <SelectContent>
-                  {countries.map((country) => (
-                    <SelectItem key={country} value={country}>
-                      {country}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
+              <div className="relative" ref={countryDropdownRef}>
+                <Input
+                  id="country"
+                  type="text"
+                  value={countrySearch}
+                  onChange={(e) => {
+                    setCountrySearch(e.target.value);
+                    setShowCountryDropdown(true);
+                    if (!ALL_COUNTRIES.includes(e.target.value)) {
+                      handleAddressChange("country", "");
+                    }
+                  }}
+                  onFocus={() => setShowCountryDropdown(true)}
+                  placeholder="Type to search country..."
+                  required
+                  autoComplete="off"
+                />
+                {showCountryDropdown && filteredCountries.length > 0 && (
+                  <div className="absolute z-50 w-full mt-1 bg-popover border border-border rounded-md shadow-lg max-h-48 overflow-y-auto">
+                    {filteredCountries.map((country) => (
+                      <button
+                        key={country}
+                        type="button"
+                        className="w-full text-left px-3 py-2 text-sm hover:bg-accent hover:text-accent-foreground transition-colors"
+                        onClick={() => handleCountrySelect(country)}
+                      >
+                        {country}
+                      </button>
+                    ))}
+                  </div>
+                )}
+                {showCountryDropdown && filteredCountries.length === 0 && countrySearch && (
+                  <div className="absolute z-50 w-full mt-1 bg-popover border border-border rounded-md shadow-lg p-3 text-sm text-muted-foreground">
+                    No country found.
+                  </div>
+                )}
+              </div>
             </div>
 
             {selectedCountry === "India" && (
@@ -254,7 +288,6 @@ const CombinedContactAddressForm: React.FC<CombinedContactAddressFormProps> = ({
                     onChange={(e) => {
                       setStateSearch(e.target.value);
                       setShowStateDropdown(true);
-                      // Clear the saved state if user is typing
                       if (!indianStates.includes(e.target.value)) {
                         handleAddressChange("state", "");
                       }

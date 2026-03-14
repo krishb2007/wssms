@@ -3,7 +3,9 @@ import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Pencil, Save, X, Eye, User, Building, Phone, MapPin, Clock, Mail } from "lucide-react";
+import { Pencil, Save, X, Eye, User, Building, Phone, MapPin, Clock, Mail, CheckCircle } from "lucide-react";
+import { supabase } from '@/integrations/supabase/client';
+import { toast } from "@/components/ui/use-toast";
 import { VisitorRegistration } from './types';
 import { SearchAndRefresh } from './SearchAndRefresh';
 import { VisitorDetailsModal } from './VisitorDetailsModal';
@@ -38,7 +40,37 @@ export const VisitorsTable: React.FC<VisitorsTableProps> = ({
   onEditEndTimeChange
 }) => {
   const [selectedRegistration, setSelectedRegistration] = useState<VisitorRegistration | null>(null);
+  const [endingMeetingId, setEndingMeetingId] = useState<string | null>(null);
 
+  const handleMeetingEnded = async (registration: VisitorRegistration) => {
+    if (registration.endtime) return;
+    setEndingMeetingId(registration.id);
+    try {
+      const now = new Date();
+      const utc = now.getTime() + (now.getTimezoneOffset() * 60000);
+      const ist = new Date(utc + (5.5 * 60 * 60 * 1000));
+      const pad = (n: number) => n.toString().padStart(2, '0');
+      const istString = `${ist.getFullYear()}-${pad(ist.getMonth() + 1)}-${pad(ist.getDate())}T${pad(ist.getHours())}:${pad(ist.getMinutes())}:${pad(ist.getSeconds())}`;
+
+      const { error } = await supabase
+        .from('visitor_registrations')
+        .update({ endtime: istString })
+        .eq('id', registration.id);
+
+      if (error) throw error;
+
+      onStartEdit(registration);
+      onEditEndTimeChange(istString.slice(0, 16));
+      onSaveEdit(registration.id);
+
+      toast({ title: "Meeting Ended", description: `Meeting with ${registration.visitorname} has been marked as concluded.` });
+      onRefresh();
+    } catch (err) {
+      toast({ title: "Error", description: "Failed to end meeting", variant: "destructive" });
+    } finally {
+      setEndingMeetingId(null);
+    }
+  };
   const formatDate = (dateString: string | null): string => {
     if (!dateString) return 'Not set';
     
@@ -263,6 +295,20 @@ export const VisitorsTable: React.FC<VisitorsTableProps> = ({
                             className="h-8 w-8 p-0 border-2 border-orange-500 text-orange-400 hover:bg-orange-500 hover:text-white"
                           >
                             <Pencil className="h-4 w-4" />
+                          </Button>
+                        )}
+                        
+                        {/* Meeting Ended Button */}
+                        {!registration.endtime && (
+                          <Button
+                            size="sm"
+                            variant="outline"
+                            onClick={() => handleMeetingEnded(registration)}
+                            disabled={endingMeetingId === registration.id}
+                            className="h-8 px-2 border-2 border-emerald-500 text-emerald-400 hover:bg-emerald-500 hover:text-white text-xs"
+                            title="Mark meeting as ended"
+                          >
+                            <CheckCircle className="h-4 w-4" />
                           </Button>
                         )}
                       </div>

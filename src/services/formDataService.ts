@@ -11,6 +11,8 @@ export interface FormEntry {
   purpose: string;
   otherPurpose: string;
   staffEmail: string;
+  staffEmails: string[];
+  extraInfo: string;
   address: {
     city: string;
     state: string;
@@ -33,6 +35,8 @@ export interface FormDataInput {
   purpose: string;
   otherPurpose: string;
   staffEmail: string;
+  staffEmails: string[];
+  extraInfo: string;
   address: {
     city: string;
     state: string;
@@ -54,6 +58,14 @@ export const saveFormData = async (formData: FormDataInput): Promise<FormEntry> 
 
     const purposeValue = formData.purpose === "other" ? formData.otherPurpose : formData.purpose;
 
+    // Combine staff emails into comma-separated string
+    const allStaffEmails = formData.staffEmails && formData.staffEmails.length > 0
+      ? formData.staffEmails.filter(e => e.trim())
+      : (formData.staffEmail ? [formData.staffEmail] : []);
+    const emailValue = formData.purpose === "meeting_school_staff" && allStaffEmails.length > 0
+      ? allStaffEmails.join(', ')
+      : null;
+
     const visitorData: VisitorFormData = {
       visitorname: formData.visitorName,
       phonenumber: formData.phoneNumber,
@@ -65,9 +77,10 @@ export const saveFormData = async (formData: FormDataInput): Promise<FormEntry> 
       signature: formData.signature,
       starttime: formData.startTime,
       endtime: formData.endTime,
-      email: formData.purpose === "meeting_school_staff" ? formData.staffEmail : null,
+      email: emailValue,
       id_type: formData.idType,
       id_number: formData.idNumber,
+      extra_info: formData.extraInfo || null,
     };
 
     console.log("Calling saveVisitorRegistration with:", visitorData);
@@ -83,6 +96,8 @@ export const saveFormData = async (formData: FormDataInput): Promise<FormEntry> 
       purpose: savedData.purpose,
       otherPurpose: formData.purpose === "other" ? formData.otherPurpose : "",
       staffEmail: formData.purpose === "meeting_school_staff" ? formData.staffEmail : "",
+      staffEmails: allStaffEmails,
+      extraInfo: formData.extraInfo || "",
       address: formData.address,
       picture: savedData.picture_url,
       signature: savedData.signature_url,
@@ -93,32 +108,32 @@ export const saveFormData = async (formData: FormDataInput): Promise<FormEntry> 
       visitCount: 1
     };
 
-    // Send email notification if meeting school staff
-    if (formData.purpose === "meeting_school_staff" && formData.staffEmail) {
-      try {
-        console.log("Sending staff notification email to:", formData.staffEmail);
-        const emailResponse = await supabase.functions.invoke('send-staff-notification', {
-          body: {
-            staffEmail: formData.staffEmail,
-            visitorName: formData.visitorName,
-            purpose: purposeValue,
-            numberOfPeople: formData.numberOfPeople,
-            startTime: formData.startTime,
-            phoneNumber: formData.phoneNumber,
-            address: `${formData.address.city}, ${formData.address.state}, ${formData.address.country}`,
-            pictureUrl: savedData.picture_url,
-            people: formData.people
+    // Send email notification to all staff members
+    if (formData.purpose === "meeting_school_staff" && allStaffEmails.length > 0) {
+      for (const staffEmail of allStaffEmails) {
+        try {
+          console.log("Sending staff notification email to:", staffEmail);
+          const emailResponse = await supabase.functions.invoke('send-staff-notification', {
+            body: {
+              staffEmail,
+              visitorName: formData.visitorName,
+              purpose: purposeValue,
+              numberOfPeople: formData.numberOfPeople,
+              startTime: formData.startTime,
+              phoneNumber: formData.phoneNumber,
+              address: `${formData.address.city}, ${formData.address.state}, ${formData.address.country}`,
+              pictureUrl: savedData.picture_url,
+              people: formData.people
+            }
+          });
+          if (emailResponse.error) {
+            console.error("Error sending staff notification:", emailResponse.error);
+          } else {
+            console.log("Staff notification sent successfully to:", staffEmail);
           }
-        });
-        
-        if (emailResponse.error) {
-          console.error("Error sending staff notification:", emailResponse.error);
-        } else {
-          console.log("Staff notification sent successfully");
+        } catch (emailError) {
+          console.error("Failed to send staff notification email:", emailError);
         }
-      } catch (emailError) {
-        console.error("Failed to send staff notification email:", emailError);
-        // Don't throw error - we don't want to fail the registration if email fails
       }
     }
 

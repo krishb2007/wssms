@@ -8,7 +8,7 @@ const corsHeaders = {
 };
 
 interface ResponseRequest {
-  action: 'approve' | 'deny';
+  action: 'approve' | 'deny' | 'meeting_ended';
   visitorName: string;
   staffEmail: string;
   registrationTime: string;
@@ -22,7 +22,7 @@ const handler = async (req: Request): Promise<Response> => {
 
   try {
     const url = new URL(req.url);
-    const action = url.searchParams.get('action') as 'approve' | 'deny';
+    const action = url.searchParams.get('action') as 'approve' | 'deny' | 'meeting_ended';
     const visitorName = url.searchParams.get('visitorName');
     const staffEmail = url.searchParams.get('staffEmail');
     const registrationTime = url.searchParams.get('registrationTime');
@@ -39,8 +39,9 @@ const handler = async (req: Request): Promise<Response> => {
       timeStyle: 'short'
     });
 
-    const actionText = action === 'approve' ? 'APPROVED' : 'DENIED';
-    const statusColor = action === 'approve' ? '#28a745' : '#dc3545';
+    const actionTextMap: Record<string, string> = { approve: 'APPROVED', deny: 'DENIED', meeting_ended: 'MEETING ENDED' };
+    const actionText = actionTextMap[action] || action.toUpperCase();
+    const statusColor = action === 'approve' ? '#28a745' : action === 'deny' ? '#dc3545' : '#6c757d';
 
     // Send confirmation email to security
     const emailHtml = `
@@ -60,7 +61,9 @@ const handler = async (req: Request): Promise<Response> => {
           <p><strong>Next Steps:</strong></p>
           ${action === 'approve' ? 
             '<p style="color: #28a745;">✓ The visitor request has been approved. Please coordinate with the visitor for their entry.</p>' :
-            '<p style="color: #dc3545;">✗ The visitor request has been denied. Please inform the visitor if necessary.</p>'
+            action === 'deny' ?
+            '<p style="color: #dc3545;">✗ The visitor request has been denied. Please inform the visitor if necessary.</p>' :
+            '<p style="color: #6c757d;">⏹ The meeting has ended. The visitor should be escorted out.</p>'
           }
         </div>
         

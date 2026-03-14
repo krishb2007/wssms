@@ -7,7 +7,7 @@ import {
   DialogTitle,
   DialogDescription,
 } from "@/components/ui/dialog";
-import { Image, FileSignature, User, Clock } from "lucide-react";
+import { Image, FileSignature, User, Clock, Mail, Info } from "lucide-react";
 import { VisitorRegistration } from './types';
 
 interface VisitorDetailsModalProps {
@@ -23,24 +23,16 @@ export const VisitorDetailsModal: React.FC<VisitorDetailsModalProps> = ({
 }) => {
   const formatDate = (dateString: string | null) => {
     if (!dateString) return 'N/A';
-    
-    // Parse the datetime string directly without Date object to avoid timezone conversions
-    // Expected format: "2025-11-25T09:19:00" or with timezone info
-    const cleanString = dateString.split('.')[0].replace('Z', ''); // Remove milliseconds and Z
+    const cleanString = dateString.split('.')[0].replace('Z', '');
     const parts = cleanString.split('T');
     if (parts.length !== 2) return 'Invalid date';
-    
     const [datePart, timePart] = parts;
     const [year, month, day] = datePart.split('-').map(Number);
     const [hours24, minutes] = timePart.split(':').map(Number);
-    
-    // Convert to 12-hour format
     const hours12 = hours24 % 12 || 12;
     const ampm = hours24 >= 12 ? 'PM' : 'AM';
-    
     const monthNames = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
     const monthName = monthNames[month - 1];
-    
     return `${monthName} ${day}, ${year}, ${hours12}:${minutes.toString().padStart(2, '0')} ${ampm}`;
   };
 
@@ -48,9 +40,7 @@ export const VisitorDetailsModal: React.FC<VisitorDetailsModalProps> = ({
     try {
       const people = JSON.parse(peopleString);
       return people.map((person: any) => {
-        if (person.role) {
-          return `${person.name} (${person.role})`;
-        }
+        if (person.role) return `${person.name} (${person.role})`;
         return person.name;
       }).join(', ');
     } catch {
@@ -60,13 +50,9 @@ export const VisitorDetailsModal: React.FC<VisitorDetailsModalProps> = ({
 
   const formatPurpose = (purpose: string): string => {
     const purposeMap: Record<string, string> = {
-      visit: "Visit",
-      work: "Work",
-      tourism: "Tourism",
-      sports: "Sports",
-      meeting: "Meeting",
-      official_visit: "Official Visit",
-      student_visit: "Student Visit"
+      visit: "Visit", work: "Work", tourism: "Tourism", sports: "Sports",
+      meeting: "Meeting", official_visit: "Official Visit", student_visit: "Student Visit",
+      meeting_school_staff: "Meeting School Staff"
     };
     return purposeMap[purpose] || (purpose.charAt(0).toUpperCase() + purpose.slice(1));
   };
@@ -76,6 +62,9 @@ export const VisitorDetailsModal: React.FC<VisitorDetailsModalProps> = ({
     if (url.startsWith('http') || url.startsWith('blob:')) return url;
     return `https://efxeohyxpnwewhqwlahw.supabase.co/storage/v1/object/public/${url}`;
   };
+
+  // Parse staff emails from email field (comma-separated)
+  const staffEmails = registration.email ? registration.email.split(',').map(e => e.trim()).filter(Boolean) : [];
 
   return (
     <Dialog open={isOpen} onOpenChange={onOpenChange}>
@@ -92,7 +81,7 @@ export const VisitorDetailsModal: React.FC<VisitorDetailsModalProps> = ({
           </DialogHeader>
           
           <div className="p-6">
-            {/* Top Row: Visitor Information (left) and Photo (right) */}
+            {/* Top Row */}
             <div className="grid grid-cols-2 gap-8 mb-8">
               {/* Visitor Information */}
               <div className="bg-gray-700 rounded-lg p-6 border border-gray-600">
@@ -121,6 +110,12 @@ export const VisitorDetailsModal: React.FC<VisitorDetailsModalProps> = ({
                     <p className="text-sm text-white font-medium">Address</p>
                     <p className="text-white font-bold">{registration.address}</p>
                   </div>
+                  {registration.id_type && (
+                    <div>
+                      <p className="text-sm text-white font-medium">ID ({registration.id_type === 'aadhaar' ? 'Aadhaar' : 'Passport'})</p>
+                      <p className="text-white font-bold">{registration.id_number || 'N/A'}</p>
+                    </div>
+                  )}
                 </div>
               </div>
               
@@ -152,8 +147,8 @@ export const VisitorDetailsModal: React.FC<VisitorDetailsModalProps> = ({
               </div>
             </div>
             
-            {/* Bottom Row: Visit Details (left) and Digital Signature (right) */}
-            <div className="grid grid-cols-2 gap-8">
+            {/* Bottom Row */}
+            <div className="grid grid-cols-2 gap-8 mb-8">
               {/* Visit Details */}
               <div className="bg-gray-700 rounded-lg p-6 border border-gray-600">
                 <h3 className="text-lg font-bold text-white mb-4 flex items-center">
@@ -207,6 +202,40 @@ export const VisitorDetailsModal: React.FC<VisitorDetailsModalProps> = ({
                 )}
               </div>
             </div>
+
+            {/* Staff Members & Extra Info Row */}
+            {(staffEmails.length > 0 || registration.extra_info) && (
+              <div className="grid grid-cols-2 gap-8">
+                {/* Staff Members */}
+                {staffEmails.length > 0 && (
+                  <div className="bg-gray-700 rounded-lg p-6 border border-gray-600">
+                    <h3 className="text-lg font-bold text-white mb-4 flex items-center">
+                      <Mail className="h-5 w-5 mr-2" />
+                      Staff Members Meeting
+                    </h3>
+                    <ul className="space-y-2">
+                      {staffEmails.map((email, idx) => (
+                        <li key={idx} className="flex items-center text-white font-bold">
+                          <Mail className="h-4 w-4 mr-2 text-amber-400 flex-shrink-0" />
+                          {email}
+                        </li>
+                      ))}
+                    </ul>
+                  </div>
+                )}
+
+                {/* Extra Info */}
+                {registration.extra_info && (
+                  <div className="bg-gray-700 rounded-lg p-6 border border-gray-600">
+                    <h3 className="text-lg font-bold text-white mb-4 flex items-center">
+                      <Info className="h-5 w-5 mr-2" />
+                      Extra Visitor Information
+                    </h3>
+                    <p className="text-white font-bold whitespace-pre-wrap">{registration.extra_info}</p>
+                  </div>
+                )}
+              </div>
+            )}
           </div>
         </div>
       </DialogContent>
