@@ -125,7 +125,7 @@ export const saveFormData = async (formData: FormDataInput): Promise<FormEntry> 
               pictureUrl: savedData.picture_url,
               people: formData.people
             }
-          
+          });
           if (emailResponse.error) {
             console.error("Error sending staff notification:", emailResponse.error);
           } else {
