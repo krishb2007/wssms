@@ -13,7 +13,6 @@ interface CombinedContactAddressFormProps {
     phoneNumber: string;
     idType: string;
     idNumber: string;
-    extraInfo: string;
     address: {
       city: string;
       state: string;
@@ -24,7 +23,6 @@ interface CombinedContactAddressFormProps {
     phoneNumber: string;
     idType: string;
     idNumber: string;
-    extraInfo: string;
     address: { city: string; state: string; country: string } 
   }>) => void;
   nextStep: () => void;
