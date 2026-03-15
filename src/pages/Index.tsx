@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import WelcomePage from "@/components/WelcomePage";
 import CombinedNamePeopleForm from "@/components/CombinedNamePeopleForm";
 import CombinedPurposeDurationForm from "@/components/CombinedPurposeDurationForm";
@@ -16,6 +16,7 @@ const Index = () => {
   const [step, setStep] = useState(1);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [submissionError, setSubmissionError] = useState<string | null>(null);
+  const [entryLocation, setEntryLocation] = useState<string | null>(null);
   const [formData, setFormData] = useState<FormDataInput & {acceptedPolicy?: boolean}>({
     visitorName: "",
     schoolName: "Woodstock School",
@@ -39,7 +40,29 @@ const Index = () => {
     picture: null as File | string | null,
     signature: null as File | string | null,
     acceptedPolicy: false,
+    meetingStaffStartTime: null,
+    meetingStaffEndTime: null,
+    entryLocation: null,
   });
+
+  // Capture GPS location on mount
+  useEffect(() => {
+    if ('geolocation' in navigator) {
+      navigator.geolocation.getCurrentPosition(
+        (position) => {
+          const loc = `${position.coords.latitude.toFixed(6)}, ${position.coords.longitude.toFixed(6)}`;
+          setEntryLocation(loc);
+        },
+        (err) => {
+          console.log("Geolocation not available:", err.message);
+          setEntryLocation("Woodstock School, Mussoorie");
+        },
+        { timeout: 10000 }
+      );
+    } else {
+      setEntryLocation("Woodstock School, Mussoorie");
+    }
+  }, []);
 
   const updateFormData = (data: Partial<FormDataInput>) => {
     setFormData((prev) => ({ ...prev, ...data }));
@@ -47,16 +70,14 @@ const Index = () => {
 
   const nextStep = () => {
     if (step < 7) {
-      let nextStepValue = step + 1;
-      setStep(nextStepValue);
+      setStep(step + 1);
       window.scrollTo(0, 0);
     }
   };
 
   const prevStep = () => {
     if (step > 1) {
-      let prevStepValue = step - 1;
-      setStep(prevStepValue);
+      setStep(step - 1);
       window.scrollTo(0, 0);
     }
   };
@@ -65,13 +86,13 @@ const Index = () => {
     try {
       setIsSubmitting(true);
       setSubmissionError(null);
-      console.log("Submitting form data:", formData);
       
-      // Save form data to Supabase
-      const savedEntry = await saveFormData(formData);
+      const submitData = { ...formData, entryLocation };
+      console.log("Submitting form data:", submitData);
+      
+      const savedEntry = await saveFormData(submitData);
       console.log("Form data saved:", savedEntry);
       
-      // Notify admin about the new entry
       notifyAdmin(savedEntry);
       
       toast({
@@ -79,12 +100,10 @@ const Index = () => {
         description: "Your registration has been submitted successfully!",
       });
       
-      // Request notification permission for demo purposes
       if ('Notification' in window && Notification.permission === 'default') {
         Notification.requestPermission();
       }
       
-      // Reset form after submission
       setStep(1);
       setFormData({
         visitorName: "",
@@ -109,17 +128,16 @@ const Index = () => {
         picture: null,
         signature: null,
         acceptedPolicy: false,
+        meetingStaffStartTime: null,
+        meetingStaffEndTime: null,
+        entryLocation: null,
       });
     } catch (error) {
       console.error("Error submitting form:", error);
-      
-      // Extract meaningful error message if available
       const errorMessage = error instanceof Error 
         ? error.message 
         : (error as any)?.message || 'There was a problem submitting your registration.';
-      
       setSubmissionError(errorMessage);
-      
       toast({
         title: "Error",
         description: "There was a problem submitting your registration.",
@@ -148,113 +166,39 @@ const Index = () => {
             <AlertTitle>Error</AlertTitle>
             <AlertDescription>
               {submissionError}
-              <div className="mt-2">
-                Please try again or contact support.
-              </div>
+              <div className="mt-2">Please try again or contact support.</div>
             </AlertDescription>
           </Alert>
           <div className="flex justify-center space-x-4 pt-4">
-            <button 
-              onClick={() => setSubmissionError(null)}
-              className="px-4 py-2 bg-gray-200 rounded hover:bg-gray-300"
-            >
-              Back to Form
-            </button>
-            <button 
-              onClick={handleSubmit}
-              className="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700"
-            >
-              Try Again
-            </button>
+            <button onClick={() => setSubmissionError(null)} className="px-4 py-2 bg-gray-200 rounded hover:bg-gray-300">Back to Form</button>
+            <button onClick={handleSubmit} className="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700">Try Again</button>
           </div>
         </div>
       );
     }
 
     switch (step) {
-      case 1:
-        return <WelcomePage nextStep={nextStep} />;
-      case 2:
-        return (
-          <CombinedNamePeopleForm
-            formData={formData}
-            updateFormData={updateFormData}
-            nextStep={nextStep}
-            prevStep={prevStep}
-          />
-        );
-      case 3:
-        return (
-          <CombinedPurposeDurationForm
-            formData={formData}
-            updateFormData={updateFormData}
-            nextStep={nextStep}
-            prevStep={prevStep}
-          />
-        );
-      case 4:
-        return (
-          <CombinedContactAddressForm
-            formData={formData}
-            updateFormData={updateFormData}
-            nextStep={nextStep}
-            prevStep={prevStep}
-          />
-        );
-      case 5:
-        return (
-          <UploadForm
-            formData={formData}
-            updateFormData={updateFormData}
-            nextStep={nextStep}
-            prevStep={prevStep}
-          />
-        );
-      case 6:
-        return (
-          <SignatureForm
-            formData={formData}
-            updateFormData={updateFormData}
-            nextStep={nextStep}
-            prevStep={prevStep}
-          />
-        );
-      case 7:
-        return (
-          <ConfirmationPage
-            formData={formData}
-            prevStep={prevStep}
-            handleSubmit={handleSubmit}
-          />
-        );
-      default:
-        return null;
+      case 1: return <WelcomePage nextStep={nextStep} />;
+      case 2: return <CombinedNamePeopleForm formData={formData} updateFormData={updateFormData} nextStep={nextStep} prevStep={prevStep} />;
+      case 3: return <CombinedPurposeDurationForm formData={formData} updateFormData={updateFormData} nextStep={nextStep} prevStep={prevStep} />;
+      case 4: return <CombinedContactAddressForm formData={formData} updateFormData={updateFormData} nextStep={nextStep} prevStep={prevStep} />;
+      case 5: return <UploadForm formData={formData} updateFormData={updateFormData} nextStep={nextStep} prevStep={prevStep} />;
+      case 6: return <SignatureForm formData={formData} updateFormData={updateFormData} nextStep={nextStep} prevStep={prevStep} />;
+      case 7: return <ConfirmationPage formData={formData} prevStep={prevStep} handleSubmit={handleSubmit} />;
+      default: return null;
     }
   };
 
   return (
-    <div 
-      className="min-h-screen bg-cover bg-center"
-      style={{
-        backgroundImage: "url('/lovable-uploads/1221534f-c2c7-4956-a2d9-7904946b648b.png')",
-        backgroundAttachment: "fixed"
-      }}
-    >
+    <div className="min-h-screen bg-cover bg-center" style={{ backgroundImage: "url('/lovable-uploads/1221534f-c2c7-4956-a2d9-7904946b648b.png')", backgroundAttachment: "fixed" }}>
       <div className="min-h-screen bg-black/40 flex items-center justify-center py-12 px-4 sm:px-6 lg:px-8">
         <div className="max-w-md w-full">
           <div className="bg-white/95 backdrop-blur-sm p-8 rounded-lg shadow-xl">
             <div className="mb-6 text-center">
-              <h2 className="text-3xl font-extrabold text-gray-900">
-                Campus Registration Form
-              </h2>
-              <p className="mt-2 text-sm text-gray-600">
-                Step {step} of 7: {getStepName(step)}
-              </p>
+              <h2 className="text-3xl font-extrabold text-gray-900">Campus Registration Form</h2>
+              <p className="mt-2 text-sm text-gray-600">Step {step} of 7: {getStepName(step)}</p>
               <div className="w-full bg-gray-200 h-2 mt-4 rounded-full">
-                <div 
-                  className="bg-blue-600 h-2 rounded-full transition-all duration-300"
-                  style={{ width: `${(step / 7) * 100}%` }}
-                ></div>
+                <div className="bg-blue-600 h-2 rounded-full transition-all duration-300" style={{ width: `${(step / 7) * 100}%` }}></div>
               </div>
             </div>
             {renderForm()}
@@ -267,22 +211,14 @@ const Index = () => {
 
 const getStepName = (step: number): string => {
   switch (step) {
-    case 1:
-      return "Welcome to Woodstock School";
-    case 2:
-      return "Visitor Information";
-    case 3:
-      return "Purpose & Duration";
-    case 4:
-      return "Contact & Address";
-    case 5:
-      return "Upload Photo";
-    case 6:
-      return "Signature";
-    case 7:
-      return "Review & Submit";
-    default:
-      return "";
+    case 1: return "Welcome to Woodstock School";
+    case 2: return "Visitor Information";
+    case 3: return "Purpose & Duration";
+    case 4: return "Contact & Address";
+    case 5: return "Upload Photo";
+    case 6: return "Signature";
+    case 7: return "Review & Submit";
+    default: return "";
   }
 };
 

@@ -7,7 +7,7 @@ import {
   DialogTitle,
   DialogDescription,
 } from "@/components/ui/dialog";
-import { Image, FileSignature, User, Clock, Mail, Info } from "lucide-react";
+import { Image, FileSignature, User, Clock, Mail, MapPin } from "lucide-react";
 import { VisitorRegistration } from './types';
 
 interface VisitorDetailsModalProps {
@@ -63,8 +63,13 @@ export const VisitorDetailsModal: React.FC<VisitorDetailsModalProps> = ({
     return `https://efxeohyxpnwewhqwlahw.supabase.co/storage/v1/object/public/${url}`;
   };
 
-  // Parse staff emails from email field (comma-separated)
   const staffEmails = registration.email ? registration.email.split(',').map(e => e.trim()).filter(Boolean) : [];
+
+  const getMeetingStatus = () => {
+    if (registration.meeting_staff_end_time) return 'Meeting Ended';
+    if (registration.meeting_staff_start_time) return 'In Meeting';
+    return null;
+  };
 
   return (
     <Dialog open={isOpen} onOpenChange={onOpenChange}>
@@ -116,6 +121,15 @@ export const VisitorDetailsModal: React.FC<VisitorDetailsModalProps> = ({
                       <p className="text-white font-bold">{registration.id_number || 'N/A'}</p>
                     </div>
                   )}
+                  {registration.entry_location && (
+                    <div>
+                      <p className="text-sm text-white font-medium">Entry Location</p>
+                      <p className="text-white font-bold flex items-center">
+                        <MapPin className="h-4 w-4 mr-1 text-amber-400" />
+                        {registration.entry_location}
+                      </p>
+                    </div>
+                  )}
                 </div>
               </div>
               
@@ -161,12 +175,12 @@ export const VisitorDetailsModal: React.FC<VisitorDetailsModalProps> = ({
                     <p className="text-white font-bold">{parsePeople(registration.people)}</p>
                   </div>
                   <div>
-                    <p className="text-sm text-white font-medium">Start Time</p>
+                    <p className="text-sm text-white font-medium">Visit Start Time</p>
                     <p className="text-white font-bold">{formatDate(registration.starttime || registration.created_at)}</p>
                   </div>
                   <div>
-                    <p className="text-sm text-white font-medium">End Time</p>
-                    <p className="text-white font-bold">{formatDate(registration.endtime)}</p>
+                    <p className="text-sm text-white font-medium">Visitor Exit Time</p>
+                    <p className="text-white font-bold">{registration.endtime ? formatDate(registration.endtime) : 'Still on campus'}</p>
                   </div>
                   <div>
                     <p className="text-sm text-white font-medium">Registered On</p>
@@ -203,10 +217,9 @@ export const VisitorDetailsModal: React.FC<VisitorDetailsModalProps> = ({
               </div>
             </div>
 
-            {/* Staff Members & Extra Info Row */}
-            {(staffEmails.length > 0 && (
-              <div className="grid grid-cols-2 gap-8">
-                {/* Staff Members */}
+            {/* Staff Members & Meeting Duration Row */}
+            {(staffEmails.length > 0 || registration.meeting_staff_start_time) && (
+              <div className="grid grid-cols-2 gap-8 mb-8">
                 {staffEmails.length > 0 && (
                   <div className="bg-gray-700 rounded-lg p-6 border border-gray-600">
                     <h3 className="text-lg font-bold text-white mb-4 flex items-center">
@@ -221,6 +234,37 @@ export const VisitorDetailsModal: React.FC<VisitorDetailsModalProps> = ({
                         </li>
                       ))}
                     </ul>
+                    {getMeetingStatus() && (
+                      <div className="mt-4 pt-3 border-t border-gray-600">
+                        <span className={`inline-flex items-center px-3 py-1 rounded-full text-xs font-bold ${
+                          registration.meeting_staff_end_time 
+                            ? 'bg-red-100 text-red-800' 
+                            : 'bg-green-100 text-green-800'
+                        }`}>
+                          {getMeetingStatus()}
+                        </span>
+                      </div>
+                    )}
+                  </div>
+                )}
+                
+                {/* Meeting Duration */}
+                {(registration.meeting_staff_start_time || registration.meeting_staff_end_time) && (
+                  <div className="bg-gray-700 rounded-lg p-6 border border-gray-600">
+                    <h3 className="text-lg font-bold text-white mb-4 flex items-center">
+                      <Clock className="h-5 w-5 mr-2" />
+                      Meeting Duration
+                    </h3>
+                    <div className="space-y-3">
+                      <div>
+                        <p className="text-sm text-white font-medium">Meeting Start</p>
+                        <p className="text-white font-bold">{formatDate(registration.meeting_staff_start_time)}</p>
+                      </div>
+                      <div>
+                        <p className="text-sm text-white font-medium">Meeting End</p>
+                        <p className="text-white font-bold">{registration.meeting_staff_end_time ? formatDate(registration.meeting_staff_end_time) : 'Ongoing'}</p>
+                      </div>
+                    </div>
                   </div>
                 )}
               </div>
