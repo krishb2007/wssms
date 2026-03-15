@@ -16,4 +16,7 @@ export interface VisitorRegistration {
   email: string | null;
   id_type: string | null;
   id_number: string | null;
+  meeting_staff_start_time: string | null;
+  meeting_staff_end_time: string | null;
+  entry_location: string | null;
 }

@@ -12,7 +12,6 @@ export interface FormEntry {
   otherPurpose: string;
   staffEmail: string;
   staffEmails: string[];
-  extraInfo: string;
   address: {
     city: string;
     state: string;
@@ -50,6 +49,9 @@ export interface FormDataInput {
   idType: string;
   idNumber: string;
   acceptedPolicy?: boolean;
+  meetingStaffStartTime?: string | null;
+  meetingStaffEndTime?: string | null;
+  entryLocation?: string | null;
 }
 
 export const saveFormData = async (formData: FormDataInput): Promise<FormEntry> => {
@@ -58,7 +60,6 @@ export const saveFormData = async (formData: FormDataInput): Promise<FormEntry> 
 
     const purposeValue = formData.purpose === "other" ? formData.otherPurpose : formData.purpose;
 
-    // Combine staff emails into comma-separated string
     const allStaffEmails = formData.staffEmails && formData.staffEmails.length > 0
       ? formData.staffEmails.filter(e => e.trim())
       : (formData.staffEmail ? [formData.staffEmail] : []);
@@ -80,7 +81,9 @@ export const saveFormData = async (formData: FormDataInput): Promise<FormEntry> 
       email: emailValue,
       id_type: formData.idType,
       id_number: formData.idNumber,
-
+      meeting_staff_start_time: formData.meetingStaffStartTime || (formData.purpose === "meeting_school_staff" ? formData.startTime : null),
+      meeting_staff_end_time: formData.meetingStaffEndTime || null,
+      entry_location: formData.entryLocation || null,
     };
 
     console.log("Calling saveVisitorRegistration with:", visitorData);
@@ -140,8 +143,6 @@ export const saveFormData = async (formData: FormDataInput): Promise<FormEntry> 
     return savedEntry;
   } catch (error) {
     console.error("Error saving form data:", error);
-    
-    // Provide more specific error messages
     if (error instanceof Error) {
       throw new Error(`Registration failed: ${error.message}`);
     } else {

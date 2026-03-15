@@ -43,7 +43,7 @@ export const VisitorsTable: React.FC<VisitorsTableProps> = ({
   const [endingMeetingId, setEndingMeetingId] = useState<string | null>(null);
 
   const handleMeetingEnded = async (registration: VisitorRegistration) => {
-    if (registration.endtime) return;
+    if (registration.meeting_staff_end_time) return;
     setEndingMeetingId(registration.id);
     try {
       const now = new Date();
@@ -54,16 +54,12 @@ export const VisitorsTable: React.FC<VisitorsTableProps> = ({
 
       const { error } = await supabase
         .from('visitor_registrations')
-        .update({ endtime: istString })
+        .update({ meeting_staff_end_time: istString } as any)
         .eq('id', registration.id);
 
       if (error) throw error;
 
-      onStartEdit(registration);
-      onEditEndTimeChange(istString.slice(0, 16));
-      onSaveEdit(registration.id);
-
-      toast({ title: "Meeting Ended", description: `Meeting with ${registration.visitorname} has been marked as concluded.` });
+      toast({ title: "Meeting Ended", description: `Meeting with ${registration.visitorname} has been marked as concluded. Visitor is still on campus.` });
       onRefresh();
     } catch (err) {
       toast({ title: "Error", description: "Failed to end meeting", variant: "destructive" });
@@ -71,26 +67,19 @@ export const VisitorsTable: React.FC<VisitorsTableProps> = ({
       setEndingMeetingId(null);
     }
   };
+
   const formatDate = (dateString: string | null): string => {
     if (!dateString) return 'Not set';
-    
-    // Parse the datetime string directly without Date object to avoid timezone conversions
-    // Expected format: "2025-11-25T09:19:00" or with timezone info
-    const cleanString = dateString.split('.')[0].replace('Z', ''); // Remove milliseconds and Z
+    const cleanString = dateString.split('.')[0].replace('Z', '');
     const parts = cleanString.split('T');
     if (parts.length !== 2) return 'Invalid date';
-    
     const [datePart, timePart] = parts;
     const [year, month, day] = datePart.split('-').map(Number);
     const [hours24, minutes] = timePart.split(':').map(Number);
-    
-    // Convert to 12-hour format
     const hours12 = hours24 % 12 || 12;
     const ampm = hours24 >= 12 ? 'PM' : 'AM';
-    
     const monthNames = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
     const monthName = monthNames[month - 1];
-    
     return `${monthName} ${day}, ${year}, ${hours12}:${minutes.toString().padStart(2, '0')} ${ampm}`;
   };
 
@@ -98,9 +87,7 @@ export const VisitorsTable: React.FC<VisitorsTableProps> = ({
     try {
       const people = JSON.parse(peopleString);
       return people.map((person: any) => {
-        if (person.role) {
-          return `${person.name} (${person.role})`;
-        }
+        if (person.role) return `${person.name} (${person.role})`;
         return person.name;
       }).join(', ');
     } catch {
@@ -110,13 +97,9 @@ export const VisitorsTable: React.FC<VisitorsTableProps> = ({
 
   const formatPurpose = (purpose: string): string => {
     const purposeMap: Record<string, string> = {
-      visit: "Visit",
-      work: "Work",
-      tourism: "Tourism",
-      sports: "Sports",
-      meeting: "Meeting",
-      official_visit: "Official Visit",
-      student_visit: "Student Visit"
+      visit: "Visit", work: "Work", tourism: "Tourism", sports: "Sports",
+      meeting: "Meeting", official_visit: "Official Visit", student_visit: "Student Visit",
+      meeting_school_staff: "Meeting School Staff"
     };
     return purposeMap[purpose] || (purpose.charAt(0).toUpperCase() + purpose.slice(1));
   };
@@ -126,8 +109,22 @@ export const VisitorsTable: React.FC<VisitorsTableProps> = ({
       return (
         <span className="inline-flex items-center px-2 py-1 rounded-full text-xs font-bold bg-red-100 text-red-800 border border-red-200">
           <div className="w-1.5 h-1.5 bg-red-500 rounded-full mr-1.5"></div>
-          Completed
+          Exited
         </span>
+      );
+    }
+    if (registration.meeting_staff_end_time) {
+      return (
+        <div className="space-y-1">
+          <span className="inline-flex items-center px-2 py-1 rounded-full text-xs font-bold bg-amber-100 text-amber-800 border border-amber-200">
+            <div className="w-1.5 h-1.5 bg-amber-500 rounded-full mr-1.5"></div>
+            Meeting Ended
+          </span>
+          <span className="inline-flex items-center px-2 py-1 rounded-full text-xs font-bold bg-green-100 text-green-800 border border-green-200">
+            <div className="w-1.5 h-1.5 bg-green-500 rounded-full mr-1.5 animate-pulse"></div>
+            On Campus
+          </span>
+        </div>
       );
     }
     return (
@@ -159,6 +156,7 @@ export const VisitorsTable: React.FC<VisitorsTableProps> = ({
                   <TableHead className="font-bold text-amber-400 border-r border-gray-600">Purpose</TableHead>
                   <TableHead className="font-bold text-amber-400 border-r border-gray-600">People</TableHead>
                   <TableHead className="font-bold text-amber-400 border-r border-gray-600">Visit Duration</TableHead>
+                  <TableHead className="font-bold text-amber-400 border-r border-gray-600">Meeting Duration</TableHead>
                   <TableHead className="font-bold text-amber-400 border-r border-gray-600">Status</TableHead>
                   <TableHead className="font-bold text-amber-400">Actions</TableHead>
                 </TableRow>
@@ -181,13 +179,17 @@ export const VisitorsTable: React.FC<VisitorsTableProps> = ({
                           </div>
                         </div>
                         <div>
-                          <div className="text-sm font-bold text-white">
-                            {registration.visitorname}
-                          </div>
+                          <div className="text-sm font-bold text-white">{registration.visitorname}</div>
                           <div className="text-xs text-white font-medium flex items-center">
                             <Building className="h-3 w-3 mr-1" />
                             {registration.schoolname}
                           </div>
+                          {registration.entry_location && (
+                            <div className="text-xs text-amber-400 font-medium flex items-center mt-0.5">
+                              <MapPin className="h-3 w-3 mr-1" />
+                              {registration.entry_location}
+                            </div>
+                          )}
                         </div>
                       </div>
                     </TableCell>
@@ -230,7 +232,7 @@ export const VisitorsTable: React.FC<VisitorsTableProps> = ({
                       <div className="space-y-1">
                         <div className="flex items-center text-xs text-white font-medium">
                           <Clock className="h-3 w-3 mr-1" />
-                          Started: {formatDate(registration.starttime || registration.created_at)}
+                          In: {formatDate(registration.starttime || registration.created_at)}
                         </div>
                         {editingId === registration.id ? (
                           <div className="space-y-1">
@@ -240,18 +242,34 @@ export const VisitorsTable: React.FC<VisitorsTableProps> = ({
                               onChange={(e) => onEditEndTimeChange(e.target.value)}
                               className="w-52 text-xs bg-gray-700 border-gray-600 text-white font-medium"
                             />
-                            {saving && (
-                              <div className="text-amber-400 text-xs font-medium">
-                                Saving...
-                              </div>
-                            )}
+                            {saving && <div className="text-amber-400 text-xs font-medium">Saving...</div>}
                           </div>
                         ) : (
                           <div className="text-xs text-white font-medium">
-                            Ended: {registration.endtime ? formatDate(registration.endtime) : 'Active'}
+                            Out: {registration.endtime ? formatDate(registration.endtime) : 'On campus'}
                           </div>
                         )}
                       </div>
+                    </TableCell>
+                    {/* Meeting Duration Column */}
+                    <TableCell className="py-4 border-r border-gray-700">
+                      {registration.purpose === 'meeting_school_staff' ? (
+                        <div className="space-y-1">
+                          <div className="text-xs text-white font-medium">
+                            Start: {formatDate(registration.meeting_staff_start_time || registration.starttime)}
+                          </div>
+                          <div className="text-xs text-white font-medium">
+                            End: {registration.meeting_staff_end_time ? formatDate(registration.meeting_staff_end_time) : 'Ongoing'}
+                          </div>
+                          {registration.meeting_staff_end_time && (
+                            <span className="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-bold bg-amber-100 text-amber-800">
+                              Meeting Ended
+                            </span>
+                          )}
+                        </div>
+                      ) : (
+                        <div className="text-xs text-white/50 font-medium">N/A</div>
+                      )}
                     </TableCell>
                     <TableCell className="py-4 border-r border-gray-700">
                       {getStatusBadge(registration)}
@@ -298,15 +316,15 @@ export const VisitorsTable: React.FC<VisitorsTableProps> = ({
                           </Button>
                         )}
                         
-                        {/* Meeting Ended Button */}
-                        {!registration.endtime && (
+                        {/* Meeting Ended Button - only for staff meetings without ended meeting */}
+                        {registration.purpose === 'meeting_school_staff' && !registration.meeting_staff_end_time && (
                           <Button
                             size="sm"
                             variant="outline"
                             onClick={() => handleMeetingEnded(registration)}
                             disabled={endingMeetingId === registration.id}
                             className="h-8 px-2 border-2 border-emerald-500 text-emerald-400 hover:bg-emerald-500 hover:text-white text-xs"
-                            title="Mark meeting as ended"
+                            title="Mark meeting as ended (visitor stays on campus)"
                           >
                             <CheckCircle className="h-4 w-4" />
                           </Button>
