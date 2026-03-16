@@ -8,7 +8,7 @@ import {
   DialogDescription,
 } from "@/components/ui/dialog";
 import { Image, FileSignature, User, Clock, Mail, MapPin } from "lucide-react";
-import { VisitorRegistration } from './types';
+import { VisitorRegistration, StaffMeetingTime } from './types';
 
 interface VisitorDetailsModalProps {
   registration: VisitorRegistration;
