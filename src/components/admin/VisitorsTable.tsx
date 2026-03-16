@@ -195,15 +195,54 @@ export const VisitorsTable: React.FC<VisitorsTableProps> = ({
                 </TableRow>
               </TableHeader>
               <TableBody>
-                {filteredRegistrations.map((registration, index) => (
-                  <TableRow 
-                    key={registration.id} 
-                    className={`transition-all duration-200 border-b border-gray-700 cursor-pointer ${
-                      index % 2 === 0 
-                        ? 'bg-gray-800 hover:bg-gray-700' 
-                        : 'bg-gray-750 hover:bg-gray-700'
-                    }`}
-                  >
+                {(() => {
+                  const getDateKey = (reg: VisitorRegistration) => {
+                    const dateStr = reg.starttime || reg.created_at;
+                    if (!dateStr) return 'Unknown';
+                    const clean = dateStr.split('.')[0].replace('Z', '');
+                    const [datePart] = clean.split('T');
+                    const [year, month, day] = datePart.split('-').map(Number);
+                    const monthNames = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+                    return `${monthNames[month - 1]} ${day}, ${year}`;
+                  };
+
+                  const today = new Date();
+                  const utc = today.getTime() + (today.getTimezoneOffset() * 60000);
+                  const ist = new Date(utc + (5.5 * 60 * 60 * 1000));
+                  const pad = (n: number) => n.toString().padStart(2, '0');
+                  const todayKey = `${['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'][ist.getMonth()]} ${ist.getDate()}, ${ist.getFullYear()}`;
+
+                  let lastDateKey = '';
+                  let rowIndex = 0;
+
+                  return filteredRegistrations.map((registration) => {
+                    const dateKey = getDateKey(registration);
+                    const showDateHeader = dateKey !== lastDateKey;
+                    lastDateKey = dateKey;
+                    const currentRowIndex = rowIndex++;
+                    const isToday = dateKey === todayKey;
+
+                    return (
+                      <React.Fragment key={registration.id}>
+                        {showDateHeader && (
+                          <TableRow className="bg-gray-900/80 hover:bg-gray-900/80 border-b border-gray-600">
+                            <TableCell colSpan={8} className="py-2 px-4">
+                              <div className="flex items-center space-x-2">
+                                <div className={`h-2 w-2 rounded-full ${isToday ? 'bg-green-400 animate-pulse' : 'bg-amber-500'}`} />
+                                <span className="text-sm font-bold text-amber-400">
+                                  {isToday ? `Today — ${dateKey}` : dateKey}
+                                </span>
+                              </div>
+                            </TableCell>
+                          </TableRow>
+                        )}
+                        <TableRow 
+                          className={`transition-all duration-200 border-b border-gray-700 cursor-pointer ${
+                            currentRowIndex % 2 === 0 
+                              ? 'bg-gray-800 hover:bg-gray-700' 
+                              : 'bg-gray-750 hover:bg-gray-700'
+                          }`}
+                        >
                     <TableCell className="py-4 border-r border-gray-700">
                       <div className="flex items-center space-x-3">
                         <div className="flex-shrink-0">
