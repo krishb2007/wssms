@@ -230,7 +230,7 @@ export const VisitorDetailsModal: React.FC<VisitorDetailsModalProps> = ({
             </div>
 
             {/* Staff Members & Meeting Duration Row */}
-            {(staffEmails.length > 0 || registration.meeting_staff_start_time) && (
+            {(staffEmails.length > 0 || registration.meeting_staff_start_time || staffTimes.length > 0) && (
               <div className="grid grid-cols-2 gap-8 mb-8">
                 {staffEmails.length > 0 && (
                   <div className="bg-gray-700 rounded-lg p-6 border border-gray-600">
@@ -238,18 +238,42 @@ export const VisitorDetailsModal: React.FC<VisitorDetailsModalProps> = ({
                       <Mail className="h-5 w-5 mr-2" />
                       Staff Members Meeting
                     </h3>
-                    <ul className="space-y-2">
-                      {staffEmails.map((email, idx) => (
-                        <li key={idx} className="flex items-center text-white font-bold">
-                          <Mail className="h-4 w-4 mr-2 text-amber-400 flex-shrink-0" />
-                          {email}
-                        </li>
-                      ))}
-                    </ul>
+                    {staffTimes.length > 0 ? (
+                      <div className="space-y-3">
+                        {staffTimes.map((st, idx) => (
+                          <div key={idx} className="border border-gray-600 rounded-md p-3 space-y-1">
+                            <div className="flex items-center text-white font-bold">
+                              <Mail className="h-4 w-4 mr-2 text-amber-400 flex-shrink-0" />
+                              {st.email}
+                            </div>
+                            <div className="text-xs text-white font-medium pl-6">Start: {formatDate(st.startTime)}</div>
+                            <div className="text-xs text-white font-medium pl-6">
+                              End: {st.endTime ? formatDate(st.endTime) : <span className="text-green-400">Ongoing</span>}
+                            </div>
+                            <div className="pl-6">
+                              <span className={`inline-flex items-center px-2 py-0.5 rounded-full text-xs font-bold ${
+                                st.endTime ? 'bg-red-100 text-red-800' : 'bg-green-100 text-green-800'
+                              }`}>
+                                {st.endTime ? 'Meeting Ended' : 'In Meeting'}
+                              </span>
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+                    ) : (
+                      <ul className="space-y-2">
+                        {staffEmails.map((email, idx) => (
+                          <li key={idx} className="flex items-center text-white font-bold">
+                            <Mail className="h-4 w-4 mr-2 text-amber-400 flex-shrink-0" />
+                            {email}
+                          </li>
+                        ))}
+                      </ul>
+                    )}
                     {getMeetingStatus() && (
                       <div className="mt-4 pt-3 border-t border-gray-600">
                         <span className={`inline-flex items-center px-3 py-1 rounded-full text-xs font-bold ${
-                          registration.meeting_staff_end_time 
+                          getMeetingStatus()?.includes('Ended') || getMeetingStatus()?.includes('All')
                             ? 'bg-red-100 text-red-800' 
                             : 'bg-green-100 text-green-800'
                         }`}>
@@ -260,8 +284,8 @@ export const VisitorDetailsModal: React.FC<VisitorDetailsModalProps> = ({
                   </div>
                 )}
                 
-                {/* Meeting Duration */}
-                {(registration.meeting_staff_start_time || registration.meeting_staff_end_time) && (
+                {/* Meeting Duration - legacy single view */}
+                {!staffTimes.length && (registration.meeting_staff_start_time || registration.meeting_staff_end_time) && (
                   <div className="bg-gray-700 rounded-lg p-6 border border-gray-600">
                     <h3 className="text-lg font-bold text-white mb-4 flex items-center">
                       <Clock className="h-5 w-5 mr-2" />
