@@ -26,6 +26,12 @@ export interface FormEntry {
   acceptedPolicy?: boolean;
 }
 
+export interface StaffMeetingTime {
+  email: string;
+  startTime: string;
+  endTime: string | null;
+}
+
 export interface FormDataInput {
   visitorName: string;
   schoolName: string;
@@ -52,6 +58,7 @@ export interface FormDataInput {
   meetingStaffStartTime?: string | null;
   meetingStaffEndTime?: string | null;
   entryLocation?: string | null;
+  meetingStaffTimes?: StaffMeetingTime[];
 }
 
 export const saveFormData = async (formData: FormDataInput): Promise<FormEntry> => {
