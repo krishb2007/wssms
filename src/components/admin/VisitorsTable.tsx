@@ -6,7 +6,7 @@ import { Input } from "@/components/ui/input";
 import { Pencil, Save, X, Eye, User, Building, Phone, MapPin, Clock, Mail, CheckCircle } from "lucide-react";
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from "@/components/ui/use-toast";
-import { VisitorRegistration } from './types';
+import { VisitorRegistration, StaffMeetingTime } from './types';
 import { SearchAndRefresh } from './SearchAndRefresh';
 import { VisitorDetailsModal } from './VisitorDetailsModal';
 
