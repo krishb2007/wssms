@@ -190,19 +190,41 @@ const CombinedPurposeDurationForm: React.FC<CombinedPurposeDurationFormProps> = 
     ? formData.staffEmails 
     : [""];
 
+  const meetingStaffTimes = formData.meetingStaffTimes || [];
+
   const updateStaffEmail = (index: number, value: string) => {
     const updated = [...staffEmails];
     updated[index] = value;
-    updateFormData({ staffEmails: updated, staffEmail: updated[0] || "" });
+    // Sync meeting staff times
+    const updatedTimes = [...meetingStaffTimes];
+    if (updatedTimes[index]) {
+      updatedTimes[index] = { ...updatedTimes[index], email: value };
+    } else {
+      updatedTimes[index] = { email: value, startTime: index === 0 ? formData.startTime : "", endTime: null };
+    }
+    updateFormData({ staffEmails: updated, staffEmail: updated[0] || "", meetingStaffTimes: updatedTimes });
+  };
+
+  const updateStaffMeetingTime = (index: number, startTime: string) => {
+    const updatedTimes = [...meetingStaffTimes];
+    if (updatedTimes[index]) {
+      updatedTimes[index] = { ...updatedTimes[index], startTime };
+    } else {
+      updatedTimes[index] = { email: staffEmails[index] || "", startTime, endTime: null };
+    }
+    updateFormData({ meetingStaffTimes: updatedTimes });
   };
 
   const addStaffEntry = () => {
-    updateFormData({ staffEmails: [...staffEmails, ""] });
+    const newEmails = [...staffEmails, ""];
+    const newTimes = [...meetingStaffTimes, { email: "", startTime: "", endTime: null }];
+    updateFormData({ staffEmails: newEmails, meetingStaffTimes: newTimes });
   };
 
   const removeStaffEntry = (index: number) => {
     const updated = staffEmails.filter((_, i) => i !== index);
-    updateFormData({ staffEmails: updated, staffEmail: updated[0] || "" });
+    const updatedTimes = meetingStaffTimes.filter((_, i) => i !== index);
+    updateFormData({ staffEmails: updated, staffEmail: updated[0] || "", meetingStaffTimes: updatedTimes });
   };
 
   const handleSubmit = (e: React.FormEvent) => {
