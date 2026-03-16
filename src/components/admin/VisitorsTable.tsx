@@ -441,8 +441,11 @@ export const VisitorsTable: React.FC<VisitorsTableProps> = ({
                         })()}
                       </div>
                     </TableCell>
-                  </TableRow>
-                ))}
+                        </TableRow>
+                      </React.Fragment>
+                    );
+                  });
+                })()}
               </TableBody>
             </Table>
           </div>
