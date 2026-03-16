@@ -21,6 +21,7 @@ export interface VisitorFormData {
   meeting_staff_start_time?: string | null;
   meeting_staff_end_time?: string | null;
   entry_location?: string | null;
+  meeting_staff_times?: string | null;
 }
 
 // Upload file to Supabase storage
