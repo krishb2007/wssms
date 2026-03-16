@@ -146,7 +146,8 @@ export const saveFormData = async (formData: FormDataInput): Promise<FormEntry> 
               pictureUrl: savedData.picture_url,
               people: formData.people,
               meetingStartTime: staffMeetingTime,
-              visitorId: savedData.id
+              visitorId: savedData.id,
+              staffIndex: i
             }
           });
           if (emailResponse.error) {
