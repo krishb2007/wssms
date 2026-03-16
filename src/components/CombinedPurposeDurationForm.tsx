@@ -47,7 +47,10 @@ const StaffEmailEntry: React.FC<{
   onRemove?: () => void;
   showRemove: boolean;
   required: boolean;
-}> = ({ value, onChange, onRemove, showRemove, required }) => {
+  meetingStartTime?: string;
+  onMeetingStartTimeChange?: (val: string) => void;
+  showMeetingTime: boolean;
+}> = ({ value, onChange, onRemove, showRemove, required, meetingStartTime, onMeetingStartTimeChange, showMeetingTime }) => {
   const [search, setSearch] = useState("");
   const [showDropdown, setShowDropdown] = useState(false);
   const [mode, setMode] = useState<"staff" | "custom">("staff");
