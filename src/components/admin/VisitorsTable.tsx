@@ -42,8 +42,12 @@ export const VisitorsTable: React.FC<VisitorsTableProps> = ({
   const [selectedRegistration, setSelectedRegistration] = useState<VisitorRegistration | null>(null);
   const [endingMeetingId, setEndingMeetingId] = useState<string | null>(null);
 
-  const handleMeetingEnded = async (registration: VisitorRegistration) => {
-    if (registration.meeting_staff_end_time) return;
+  const parseStaffTimes = (registration: VisitorRegistration): StaffMeetingTime[] => {
+    if (!registration.meeting_staff_times) return [];
+    try { return JSON.parse(registration.meeting_staff_times); } catch { return []; }
+  };
+
+  const handleMeetingEnded = async (registration: VisitorRegistration, staffEmail?: string) => {
     setEndingMeetingId(registration.id);
     try {
       const now = new Date();
@@ -52,14 +56,32 @@ export const VisitorsTable: React.FC<VisitorsTableProps> = ({
       const pad = (n: number) => n.toString().padStart(2, '0');
       const istString = `${ist.getFullYear()}-${pad(ist.getMonth() + 1)}-${pad(ist.getDate())}T${pad(ist.getHours())}:${pad(ist.getMinutes())}:${pad(ist.getSeconds())}`;
 
-      const { error } = await supabase
-        .from('visitor_registrations')
-        .update({ meeting_staff_end_time: istString } as any)
-        .eq('id', registration.id);
+      const staffTimes = parseStaffTimes(registration);
+      
+      if (staffTimes.length > 0 && staffEmail) {
+        // Update specific staff's end time in JSON
+        const updated = staffTimes.map(st => 
+          st.email === staffEmail && !st.endTime ? { ...st, endTime: istString } : st
+        );
+        const allEnded = updated.every(st => st.endTime);
+        const updatePayload: any = { meeting_staff_times: JSON.stringify(updated) };
+        if (allEnded) updatePayload.meeting_staff_end_time = istString;
+        
+        const { error } = await supabase
+          .from('visitor_registrations')
+          .update(updatePayload)
+          .eq('id', registration.id);
+        if (error) throw error;
+      } else {
+        // Legacy: single meeting end
+        const { error } = await supabase
+          .from('visitor_registrations')
+          .update({ meeting_staff_end_time: istString } as any)
+          .eq('id', registration.id);
+        if (error) throw error;
+      }
 
-      if (error) throw error;
-
-      toast({ title: "Meeting Ended", description: `Meeting with ${registration.visitorname} has been marked as concluded. Visitor is still on campus.` });
+      toast({ title: "Meeting Ended", description: `Meeting has been marked as concluded. Visitor is still on campus.` });
       onRefresh();
     } catch (err) {
       toast({ title: "Error", description: "Failed to end meeting", variant: "destructive" });
