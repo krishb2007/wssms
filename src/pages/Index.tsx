@@ -132,6 +132,7 @@ const Index = () => {
         meetingStaffStartTime: null,
         meetingStaffEndTime: null,
         entryLocation: null,
+        meetingStaffTimes: [],
       });
     } catch (error) {
       console.error("Error submitting form:", error);
