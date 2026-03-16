@@ -1,4 +1,10 @@
 
+export interface StaffMeetingTime {
+  email: string;
+  startTime: string;
+  endTime: string | null;
+}
+
 export interface VisitorRegistration {
   id: string;
   visitorname: string;
@@ -19,4 +25,5 @@ export interface VisitorRegistration {
   meeting_staff_start_time: string | null;
   meeting_staff_end_time: string | null;
   entry_location: string | null;
+  meeting_staff_times: string | null;
 }

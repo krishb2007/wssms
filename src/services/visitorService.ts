@@ -21,6 +21,7 @@ export interface VisitorFormData {
   meeting_staff_start_time?: string | null;
   meeting_staff_end_time?: string | null;
   entry_location?: string | null;
+  meeting_staff_times?: string | null;
 }
 
 // Upload file to Supabase storage
@@ -102,6 +103,7 @@ export const saveVisitorRegistration = async (formData: VisitorFormData) => {
       meeting_staff_start_time: formData.meeting_staff_start_time || null,
       meeting_staff_end_time: formData.meeting_staff_end_time || null,
       entry_location: formData.entry_location || null,
+      meeting_staff_times: formData.meeting_staff_times || null,
     };
 
     console.log("Attempting to insert into visitor_registrations table:", insertData);

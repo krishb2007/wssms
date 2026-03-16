@@ -26,6 +26,12 @@ export interface FormEntry {
   acceptedPolicy?: boolean;
 }
 
+export interface StaffMeetingTime {
+  email: string;
+  startTime: string;
+  endTime: string | null;
+}
+
 export interface FormDataInput {
   visitorName: string;
   schoolName: string;
@@ -52,6 +58,7 @@ export interface FormDataInput {
   meetingStaffStartTime?: string | null;
   meetingStaffEndTime?: string | null;
   entryLocation?: string | null;
+  meetingStaffTimes?: StaffMeetingTime[];
 }
 
 export const saveFormData = async (formData: FormDataInput): Promise<FormEntry> => {
@@ -66,6 +73,15 @@ export const saveFormData = async (formData: FormDataInput): Promise<FormEntry> 
     const emailValue = formData.purpose === "meeting_school_staff" && allStaffEmails.length > 0
       ? allStaffEmails.join(', ')
       : null;
+
+    // Build per-staff meeting times
+    const meetingStaffTimes: StaffMeetingTime[] = formData.purpose === "meeting_school_staff" && allStaffEmails.length > 0
+      ? allStaffEmails.map((email, idx) => ({
+          email,
+          startTime: formData.meetingStaffTimes?.[idx]?.startTime || (idx === 0 ? formData.startTime : ""),
+          endTime: null,
+        }))
+      : [];
 
     const visitorData: VisitorFormData = {
       visitorname: formData.visitorName,
@@ -84,6 +100,7 @@ export const saveFormData = async (formData: FormDataInput): Promise<FormEntry> 
       meeting_staff_start_time: formData.meetingStaffStartTime || (formData.purpose === "meeting_school_staff" ? formData.startTime : null),
       meeting_staff_end_time: formData.meetingStaffEndTime || null,
       entry_location: formData.entryLocation || null,
+      meeting_staff_times: meetingStaffTimes.length > 0 ? JSON.stringify(meetingStaffTimes) : null,
     };
 
     console.log("Calling saveVisitorRegistration with:", visitorData);

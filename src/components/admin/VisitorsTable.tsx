@@ -6,7 +6,7 @@ import { Input } from "@/components/ui/input";
 import { Pencil, Save, X, Eye, User, Building, Phone, MapPin, Clock, Mail, CheckCircle } from "lucide-react";
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from "@/components/ui/use-toast";
-import { VisitorRegistration } from './types';
+import { VisitorRegistration, StaffMeetingTime } from './types';
 import { SearchAndRefresh } from './SearchAndRefresh';
 import { VisitorDetailsModal } from './VisitorDetailsModal';
 
@@ -42,8 +42,12 @@ export const VisitorsTable: React.FC<VisitorsTableProps> = ({
   const [selectedRegistration, setSelectedRegistration] = useState<VisitorRegistration | null>(null);
   const [endingMeetingId, setEndingMeetingId] = useState<string | null>(null);
 
-  const handleMeetingEnded = async (registration: VisitorRegistration) => {
-    if (registration.meeting_staff_end_time) return;
+  const parseStaffTimes = (registration: VisitorRegistration): StaffMeetingTime[] => {
+    if (!registration.meeting_staff_times) return [];
+    try { return JSON.parse(registration.meeting_staff_times); } catch { return []; }
+  };
+
+  const handleMeetingEnded = async (registration: VisitorRegistration, staffEmail?: string) => {
     setEndingMeetingId(registration.id);
     try {
       const now = new Date();
@@ -52,14 +56,32 @@ export const VisitorsTable: React.FC<VisitorsTableProps> = ({
       const pad = (n: number) => n.toString().padStart(2, '0');
       const istString = `${ist.getFullYear()}-${pad(ist.getMonth() + 1)}-${pad(ist.getDate())}T${pad(ist.getHours())}:${pad(ist.getMinutes())}:${pad(ist.getSeconds())}`;
 
-      const { error } = await supabase
-        .from('visitor_registrations')
-        .update({ meeting_staff_end_time: istString } as any)
-        .eq('id', registration.id);
+      const staffTimes = parseStaffTimes(registration);
+      
+      if (staffTimes.length > 0 && staffEmail) {
+        // Update specific staff's end time in JSON
+        const updated = staffTimes.map(st => 
+          st.email === staffEmail && !st.endTime ? { ...st, endTime: istString } : st
+        );
+        const allEnded = updated.every(st => st.endTime);
+        const updatePayload: any = { meeting_staff_times: JSON.stringify(updated) };
+        if (allEnded) updatePayload.meeting_staff_end_time = istString;
+        
+        const { error } = await supabase
+          .from('visitor_registrations')
+          .update(updatePayload)
+          .eq('id', registration.id);
+        if (error) throw error;
+      } else {
+        // Legacy: single meeting end
+        const { error } = await supabase
+          .from('visitor_registrations')
+          .update({ meeting_staff_end_time: istString } as any)
+          .eq('id', registration.id);
+        if (error) throw error;
+      }
 
-      if (error) throw error;
-
-      toast({ title: "Meeting Ended", description: `Meeting with ${registration.visitorname} has been marked as concluded. Visitor is still on campus.` });
+      toast({ title: "Meeting Ended", description: `Meeting has been marked as concluded. Visitor is still on campus.` });
       onRefresh();
     } catch (err) {
       toast({ title: "Error", description: "Failed to end meeting", variant: "destructive" });
@@ -253,21 +275,34 @@ export const VisitorsTable: React.FC<VisitorsTableProps> = ({
                     </TableCell>
                     {/* Meeting Duration Column */}
                     <TableCell className="py-4 border-r border-gray-700">
-                      {registration.purpose === 'meeting_school_staff' ? (
-                        <div className="space-y-1">
-                          <div className="text-xs text-white font-medium">
-                            Start: {formatDate(registration.meeting_staff_start_time || registration.starttime)}
+                      {registration.purpose === 'meeting_school_staff' ? (() => {
+                        const staffTimes = parseStaffTimes(registration);
+                        if (staffTimes.length > 0) {
+                          return (
+                            <div className="space-y-2">
+                              {staffTimes.map((st, idx) => (
+                                <div key={idx} className="text-xs border-b border-gray-600 pb-1 last:border-0">
+                                  <div className="text-amber-400 font-bold truncate max-w-[150px]" title={st.email}>{st.email.split('@')[0]}</div>
+                                  <div className="text-white font-medium">In: {formatDate(st.startTime)}</div>
+                                  <div className="text-white font-medium">
+                                    Out: {st.endTime ? formatDate(st.endTime) : <span className="text-green-400">Ongoing</span>}
+                                  </div>
+                                </div>
+                              ))}
+                            </div>
+                          );
+                        }
+                        return (
+                          <div className="space-y-1">
+                            <div className="text-xs text-white font-medium">
+                              Start: {formatDate(registration.meeting_staff_start_time || registration.starttime)}
+                            </div>
+                            <div className="text-xs text-white font-medium">
+                              End: {registration.meeting_staff_end_time ? formatDate(registration.meeting_staff_end_time) : 'Ongoing'}
+                            </div>
                           </div>
-                          <div className="text-xs text-white font-medium">
-                            End: {registration.meeting_staff_end_time ? formatDate(registration.meeting_staff_end_time) : 'Ongoing'}
-                          </div>
-                          {registration.meeting_staff_end_time && (
-                            <span className="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-bold bg-amber-100 text-amber-800">
-                              Meeting Ended
-                            </span>
-                          )}
-                        </div>
-                      ) : (
+                        );
+                      })() : (
                         <div className="text-xs text-white/50 font-medium">N/A</div>
                       )}
                     </TableCell>
@@ -316,19 +351,42 @@ export const VisitorsTable: React.FC<VisitorsTableProps> = ({
                           </Button>
                         )}
                         
-                        {/* Meeting Ended Button - only for staff meetings without ended meeting */}
-                        {registration.purpose === 'meeting_school_staff' && !registration.meeting_staff_end_time && (
-                          <Button
-                            size="sm"
-                            variant="outline"
-                            onClick={() => handleMeetingEnded(registration)}
-                            disabled={endingMeetingId === registration.id}
-                            className="h-8 px-2 border-2 border-emerald-500 text-emerald-400 hover:bg-emerald-500 hover:text-white text-xs"
-                            title="Mark meeting as ended (visitor stays on campus)"
-                          >
-                            <CheckCircle className="h-4 w-4" />
-                          </Button>
-                        )}
+                        {/* Meeting Ended Buttons - per staff or single */}
+                        {registration.purpose === 'meeting_school_staff' && (() => {
+                          const staffTimes = parseStaffTimes(registration);
+                          if (staffTimes.length > 0) {
+                            const ongoing = staffTimes.filter(st => !st.endTime);
+                            return ongoing.map((st, idx) => (
+                              <Button
+                                key={idx}
+                                size="sm"
+                                variant="outline"
+                                onClick={() => handleMeetingEnded(registration, st.email)}
+                                disabled={endingMeetingId === registration.id}
+                                className="h-8 px-2 border-2 border-emerald-500 text-emerald-400 hover:bg-emerald-500 hover:text-white text-xs"
+                                title={`End meeting with ${st.email.split('@')[0]}`}
+                              >
+                                <CheckCircle className="h-3 w-3 mr-1" />
+                                {st.email.split('@')[0].slice(0, 8)}
+                              </Button>
+                            ));
+                          }
+                          if (!registration.meeting_staff_end_time) {
+                            return (
+                              <Button
+                                size="sm"
+                                variant="outline"
+                                onClick={() => handleMeetingEnded(registration)}
+                                disabled={endingMeetingId === registration.id}
+                                className="h-8 px-2 border-2 border-emerald-500 text-emerald-400 hover:bg-emerald-500 hover:text-white text-xs"
+                                title="Mark meeting as ended"
+                              >
+                                <CheckCircle className="h-4 w-4" />
+                              </Button>
+                            );
+                          }
+                          return null;
+                        })()}
                       </div>
                     </TableCell>
                   </TableRow>

@@ -26,40 +26,58 @@ const handler = async (req: Request): Promise<Response> => {
 
     console.log(`Processing ${action} response for visitor: ${visitorName}`);
 
-    // If meeting_ended, update meeting_staff_end_time in Supabase (NOT endtime)
+    // If meeting_ended, update the specific staff's end time in meeting_staff_times JSON
     if (action === 'meeting_ended') {
       const supabaseUrl = Deno.env.get('SUPABASE_URL')!;
       const supabaseKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!;
       const supabase = createClient(supabaseUrl, supabaseKey);
 
-      // Calculate IST time
       const now = new Date();
       const istTime = new Date(now.getTime() + (5.5 * 60 * 60 * 1000));
       const pad = (n: number) => n.toString().padStart(2, '0');
       const istString = `${istTime.getUTCFullYear()}-${pad(istTime.getUTCMonth() + 1)}-${pad(istTime.getUTCDate())}T${pad(istTime.getUTCHours())}:${pad(istTime.getUTCMinutes())}:${pad(istTime.getUTCSeconds())}`;
 
-      // Find the visitor by name and update meeting_staff_end_time
       const { data: visitors, error: fetchError } = await supabase
         .from('visitor_registrations')
-        .select('id, email')
+        .select('id, email, meeting_staff_times, meeting_staff_end_time')
         .eq('visitorname', visitorName)
-        .is('meeting_staff_end_time', null)
+        .is('endtime', null)
         .order('created_at', { ascending: false })
         .limit(1);
 
       if (!fetchError && visitors && visitors.length > 0) {
+        const visitor = visitors[0];
+        const updatePayload: Record<string, any> = {};
+
+        // Try to update per-staff times JSON
+        if (visitor.meeting_staff_times) {
+          try {
+            const staffTimes = JSON.parse(visitor.meeting_staff_times);
+            const updated = staffTimes.map((st: any) =>
+              st.email === staffEmail && !st.endTime ? { ...st, endTime: istString } : st
+            );
+            updatePayload.meeting_staff_times = JSON.stringify(updated);
+            // If all staff meetings ended, also set the global meeting_staff_end_time
+            if (updated.every((st: any) => st.endTime)) {
+              updatePayload.meeting_staff_end_time = istString;
+            }
+          } catch {
+            updatePayload.meeting_staff_end_time = istString;
+          }
+        } else {
+          updatePayload.meeting_staff_end_time = istString;
+        }
+
         const { error: updateError } = await supabase
           .from('visitor_registrations')
-          .update({ meeting_staff_end_time: istString })
-          .eq('id', visitors[0].id);
+          .update(updatePayload)
+          .eq('id', visitor.id);
 
         if (updateError) {
-          console.error("Error updating meeting_staff_end_time:", updateError);
+          console.error("Error updating meeting end time:", updateError);
         } else {
-          console.log("Successfully updated meeting_staff_end_time for visitor:", visitorName);
+          console.log("Successfully updated meeting end time for visitor:", visitorName, "staff:", staffEmail);
         }
-      } else {
-        console.log("No active meeting found for visitor:", visitorName);
       }
     }
 

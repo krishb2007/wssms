@@ -43,6 +43,7 @@ const Index = () => {
     meetingStaffStartTime: null,
     meetingStaffEndTime: null,
     entryLocation: null,
+    meetingStaffTimes: [],
   });
 
   // Capture GPS location on mount
@@ -131,6 +132,7 @@ const Index = () => {
         meetingStaffStartTime: null,
         meetingStaffEndTime: null,
         entryLocation: null,
+        meetingStaffTimes: [],
       });
     } catch (error) {
       console.error("Error submitting form:", error);

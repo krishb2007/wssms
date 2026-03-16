@@ -13,6 +13,12 @@ const STAFF_NAMES = [
   "AanchalNegi","AaronShangne","AbdulRehman","AbhishekKumar","AdityaManral","AfrozAnjum","AishwaryaDasappa","AjayNegi","AkashKar","AkashTuli","AkshayShah","AlokeMaiti","AlpanaPathak","AmritaJohn","AndrewDas","AndrewStuart-Watson","AndriyYanovych","AniruddhUpadhyay","AnjanaMenon","AnjanaSharma","AnneMcgregor","AnthonyHyde","AntonioMelgar","AnupamaMukherjee","AnushaTuli","AnusuyaVijay","AnveshThapa","ArpanaFernandes","ArpanaMalhotra","AshishLuthra","AzadSingh","BlairLee","BormaniDevi","BrigitteConcessio","BrijeshTyagi","CeciliaCastro","ChelseaKorth","ChrisantaEly","ChristopherMartin","ClaireBrady","ComfortAnkutse","CristianRuiz","CristinaSantiago","DanKoopLiechty","DarabNagarwalla","DavidFrederick","DavidWilliamson","DeborrahMondle","DeunKim","DharmendraBhandari","DheeraSingla","DipikaSharma","DishaAggarwal","DuncanOwich","EktaJohn","EldriMeintjes","EnoshThomas","EshaGeorge","EthanBaker","GauravRawat","GirirajShekhawat","GodwinKomora","GurdeepGrover","HarshBajaj","HimanshuHalve","HutenLaldailova","ImtiazRai","IngMariePutka","JaclynDuellman","JacobHorsey","JamesTuffs","JenniferBelz","JenniferFrederick","JerushaMissal","JessicaLall","JitendraSingh","JoelFord","JoonaSheel","JordanKorth","JustineOliver","KalpanaSingh","KamalThapa","KarenLloyd","KaterinaVackova","KetanSwami","KiranSingh","KleinVerHill","KristenRichardson","KuldeepBhandari","KuvengoluKhamo","LanieGaitan","LaureneGuirette","LekhaMukherjee","LimeeshiBhaskaram","MaggieHolmesheoran","ManishaDogra","MariaLusardi","MariaPrieto","MarkCrowell","MarkWindsor","MartaSzypczynska","MerlineJesudoss","MilanSudzuk","ModesteDate","MohammadJamaal","MohdYousuf","MohitHolmesheoran","NalayiniNantha","NehaSingh","NehaSwami","OksanaSielina","PeshumhringHuten","PholkanLukhu","PoojaAggarwal","PoojaSharma","PoonamSharma","PoushaliBanerjee","PrabinRai","PrarthanaSingh","PrasannaBoddapati","PrashantSingh","PrateekSantram","PravinJelaji","PreetiBhandari","PrernaGadve","PriyankaNagalia","PriyaRollins","PruthiviPanda","RaakheeGumireddy","RachnaPeter","RahimaThomas","RajatBhog","RangariraiMagudu","RaveeshDogra","RaviArthur","RenuOberoi","RohitSharma","RonitaDaniel","RuthBroome","RuthKalsang","SaffronToms","SamuelDzongor","SanchaliChakraborty","SandeepRawat","SangayOhm","SangeetaBhandari","SanketShitole","SarahKhan","SarahThomas","SareenaPun","SenoluDawhuo","ShadabBegum","ShailenderBhandari","ShaileshGarg","SheetalWaller","ShivaniSapehia","ShoaibAli","ShreyNagalia","SonamThomas","SonamTshering","SondeepPeter","SongSeokin","SrinivasGopal","StellaDate","SudhirMendiratta","SumanMitra","SunilBaloni","SunilKumar","SunitaPanwar","SureshChand","SwatiRoy","SwetaGarg","TafadzwaChibade","TanuPathak","TanyaGurung","TanyaMarathe","TheresaJoseph","ThomasJacob","TriptiRathore","TseringMalik","TwylaSpiller","UpasnaGhale","VimmiDang","VinodBhandari","VipulVashistha","VishalNegi","VivekWilliam","YunJiKwak","ZohraJohn"
 ];
 
+export interface StaffMeetingTime {
+  email: string;
+  startTime: string;
+  endTime: string | null;
+}
+
 interface CombinedPurposeDurationFormProps {
   formData: {
     purpose: string;
@@ -20,6 +26,7 @@ interface CombinedPurposeDurationFormProps {
     staffEmail: string;
     staffEmails: string[];
     startTime: string;
+    meetingStaffTimes?: StaffMeetingTime[];
   };
   updateFormData: (data: Partial<{ 
     purpose: string; 
@@ -27,6 +34,7 @@ interface CombinedPurposeDurationFormProps {
     staffEmail: string;
     staffEmails: string[];
     startTime: string;
+    meetingStaffTimes: StaffMeetingTime[];
   }>) => void;
   nextStep: () => void;
   prevStep: () => void;
@@ -39,7 +47,10 @@ const StaffEmailEntry: React.FC<{
   onRemove?: () => void;
   showRemove: boolean;
   required: boolean;
-}> = ({ value, onChange, onRemove, showRemove, required }) => {
+  meetingStartTime?: string;
+  onMeetingStartTimeChange?: (val: string) => void;
+  showMeetingTime: boolean;
+}> = ({ value, onChange, onRemove, showRemove, required, meetingStartTime, onMeetingStartTimeChange, showMeetingTime }) => {
   const [search, setSearch] = useState("");
   const [showDropdown, setShowDropdown] = useState(false);
   const [mode, setMode] = useState<"staff" | "custom">("staff");
@@ -136,6 +147,17 @@ const StaffEmailEntry: React.FC<{
         }}
         placeholder="staff@example.com"
       />
+      {showMeetingTime && (
+        <div className="mt-2 space-y-1">
+          <Label className="text-xs">Meeting Start Time for this staff:</Label>
+          <Input
+            type="datetime-local"
+            value={meetingStartTime || ""}
+            onChange={(e) => onMeetingStartTimeChange?.(e.target.value)}
+            required
+          />
+        </div>
+      )}
     </div>
   );
 };
@@ -168,19 +190,41 @@ const CombinedPurposeDurationForm: React.FC<CombinedPurposeDurationFormProps> = 
     ? formData.staffEmails 
     : [""];
 
+  const meetingStaffTimes = formData.meetingStaffTimes || [];
+
   const updateStaffEmail = (index: number, value: string) => {
     const updated = [...staffEmails];
     updated[index] = value;
-    updateFormData({ staffEmails: updated, staffEmail: updated[0] || "" });
+    // Sync meeting staff times
+    const updatedTimes = [...meetingStaffTimes];
+    if (updatedTimes[index]) {
+      updatedTimes[index] = { ...updatedTimes[index], email: value };
+    } else {
+      updatedTimes[index] = { email: value, startTime: index === 0 ? formData.startTime : "", endTime: null };
+    }
+    updateFormData({ staffEmails: updated, staffEmail: updated[0] || "", meetingStaffTimes: updatedTimes });
+  };
+
+  const updateStaffMeetingTime = (index: number, startTime: string) => {
+    const updatedTimes = [...meetingStaffTimes];
+    if (updatedTimes[index]) {
+      updatedTimes[index] = { ...updatedTimes[index], startTime };
+    } else {
+      updatedTimes[index] = { email: staffEmails[index] || "", startTime, endTime: null };
+    }
+    updateFormData({ meetingStaffTimes: updatedTimes });
   };
 
   const addStaffEntry = () => {
-    updateFormData({ staffEmails: [...staffEmails, ""] });
+    const newEmails = [...staffEmails, ""];
+    const newTimes = [...meetingStaffTimes, { email: "", startTime: "", endTime: null }];
+    updateFormData({ staffEmails: newEmails, meetingStaffTimes: newTimes });
   };
 
   const removeStaffEntry = (index: number) => {
     const updated = staffEmails.filter((_, i) => i !== index);
-    updateFormData({ staffEmails: updated, staffEmail: updated[0] || "" });
+    const updatedTimes = meetingStaffTimes.filter((_, i) => i !== index);
+    updateFormData({ staffEmails: updated, staffEmail: updated[0] || "", meetingStaffTimes: updatedTimes });
   };
 
   const handleSubmit = (e: React.FormEvent) => {
@@ -281,6 +325,9 @@ const CombinedPurposeDurationForm: React.FC<CombinedPurposeDurationFormProps> = 
                 onRemove={() => removeStaffEntry(index)}
                 showRemove={staffEmails.length > 1}
                 required={index === 0}
+                showMeetingTime={index > 0}
+                meetingStartTime={meetingStaffTimes[index]?.startTime || ""}
+                onMeetingStartTimeChange={(val) => updateStaffMeetingTime(index, val)}
               />
             ))}
             <Button
