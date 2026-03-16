@@ -47,7 +47,7 @@ export const VisitorsTable: React.FC<VisitorsTableProps> = ({
     try { return JSON.parse(registration.meeting_staff_times); } catch { return []; }
   };
 
-  const handleMeetingEnded = async (registration: VisitorRegistration, staffEmail?: string) => {
+  const handleMeetingEnded = async (registration: VisitorRegistration, staffEmail?: string, staffIndex?: number) => {
     setEndingMeetingId(registration.id);
     try {
       const now = new Date();
@@ -57,16 +57,27 @@ export const VisitorsTable: React.FC<VisitorsTableProps> = ({
       const istString = `${ist.getFullYear()}-${pad(ist.getMonth() + 1)}-${pad(ist.getDate())}T${pad(ist.getHours())}:${pad(ist.getMinutes())}:${pad(ist.getSeconds())}`;
 
       const staffTimes = parseStaffTimes(registration);
-      
-      if (staffTimes.length > 0 && staffEmail) {
-        // Update specific staff's end time in JSON
-        const updated = staffTimes.map(st => 
-          st.email === staffEmail && !st.endTime ? { ...st, endTime: istString } : st
-        );
-        const allEnded = updated.every(st => st.endTime);
-        const updatePayload: any = { meeting_staff_times: JSON.stringify(updated) };
-        if (allEnded) updatePayload.meeting_staff_end_time = istString;
-        
+
+      if (staffTimes.length > 0) {
+        const updated = [...staffTimes];
+        let targetIndex = typeof staffIndex === 'number' ? staffIndex : -1;
+
+        if (targetIndex < 0 && staffEmail) {
+          targetIndex = updated.findIndex(
+            st => st.email.trim().toLowerCase() === staffEmail.trim().toLowerCase() && !st.endTime
+          );
+        }
+
+        if (targetIndex >= 0 && updated[targetIndex] && !updated[targetIndex].endTime) {
+          updated[targetIndex] = { ...updated[targetIndex], endTime: istString };
+        }
+
+        const allEnded = updated.length > 0 && updated.every(st => st.endTime);
+        const updatePayload: any = {
+          meeting_staff_times: JSON.stringify(updated),
+          meeting_staff_end_time: allEnded ? istString : null,
+        };
+
         const { error } = await supabase
           .from('visitor_registrations')
           .update(updatePayload)
@@ -177,8 +188,8 @@ export const VisitorsTable: React.FC<VisitorsTableProps> = ({
                   <TableHead className="font-bold text-amber-400 border-r border-gray-600">Contact</TableHead>
                   <TableHead className="font-bold text-amber-400 border-r border-gray-600">Purpose</TableHead>
                   <TableHead className="font-bold text-amber-400 border-r border-gray-600">People</TableHead>
-                  <TableHead className="font-bold text-amber-400 border-r border-gray-600">Visit Duration</TableHead>
                   <TableHead className="font-bold text-amber-400 border-r border-gray-600">Meeting Duration</TableHead>
+                  <TableHead className="font-bold text-amber-400 border-r border-gray-600">Visit Duration</TableHead>
                   <TableHead className="font-bold text-amber-400 border-r border-gray-600">Status</TableHead>
                   <TableHead className="font-bold text-amber-400">Actions</TableHead>
                 </TableRow>
@@ -250,29 +261,6 @@ export const VisitorsTable: React.FC<VisitorsTableProps> = ({
                         </div>
                       </div>
                     </TableCell>
-                    <TableCell className="py-4 border-r border-gray-700">
-                      <div className="space-y-1">
-                        <div className="flex items-center text-xs text-white font-medium">
-                          <Clock className="h-3 w-3 mr-1" />
-                          In: {formatDate(registration.starttime || registration.created_at)}
-                        </div>
-                        {editingId === registration.id ? (
-                          <div className="space-y-1">
-                            <Input
-                              type="datetime-local"
-                              value={editEndTime}
-                              onChange={(e) => onEditEndTimeChange(e.target.value)}
-                              className="w-52 text-xs bg-gray-700 border-gray-600 text-white font-medium"
-                            />
-                            {saving && <div className="text-amber-400 text-xs font-medium">Saving...</div>}
-                          </div>
-                        ) : (
-                          <div className="text-xs text-white font-medium">
-                            Out: {registration.endtime ? formatDate(registration.endtime) : 'On campus'}
-                          </div>
-                        )}
-                      </div>
-                    </TableCell>
                     {/* Meeting Duration Column */}
                     <TableCell className="py-4 border-r border-gray-700">
                       {registration.purpose === 'meeting_school_staff' ? (() => {
@@ -305,6 +293,29 @@ export const VisitorsTable: React.FC<VisitorsTableProps> = ({
                       })() : (
                         <div className="text-xs text-white/50 font-medium">N/A</div>
                       )}
+                    </TableCell>
+                    <TableCell className="py-4 border-r border-gray-700">
+                      <div className="space-y-1">
+                        <div className="flex items-center text-xs text-white font-medium">
+                          <Clock className="h-3 w-3 mr-1" />
+                          In: {formatDate(registration.starttime || registration.created_at)}
+                        </div>
+                        {editingId === registration.id ? (
+                          <div className="space-y-1">
+                            <Input
+                              type="datetime-local"
+                              value={editEndTime}
+                              onChange={(e) => onEditEndTimeChange(e.target.value)}
+                              className="w-52 text-xs bg-gray-700 border-gray-600 text-white font-medium"
+                            />
+                            {saving && <div className="text-amber-400 text-xs font-medium">Saving...</div>}
+                          </div>
+                        ) : (
+                          <div className="text-xs text-white font-medium">
+                            Out: {registration.endtime ? formatDate(registration.endtime) : 'On campus'}
+                          </div>
+                        )}
+                      </div>
                     </TableCell>
                     <TableCell className="py-4 border-r border-gray-700">
                       {getStatusBadge(registration)}
@@ -355,13 +366,15 @@ export const VisitorsTable: React.FC<VisitorsTableProps> = ({
                         {registration.purpose === 'meeting_school_staff' && (() => {
                           const staffTimes = parseStaffTimes(registration);
                           if (staffTimes.length > 0) {
-                            const ongoing = staffTimes.filter(st => !st.endTime);
-                            return ongoing.map((st, idx) => (
+                            const ongoing = staffTimes
+                              .map((st, originalIndex) => ({ ...st, originalIndex }))
+                              .filter(st => !st.endTime);
+                            return ongoing.map((st) => (
                               <Button
-                                key={idx}
+                                key={`${st.email}-${st.originalIndex}`}
                                 size="sm"
                                 variant="outline"
-                                onClick={() => handleMeetingEnded(registration, st.email)}
+                                onClick={() => handleMeetingEnded(registration, st.email, st.originalIndex)}
                                 disabled={endingMeetingId === registration.id}
                                 className="h-8 px-2 border-2 border-emerald-500 text-emerald-400 hover:bg-emerald-500 hover:text-white text-xs"
                                 title={`End meeting with ${st.email.split('@')[0]}`}

@@ -20,6 +20,7 @@ const handler = async (req: Request): Promise<Response> => {
     const staffEmail = url.searchParams.get('staffEmail');
     const registrationTime = url.searchParams.get('registrationTime');
     const visitorId = url.searchParams.get('visitorId');
+    const staffIndexParam = url.searchParams.get('staffIndex');
 
     if (!action || !visitorName || !staffEmail || !registrationTime) {
       return new Response('Missing required parameters', { status: 400 });
@@ -67,13 +68,37 @@ const handler = async (req: Request): Promise<Response> => {
         if (visitor.meeting_staff_times) {
           try {
             const staffTimes = JSON.parse(visitor.meeting_staff_times);
-            const updated = staffTimes.map((st: any) =>
-              st.email === staffEmail && !st.endTime ? { ...st, endTime: istString } : st
-            );
-            updatePayload.meeting_staff_times = JSON.stringify(updated);
-            // Only set global meeting end if ALL staff meetings have ended
-            if (updated.every((st: any) => st.endTime)) {
-              updatePayload.meeting_staff_end_time = istString;
+            const normalizedEmail = (staffEmail || '').trim().toLowerCase();
+            const parsedStaffIndex = staffIndexParam !== null ? Number(staffIndexParam) : NaN;
+            const hasValidIndex = Number.isInteger(parsedStaffIndex) && parsedStaffIndex >= 0 && parsedStaffIndex < staffTimes.length;
+
+            let didUpdate = false;
+            const updated = [...staffTimes];
+
+            if (hasValidIndex) {
+              const target = updated[parsedStaffIndex];
+              if (target && !target.endTime) {
+                updated[parsedStaffIndex] = { ...target, endTime: istString };
+                didUpdate = true;
+              }
+            }
+
+            if (!didUpdate) {
+              const firstMatchIndex = updated.findIndex((st: any) =>
+                (st.email || '').trim().toLowerCase() === normalizedEmail && !st.endTime
+              );
+              if (firstMatchIndex >= 0) {
+                updated[firstMatchIndex] = { ...updated[firstMatchIndex], endTime: istString };
+                didUpdate = true;
+              }
+            }
+
+            if (didUpdate) {
+              updatePayload.meeting_staff_times = JSON.stringify(updated);
+              const allEnded = updated.length > 0 && updated.every((st: any) => st.endTime);
+              updatePayload.meeting_staff_end_time = allEnded ? istString : null;
+            } else {
+              console.log("No matching ongoing staff meeting found to update", { visitorId, staffEmail, staffIndexParam });
             }
           } catch {
             updatePayload.meeting_staff_end_time = istString;
@@ -82,16 +107,18 @@ const handler = async (req: Request): Promise<Response> => {
           updatePayload.meeting_staff_end_time = istString;
         }
 
-        // IMPORTANT: Never update endtime here - visitor exit is separate
-        const { error: updateError } = await supabase
-          .from('visitor_registrations')
-          .update(updatePayload)
-          .eq('id', visitor.id);
+        if (Object.keys(updatePayload).length > 0) {
+          // IMPORTANT: Never update endtime here - visitor exit is separate
+          const { error: updateError } = await supabase
+            .from('visitor_registrations')
+            .update(updatePayload)
+            .eq('id', visitor.id);
 
-        if (updateError) {
-          console.error("Error updating meeting end time:", updateError);
-        } else {
-          console.log("Successfully updated meeting end time for visitor:", visitorName, "staff:", staffEmail);
+          if (updateError) {
+            console.error("Error updating meeting end time:", updateError);
+          } else {
+            console.log("Successfully updated meeting end time for visitor:", visitorName, "staff:", staffEmail, "staffIndex:", staffIndexParam);
+          }
         }
       } else {
         console.error("No visitor record found for:", visitorName, visitorId);

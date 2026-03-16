@@ -19,6 +19,7 @@ interface StaffNotificationRequest {
   people?: Array<{ name: string; role: string }>;
   meetingStartTime?: string;
   visitorId?: string;
+  staffIndex?: number;
 }
 
 const handler = async (req: Request): Promise<Response> => {
@@ -27,7 +28,7 @@ const handler = async (req: Request): Promise<Response> => {
   }
 
   try {
-    const { staffEmail, visitorName, purpose, numberOfPeople, startTime, phoneNumber, address, pictureUrl, people, meetingStartTime, visitorId }: StaffNotificationRequest = await req.json();
+    const { staffEmail, visitorName, purpose, numberOfPeople, startTime, phoneNumber, address, pictureUrl, people, meetingStartTime, visitorId, staffIndex }: StaffNotificationRequest = await req.json();
 
     console.log("Sending email to:", staffEmail);
     console.log("Picture URL received:", pictureUrl);
@@ -67,7 +68,7 @@ const handler = async (req: Request): Promise<Response> => {
     }
 
     const baseUrl = "https://efxeohyxpnwewhqwlahw.supabase.co/functions/v1/handle-visit-response";
-    const commonParams = `visitorName=${encodeURIComponent(visitorName)}&staffEmail=${encodeURIComponent(staffEmail)}&registrationTime=${encodeURIComponent(currentTime)}${visitorId ? `&visitorId=${encodeURIComponent(visitorId)}` : ''}`;
+    const commonParams = `visitorName=${encodeURIComponent(visitorName)}&staffEmail=${encodeURIComponent(staffEmail)}&registrationTime=${encodeURIComponent(currentTime)}${visitorId ? `&visitorId=${encodeURIComponent(visitorId)}` : ''}${typeof staffIndex === 'number' ? `&staffIndex=${staffIndex}` : ''}`;
     const approveUrl = `${baseUrl}?action=approve&${commonParams}`;
     const denyUrl = `${baseUrl}?action=deny&${commonParams}`;
     const meetingEndedUrl = `${baseUrl}?action=meeting_ended&${commonParams}`;
