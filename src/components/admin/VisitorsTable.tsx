@@ -275,21 +275,34 @@ export const VisitorsTable: React.FC<VisitorsTableProps> = ({
                     </TableCell>
                     {/* Meeting Duration Column */}
                     <TableCell className="py-4 border-r border-gray-700">
-                      {registration.purpose === 'meeting_school_staff' ? (
-                        <div className="space-y-1">
-                          <div className="text-xs text-white font-medium">
-                            Start: {formatDate(registration.meeting_staff_start_time || registration.starttime)}
+                      {registration.purpose === 'meeting_school_staff' ? (() => {
+                        const staffTimes = parseStaffTimes(registration);
+                        if (staffTimes.length > 0) {
+                          return (
+                            <div className="space-y-2">
+                              {staffTimes.map((st, idx) => (
+                                <div key={idx} className="text-xs border-b border-gray-600 pb-1 last:border-0">
+                                  <div className="text-amber-400 font-bold truncate max-w-[150px]" title={st.email}>{st.email.split('@')[0]}</div>
+                                  <div className="text-white font-medium">In: {formatDate(st.startTime)}</div>
+                                  <div className="text-white font-medium">
+                                    Out: {st.endTime ? formatDate(st.endTime) : <span className="text-green-400">Ongoing</span>}
+                                  </div>
+                                </div>
+                              ))}
+                            </div>
+                          );
+                        }
+                        return (
+                          <div className="space-y-1">
+                            <div className="text-xs text-white font-medium">
+                              Start: {formatDate(registration.meeting_staff_start_time || registration.starttime)}
+                            </div>
+                            <div className="text-xs text-white font-medium">
+                              End: {registration.meeting_staff_end_time ? formatDate(registration.meeting_staff_end_time) : 'Ongoing'}
+                            </div>
                           </div>
-                          <div className="text-xs text-white font-medium">
-                            End: {registration.meeting_staff_end_time ? formatDate(registration.meeting_staff_end_time) : 'Ongoing'}
-                          </div>
-                          {registration.meeting_staff_end_time && (
-                            <span className="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-bold bg-amber-100 text-amber-800">
-                              Meeting Ended
-                            </span>
-                          )}
-                        </div>
-                      ) : (
+                        );
+                      })() : (
                         <div className="text-xs text-white/50 font-medium">N/A</div>
                       )}
                     </TableCell>
