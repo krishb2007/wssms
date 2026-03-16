@@ -19,6 +19,7 @@ interface StaffNotificationRequest {
   people?: Array<{ name: string; role: string }>;
   meetingStartTime?: string;
   visitorId?: string;
+  staffIndex?: number;
 }
 
 const handler = async (req: Request): Promise<Response> => {
