@@ -65,7 +65,19 @@ export const VisitorDetailsModal: React.FC<VisitorDetailsModalProps> = ({
 
   const staffEmails = registration.email ? registration.email.split(',').map(e => e.trim()).filter(Boolean) : [];
 
+  const staffTimes: StaffMeetingTime[] = (() => {
+    if (!registration.meeting_staff_times) return [];
+    try { return JSON.parse(registration.meeting_staff_times); } catch { return []; }
+  })();
+
   const getMeetingStatus = () => {
+    if (staffTimes.length > 0) {
+      const allEnded = staffTimes.every(st => st.endTime);
+      if (allEnded) return 'All Meetings Ended';
+      const someEnded = staffTimes.some(st => st.endTime);
+      if (someEnded) return 'Some Meetings Ongoing';
+      return 'In Meeting';
+    }
     if (registration.meeting_staff_end_time) return 'Meeting Ended';
     if (registration.meeting_staff_start_time) return 'In Meeting';
     return null;
