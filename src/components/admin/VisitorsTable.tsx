@@ -366,13 +366,15 @@ export const VisitorsTable: React.FC<VisitorsTableProps> = ({
                         {registration.purpose === 'meeting_school_staff' && (() => {
                           const staffTimes = parseStaffTimes(registration);
                           if (staffTimes.length > 0) {
-                            const ongoing = staffTimes.filter(st => !st.endTime);
-                            return ongoing.map((st, idx) => (
+                            const ongoing = staffTimes
+                              .map((st, originalIndex) => ({ ...st, originalIndex }))
+                              .filter(st => !st.endTime);
+                            return ongoing.map((st) => (
                               <Button
-                                key={idx}
+                                key={`${st.email}-${st.originalIndex}`}
                                 size="sm"
                                 variant="outline"
-                                onClick={() => handleMeetingEnded(registration, st.email)}
+                                onClick={() => handleMeetingEnded(registration, st.email, st.originalIndex)}
                                 disabled={endingMeetingId === registration.id}
                                 className="h-8 px-2 border-2 border-emerald-500 text-emerald-400 hover:bg-emerald-500 hover:text-white text-xs"
                                 title={`End meeting with ${st.email.split('@')[0]}`}
