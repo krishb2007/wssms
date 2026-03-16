@@ -68,7 +68,7 @@ const handler = async (req: Request): Promise<Response> => {
     }
 
     const baseUrl = "https://efxeohyxpnwewhqwlahw.supabase.co/functions/v1/handle-visit-response";
-    const commonParams = `visitorName=${encodeURIComponent(visitorName)}&staffEmail=${encodeURIComponent(staffEmail)}&registrationTime=${encodeURIComponent(currentTime)}${visitorId ? `&visitorId=${encodeURIComponent(visitorId)}` : ''}`;
+    const commonParams = `visitorName=${encodeURIComponent(visitorName)}&staffEmail=${encodeURIComponent(staffEmail)}&registrationTime=${encodeURIComponent(currentTime)}${visitorId ? `&visitorId=${encodeURIComponent(visitorId)}` : ''}${typeof staffIndex === 'number' ? `&staffIndex=${staffIndex}` : ''}`;
     const approveUrl = `${baseUrl}?action=approve&${commonParams}`;
     const denyUrl = `${baseUrl}?action=deny&${commonParams}`;
     const meetingEndedUrl = `${baseUrl}?action=meeting_ended&${commonParams}`;
