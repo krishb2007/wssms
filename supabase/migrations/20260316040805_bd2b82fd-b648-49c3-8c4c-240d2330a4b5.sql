@@ -1,0 +1,1 @@
+ALTER TABLE public.visitor_registrations ADD COLUMN IF NOT EXISTS meeting_staff_times text;

@@ -48,6 +48,7 @@ export type Database = {
           id_type: string | null
           meeting_staff_end_time: string | null
           meeting_staff_start_time: string | null
+          meeting_staff_times: string | null
           numberofpeople: number
           people: string
           phonenumber: string
@@ -72,6 +73,7 @@ export type Database = {
           id_type?: string | null
           meeting_staff_end_time?: string | null
           meeting_staff_start_time?: string | null
+          meeting_staff_times?: string | null
           numberofpeople: number
           people: string
           phonenumber: string
@@ -96,6 +98,7 @@ export type Database = {
           id_type?: string | null
           meeting_staff_end_time?: string | null
           meeting_staff_start_time?: string | null
+          meeting_staff_times?: string | null
           numberofpeople?: number
           people?: string
           phonenumber?: string
