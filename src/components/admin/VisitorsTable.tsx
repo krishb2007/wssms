@@ -351,19 +351,42 @@ export const VisitorsTable: React.FC<VisitorsTableProps> = ({
                           </Button>
                         )}
                         
-                        {/* Meeting Ended Button - only for staff meetings without ended meeting */}
-                        {registration.purpose === 'meeting_school_staff' && !registration.meeting_staff_end_time && (
-                          <Button
-                            size="sm"
-                            variant="outline"
-                            onClick={() => handleMeetingEnded(registration)}
-                            disabled={endingMeetingId === registration.id}
-                            className="h-8 px-2 border-2 border-emerald-500 text-emerald-400 hover:bg-emerald-500 hover:text-white text-xs"
-                            title="Mark meeting as ended (visitor stays on campus)"
-                          >
-                            <CheckCircle className="h-4 w-4" />
-                          </Button>
-                        )}
+                        {/* Meeting Ended Buttons - per staff or single */}
+                        {registration.purpose === 'meeting_school_staff' && (() => {
+                          const staffTimes = parseStaffTimes(registration);
+                          if (staffTimes.length > 0) {
+                            const ongoing = staffTimes.filter(st => !st.endTime);
+                            return ongoing.map((st, idx) => (
+                              <Button
+                                key={idx}
+                                size="sm"
+                                variant="outline"
+                                onClick={() => handleMeetingEnded(registration, st.email)}
+                                disabled={endingMeetingId === registration.id}
+                                className="h-8 px-2 border-2 border-emerald-500 text-emerald-400 hover:bg-emerald-500 hover:text-white text-xs"
+                                title={`End meeting with ${st.email.split('@')[0]}`}
+                              >
+                                <CheckCircle className="h-3 w-3 mr-1" />
+                                {st.email.split('@')[0].slice(0, 8)}
+                              </Button>
+                            ));
+                          }
+                          if (!registration.meeting_staff_end_time) {
+                            return (
+                              <Button
+                                size="sm"
+                                variant="outline"
+                                onClick={() => handleMeetingEnded(registration)}
+                                disabled={endingMeetingId === registration.id}
+                                className="h-8 px-2 border-2 border-emerald-500 text-emerald-400 hover:bg-emerald-500 hover:text-white text-xs"
+                                title="Mark meeting as ended"
+                              >
+                                <CheckCircle className="h-4 w-4" />
+                              </Button>
+                            );
+                          }
+                          return null;
+                        })()}
                       </div>
                     </TableCell>
                   </TableRow>
