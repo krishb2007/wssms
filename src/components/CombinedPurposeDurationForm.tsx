@@ -13,6 +13,12 @@ const STAFF_NAMES = [
   "AanchalNegi","AaronShangne","AbdulRehman","AbhishekKumar","AdityaManral","AfrozAnjum","AishwaryaDasappa","AjayNegi","AkashKar","AkashTuli","AkshayShah","AlokeMaiti","AlpanaPathak","AmritaJohn","AndrewDas","AndrewStuart-Watson","AndriyYanovych","AniruddhUpadhyay","AnjanaMenon","AnjanaSharma","AnneMcgregor","AnthonyHyde","AntonioMelgar","AnupamaMukherjee","AnushaTuli","AnusuyaVijay","AnveshThapa","ArpanaFernandes","ArpanaMalhotra","AshishLuthra","AzadSingh","BlairLee","BormaniDevi","BrigitteConcessio","BrijeshTyagi","CeciliaCastro","ChelseaKorth","ChrisantaEly","ChristopherMartin","ClaireBrady","ComfortAnkutse","CristianRuiz","CristinaSantiago","DanKoopLiechty","DarabNagarwalla","DavidFrederick","DavidWilliamson","DeborrahMondle","DeunKim","DharmendraBhandari","DheeraSingla","DipikaSharma","DishaAggarwal","DuncanOwich","EktaJohn","EldriMeintjes","EnoshThomas","EshaGeorge","EthanBaker","GauravRawat","GirirajShekhawat","GodwinKomora","GurdeepGrover","HarshBajaj","HimanshuHalve","HutenLaldailova","ImtiazRai","IngMariePutka","JaclynDuellman","JacobHorsey","JamesTuffs","JenniferBelz","JenniferFrederick","JerushaMissal","JessicaLall","JitendraSingh","JoelFord","JoonaSheel","JordanKorth","JustineOliver","KalpanaSingh","KamalThapa","KarenLloyd","KaterinaVackova","KetanSwami","KiranSingh","KleinVerHill","KristenRichardson","KuldeepBhandari","KuvengoluKhamo","LanieGaitan","LaureneGuirette","LekhaMukherjee","LimeeshiBhaskaram","MaggieHolmesheoran","ManishaDogra","MariaLusardi","MariaPrieto","MarkCrowell","MarkWindsor","MartaSzypczynska","MerlineJesudoss","MilanSudzuk","ModesteDate","MohammadJamaal","MohdYousuf","MohitHolmesheoran","NalayiniNantha","NehaSingh","NehaSwami","OksanaSielina","PeshumhringHuten","PholkanLukhu","PoojaAggarwal","PoojaSharma","PoonamSharma","PoushaliBanerjee","PrabinRai","PrarthanaSingh","PrasannaBoddapati","PrashantSingh","PrateekSantram","PravinJelaji","PreetiBhandari","PrernaGadve","PriyankaNagalia","PriyaRollins","PruthiviPanda","RaakheeGumireddy","RachnaPeter","RahimaThomas","RajatBhog","RangariraiMagudu","RaveeshDogra","RaviArthur","RenuOberoi","RohitSharma","RonitaDaniel","RuthBroome","RuthKalsang","SaffronToms","SamuelDzongor","SanchaliChakraborty","SandeepRawat","SangayOhm","SangeetaBhandari","SanketShitole","SarahKhan","SarahThomas","SareenaPun","SenoluDawhuo","ShadabBegum","ShailenderBhandari","ShaileshGarg","SheetalWaller","ShivaniSapehia","ShoaibAli","ShreyNagalia","SonamThomas","SonamTshering","SondeepPeter","SongSeokin","SrinivasGopal","StellaDate","SudhirMendiratta","SumanMitra","SunilBaloni","SunilKumar","SunitaPanwar","SureshChand","SwatiRoy","SwetaGarg","TafadzwaChibade","TanuPathak","TanyaGurung","TanyaMarathe","TheresaJoseph","ThomasJacob","TriptiRathore","TseringMalik","TwylaSpiller","UpasnaGhale","VimmiDang","VinodBhandari","VipulVashistha","VishalNegi","VivekWilliam","YunJiKwak","ZohraJohn"
 ];
 
+export interface StaffMeetingTime {
+  email: string;
+  startTime: string;
+  endTime: string | null;
+}
+
 interface CombinedPurposeDurationFormProps {
   formData: {
     purpose: string;
@@ -20,6 +26,7 @@ interface CombinedPurposeDurationFormProps {
     staffEmail: string;
     staffEmails: string[];
     startTime: string;
+    meetingStaffTimes?: StaffMeetingTime[];
   };
   updateFormData: (data: Partial<{ 
     purpose: string; 
@@ -27,6 +34,7 @@ interface CombinedPurposeDurationFormProps {
     staffEmail: string;
     staffEmails: string[];
     startTime: string;
+    meetingStaffTimes: StaffMeetingTime[];
   }>) => void;
   nextStep: () => void;
   prevStep: () => void;
