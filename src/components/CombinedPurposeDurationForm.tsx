@@ -325,6 +325,9 @@ const CombinedPurposeDurationForm: React.FC<CombinedPurposeDurationFormProps> = 
                 onRemove={() => removeStaffEntry(index)}
                 showRemove={staffEmails.length > 1}
                 required={index === 0}
+                showMeetingTime={index > 0}
+                meetingStartTime={meetingStaffTimes[index]?.startTime || ""}
+                onMeetingStartTimeChange={(val) => updateStaffMeetingTime(index, val)}
               />
             ))}
             <Button
