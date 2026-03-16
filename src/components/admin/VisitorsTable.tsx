@@ -261,29 +261,6 @@ export const VisitorsTable: React.FC<VisitorsTableProps> = ({
                         </div>
                       </div>
                     </TableCell>
-                    <TableCell className="py-4 border-r border-gray-700">
-                      <div className="space-y-1">
-                        <div className="flex items-center text-xs text-white font-medium">
-                          <Clock className="h-3 w-3 mr-1" />
-                          In: {formatDate(registration.starttime || registration.created_at)}
-                        </div>
-                        {editingId === registration.id ? (
-                          <div className="space-y-1">
-                            <Input
-                              type="datetime-local"
-                              value={editEndTime}
-                              onChange={(e) => onEditEndTimeChange(e.target.value)}
-                              className="w-52 text-xs bg-gray-700 border-gray-600 text-white font-medium"
-                            />
-                            {saving && <div className="text-amber-400 text-xs font-medium">Saving...</div>}
-                          </div>
-                        ) : (
-                          <div className="text-xs text-white font-medium">
-                            Out: {registration.endtime ? formatDate(registration.endtime) : 'On campus'}
-                          </div>
-                        )}
-                      </div>
-                    </TableCell>
                     {/* Meeting Duration Column */}
                     <TableCell className="py-4 border-r border-gray-700">
                       {registration.purpose === 'meeting_school_staff' ? (() => {
@@ -316,6 +293,29 @@ export const VisitorsTable: React.FC<VisitorsTableProps> = ({
                       })() : (
                         <div className="text-xs text-white/50 font-medium">N/A</div>
                       )}
+                    </TableCell>
+                    <TableCell className="py-4 border-r border-gray-700">
+                      <div className="space-y-1">
+                        <div className="flex items-center text-xs text-white font-medium">
+                          <Clock className="h-3 w-3 mr-1" />
+                          In: {formatDate(registration.starttime || registration.created_at)}
+                        </div>
+                        {editingId === registration.id ? (
+                          <div className="space-y-1">
+                            <Input
+                              type="datetime-local"
+                              value={editEndTime}
+                              onChange={(e) => onEditEndTimeChange(e.target.value)}
+                              className="w-52 text-xs bg-gray-700 border-gray-600 text-white font-medium"
+                            />
+                            {saving && <div className="text-amber-400 text-xs font-medium">Saving...</div>}
+                          </div>
+                        ) : (
+                          <div className="text-xs text-white font-medium">
+                            Out: {registration.endtime ? formatDate(registration.endtime) : 'On campus'}
+                          </div>
+                        )}
+                      </div>
                     </TableCell>
                     <TableCell className="py-4 border-r border-gray-700">
                       {getStatusBadge(registration)}
