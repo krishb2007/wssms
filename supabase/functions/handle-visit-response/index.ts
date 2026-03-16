@@ -20,6 +20,7 @@ const handler = async (req: Request): Promise<Response> => {
     const staffEmail = url.searchParams.get('staffEmail');
     const registrationTime = url.searchParams.get('registrationTime');
     const visitorId = url.searchParams.get('visitorId');
+    const staffIndexParam = url.searchParams.get('staffIndex');
 
     if (!action || !visitorName || !staffEmail || !registrationTime) {
       return new Response('Missing required parameters', { status: 400 });
