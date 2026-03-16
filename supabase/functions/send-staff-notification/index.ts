@@ -28,7 +28,7 @@ const handler = async (req: Request): Promise<Response> => {
   }
 
   try {
-    const { staffEmail, visitorName, purpose, numberOfPeople, startTime, phoneNumber, address, pictureUrl, people, meetingStartTime, visitorId }: StaffNotificationRequest = await req.json();
+    const { staffEmail, visitorName, purpose, numberOfPeople, startTime, phoneNumber, address, pictureUrl, people, meetingStartTime, visitorId, staffIndex }: StaffNotificationRequest = await req.json();
 
     console.log("Sending email to:", staffEmail);
     console.log("Picture URL received:", pictureUrl);
