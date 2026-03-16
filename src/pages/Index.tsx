@@ -43,6 +43,7 @@ const Index = () => {
     meetingStaffStartTime: null,
     meetingStaffEndTime: null,
     entryLocation: null,
+    meetingStaffTimes: [],
   });
 
   // Capture GPS location on mount
