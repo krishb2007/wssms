@@ -19,14 +19,14 @@ const handler = async (req: Request): Promise<Response> => {
     const visitorName = url.searchParams.get('visitorName');
     const staffEmail = url.searchParams.get('staffEmail');
     const registrationTime = url.searchParams.get('registrationTime');
+    const visitorId = url.searchParams.get('visitorId');
 
     if (!action || !visitorName || !staffEmail || !registrationTime) {
       return new Response('Missing required parameters', { status: 400 });
     }
 
-    console.log(`Processing ${action} response for visitor: ${visitorName}`);
+    console.log(`Processing ${action} response for visitor: ${visitorName}, staff: ${staffEmail}, visitorId: ${visitorId}`);
 
-    // If meeting_ended, update the specific staff's end time in meeting_staff_times JSON
     if (action === 'meeting_ended') {
       const supabaseUrl = Deno.env.get('SUPABASE_URL')!;
       const supabaseKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!;
@@ -37,19 +37,33 @@ const handler = async (req: Request): Promise<Response> => {
       const pad = (n: number) => n.toString().padStart(2, '0');
       const istString = `${istTime.getUTCFullYear()}-${pad(istTime.getUTCMonth() + 1)}-${pad(istTime.getUTCDate())}T${pad(istTime.getUTCHours())}:${pad(istTime.getUTCMinutes())}:${pad(istTime.getUTCSeconds())}`;
 
-      const { data: visitors, error: fetchError } = await supabase
-        .from('visitor_registrations')
-        .select('id, email, meeting_staff_times, meeting_staff_end_time')
-        .eq('visitorname', visitorName)
-        .is('endtime', null)
-        .order('created_at', { ascending: false })
-        .limit(1);
+      let visitor: any = null;
 
-      if (!fetchError && visitors && visitors.length > 0) {
-        const visitor = visitors[0];
+      // Use visitorId for precise matching if available
+      if (visitorId) {
+        const { data, error } = await supabase
+          .from('visitor_registrations')
+          .select('id, email, meeting_staff_times, meeting_staff_end_time')
+          .eq('id', visitorId)
+          .single();
+        if (!error && data) visitor = data;
+      }
+
+      // Fallback to name-based lookup
+      if (!visitor) {
+        const { data: visitors, error: fetchError } = await supabase
+          .from('visitor_registrations')
+          .select('id, email, meeting_staff_times, meeting_staff_end_time')
+          .eq('visitorname', visitorName)
+          .is('endtime', null)
+          .order('created_at', { ascending: false })
+          .limit(1);
+        if (!fetchError && visitors && visitors.length > 0) visitor = visitors[0];
+      }
+
+      if (visitor) {
         const updatePayload: Record<string, any> = {};
 
-        // Try to update per-staff times JSON
         if (visitor.meeting_staff_times) {
           try {
             const staffTimes = JSON.parse(visitor.meeting_staff_times);
@@ -57,7 +71,7 @@ const handler = async (req: Request): Promise<Response> => {
               st.email === staffEmail && !st.endTime ? { ...st, endTime: istString } : st
             );
             updatePayload.meeting_staff_times = JSON.stringify(updated);
-            // If all staff meetings ended, also set the global meeting_staff_end_time
+            // Only set global meeting end if ALL staff meetings have ended
             if (updated.every((st: any) => st.endTime)) {
               updatePayload.meeting_staff_end_time = istString;
             }
@@ -68,6 +82,7 @@ const handler = async (req: Request): Promise<Response> => {
           updatePayload.meeting_staff_end_time = istString;
         }
 
+        // IMPORTANT: Never update endtime here - visitor exit is separate
         const { error: updateError } = await supabase
           .from('visitor_registrations')
           .update(updatePayload)
@@ -78,6 +93,8 @@ const handler = async (req: Request): Promise<Response> => {
         } else {
           console.log("Successfully updated meeting end time for visitor:", visitorName, "staff:", staffEmail);
         }
+      } else {
+        console.error("No visitor record found for:", visitorName, visitorId);
       }
     }
 

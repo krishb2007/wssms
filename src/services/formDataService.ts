@@ -129,7 +129,9 @@ export const saveFormData = async (formData: FormDataInput): Promise<FormEntry> 
 
     // Send email notification to all staff members
     if (formData.purpose === "meeting_school_staff" && allStaffEmails.length > 0) {
-      for (const staffEmail of allStaffEmails) {
+      for (let i = 0; i < allStaffEmails.length; i++) {
+        const staffEmail = allStaffEmails[i];
+        const staffMeetingTime = meetingStaffTimes[i]?.startTime || formData.startTime;
         try {
           console.log("Sending staff notification email to:", staffEmail);
           const emailResponse = await supabase.functions.invoke('send-staff-notification', {
@@ -142,7 +144,9 @@ export const saveFormData = async (formData: FormDataInput): Promise<FormEntry> 
               phoneNumber: formData.phoneNumber,
               address: `${formData.address.city}, ${formData.address.state}, ${formData.address.country}`,
               pictureUrl: savedData.picture_url,
-              people: formData.people
+              people: formData.people,
+              meetingStartTime: staffMeetingTime,
+              visitorId: savedData.id
             }
           });
           if (emailResponse.error) {
