@@ -11,7 +11,14 @@ export const useVisitorRegistrations = () => {
   const [searchTerm, setSearchTerm] = useState<string>('');
 
   const sortRegistrations = (data: VisitorRegistration[]) => {
-    return data.sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime());
+    return data.sort((a, b) => {
+      // Active (no endtime) visitors first
+      const aActive = !a.endtime ? 0 : 1;
+      const bActive = !b.endtime ? 0 : 1;
+      if (aActive !== bActive) return aActive - bActive;
+      // Then by date descending
+      return new Date(b.created_at).getTime() - new Date(a.created_at).getTime();
+    });
   };
 
   useEffect(() => {
