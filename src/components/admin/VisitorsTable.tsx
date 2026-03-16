@@ -47,7 +47,7 @@ export const VisitorsTable: React.FC<VisitorsTableProps> = ({
     try { return JSON.parse(registration.meeting_staff_times); } catch { return []; }
   };
 
-  const handleMeetingEnded = async (registration: VisitorRegistration, staffEmail?: string) => {
+  const handleMeetingEnded = async (registration: VisitorRegistration, staffEmail?: string, staffIndex?: number) => {
     setEndingMeetingId(registration.id);
     try {
       const now = new Date();
@@ -57,16 +57,27 @@ export const VisitorsTable: React.FC<VisitorsTableProps> = ({
       const istString = `${ist.getFullYear()}-${pad(ist.getMonth() + 1)}-${pad(ist.getDate())}T${pad(ist.getHours())}:${pad(ist.getMinutes())}:${pad(ist.getSeconds())}`;
 
       const staffTimes = parseStaffTimes(registration);
-      
-      if (staffTimes.length > 0 && staffEmail) {
-        // Update specific staff's end time in JSON
-        const updated = staffTimes.map(st => 
-          st.email === staffEmail && !st.endTime ? { ...st, endTime: istString } : st
-        );
-        const allEnded = updated.every(st => st.endTime);
-        const updatePayload: any = { meeting_staff_times: JSON.stringify(updated) };
-        if (allEnded) updatePayload.meeting_staff_end_time = istString;
-        
+
+      if (staffTimes.length > 0) {
+        const updated = [...staffTimes];
+        let targetIndex = typeof staffIndex === 'number' ? staffIndex : -1;
+
+        if (targetIndex < 0 && staffEmail) {
+          targetIndex = updated.findIndex(
+            st => st.email.trim().toLowerCase() === staffEmail.trim().toLowerCase() && !st.endTime
+          );
+        }
+
+        if (targetIndex >= 0 && updated[targetIndex] && !updated[targetIndex].endTime) {
+          updated[targetIndex] = { ...updated[targetIndex], endTime: istString };
+        }
+
+        const allEnded = updated.length > 0 && updated.every(st => st.endTime);
+        const updatePayload: any = {
+          meeting_staff_times: JSON.stringify(updated),
+          meeting_staff_end_time: allEnded ? istString : null,
+        };
+
         const { error } = await supabase
           .from('visitor_registrations')
           .update(updatePayload)
