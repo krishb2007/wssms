@@ -43,7 +43,6 @@ export type Database = {
           email: string | null
           endtime: string | null
           entry_location: string | null
-          extra_info: string | null
           id: string
           id_number: string | null
           id_type: string | null
@@ -68,7 +67,6 @@ export type Database = {
           email?: string | null
           endtime?: string | null
           entry_location?: string | null
-          extra_info?: string | null
           id?: string
           id_number?: string | null
           id_type?: string | null
@@ -93,7 +91,6 @@ export type Database = {
           email?: string | null
           endtime?: string | null
           entry_location?: string | null
-          extra_info?: string | null
           id?: string
           id_number?: string | null
           id_type?: string | null
