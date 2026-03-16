@@ -188,8 +188,8 @@ export const VisitorsTable: React.FC<VisitorsTableProps> = ({
                   <TableHead className="font-bold text-amber-400 border-r border-gray-600">Contact</TableHead>
                   <TableHead className="font-bold text-amber-400 border-r border-gray-600">Purpose</TableHead>
                   <TableHead className="font-bold text-amber-400 border-r border-gray-600">People</TableHead>
-                  <TableHead className="font-bold text-amber-400 border-r border-gray-600">Visit Duration</TableHead>
                   <TableHead className="font-bold text-amber-400 border-r border-gray-600">Meeting Duration</TableHead>
+                  <TableHead className="font-bold text-amber-400 border-r border-gray-600">Visit Duration</TableHead>
                   <TableHead className="font-bold text-amber-400 border-r border-gray-600">Status</TableHead>
                   <TableHead className="font-bold text-amber-400">Actions</TableHead>
                 </TableRow>
