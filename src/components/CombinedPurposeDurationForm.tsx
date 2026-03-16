@@ -147,6 +147,17 @@ const StaffEmailEntry: React.FC<{
         }}
         placeholder="staff@example.com"
       />
+      {showMeetingTime && (
+        <div className="mt-2 space-y-1">
+          <Label className="text-xs">Meeting Start Time for this staff:</Label>
+          <Input
+            type="datetime-local"
+            value={meetingStartTime || ""}
+            onChange={(e) => onMeetingStartTimeChange?.(e.target.value)}
+            required
+          />
+        </div>
+      )}
     </div>
   );
 };
