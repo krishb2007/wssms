@@ -90,21 +90,35 @@ const ExitPage = () => {
                 </p>
               </div>
               
-              <div className="bg-gray-50 p-4 rounded-lg mb-6">
-                <h3 className="font-semibold text-gray-900 mb-2">Exit Details</h3>
-                <p className="text-sm text-gray-600 mb-1">
-                  <strong>Visitor:</strong> {exitedVisitor.visitorname}
-                </p>
-                <p className="text-sm text-gray-600 mb-1">
-                  <strong>Phone:</strong> {exitedVisitor.phonenumber}
-                </p>
-                <p className="text-sm text-gray-600">
-                  <strong>Exit Time:</strong> {new Date(exitedVisitor.endtime + '+05:30').toLocaleString('en-IN', {
-                    timeZone: 'Asia/Kolkata',
-                    dateStyle: 'short',
-                    timeStyle: 'short'
-                  })}
-                </p>
+              <div className="bg-gray-50 p-4 rounded-lg mb-6 text-left">
+                <h3 className="font-semibold text-gray-900 mb-3 text-center">Exit Details</h3>
+                <div className="flex items-center gap-3">
+                  {exitedVisitor.picture_url ? (
+                    <img
+                      src={exitedVisitor.picture_url}
+                      alt={exitedVisitor.visitorname}
+                      className="w-12 h-12 rounded-full object-cover border border-gray-200 shrink-0"
+                    />
+                  ) : (
+                    <div className="w-12 h-12 rounded-full bg-gray-200 flex items-center justify-center shrink-0">
+                      <span className="text-gray-500 text-lg font-semibold">
+                        {exitedVisitor.visitorname?.charAt(0)?.toUpperCase()}
+                      </span>
+                    </div>
+                  )}
+                  <div className="space-y-1">
+                    <p className="text-sm text-gray-700 font-semibold">{exitedVisitor.visitorname}</p>
+                    <p className="text-xs text-gray-600">People in group: {Number(exitedVisitor.numberofpeople) || 1}</p>
+                    <p className="text-xs text-gray-600">Companions: {Math.max((Number(exitedVisitor.numberofpeople) || 1) - 1, 0)}</p>
+                    <p className="text-xs text-gray-600">
+                      Exit: {new Date(exitedVisitor.endtime + '+05:30').toLocaleString('en-IN', {
+                        timeZone: 'Asia/Kolkata',
+                        dateStyle: 'short',
+                        timeStyle: 'short'
+                      })}
+                    </p>
+                  </div>
+                </div>
               </div>
 
               <div className="space-y-4">

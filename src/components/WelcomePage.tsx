@@ -109,9 +109,12 @@ const WelcomePage: React.FC<WelcomePageProps> = ({ nextStep }) => {
                 )}
                 <div className="text-left space-y-0.5">
                   <p className="font-semibold text-gray-800">{exitedVisitor.visitorname}</p>
-                  {exitedVisitor.numberofpeople > 1 && (
-                    <p className="text-xs text-gray-500">+{exitedVisitor.numberofpeople - 1} companion{exitedVisitor.numberofpeople > 2 ? 's' : ''}</p>
-                  )}
+                  <p className="text-xs text-gray-500">
+                    People in group: {Number(exitedVisitor.numberofpeople) || 1}
+                  </p>
+                  <p className="text-xs text-gray-500">
+                    Companions: {Math.max((Number(exitedVisitor.numberofpeople) || 1) - 1, 0)}
+                  </p>
                   <p className="text-xs text-gray-500">
                     Exit: {new Date(exitedVisitor.endtime + '+05:30').toLocaleString('en-IN', {
                       timeZone: 'Asia/Kolkata',
