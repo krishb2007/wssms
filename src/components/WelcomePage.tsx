@@ -92,13 +92,35 @@ const WelcomePage: React.FC<WelcomePageProps> = ({ nextStep }) => {
               <CheckCircle className="h-5 w-5" />
               <span className="font-medium">Exit recorded successfully!</span>
             </div>
-            <div className="bg-gray-50 rounded-lg p-3 text-sm text-gray-600 space-y-1">
-              <p><strong>Visitor:</strong> {exitedVisitor.visitorname}</p>
-              <p><strong>Exit Time:</strong> {new Date(exitedVisitor.endtime + '+05:30').toLocaleString('en-IN', {
-                timeZone: 'Asia/Kolkata',
-                dateStyle: 'short',
-                timeStyle: 'short'
-              })}</p>
+            <div className="bg-gray-50 rounded-lg p-3 text-sm text-gray-600">
+              <div className="flex items-center gap-3">
+                {exitedVisitor.picture_url ? (
+                  <img
+                    src={exitedVisitor.picture_url}
+                    alt={exitedVisitor.visitorname}
+                    className="w-12 h-12 rounded-full object-cover border border-gray-200 shrink-0"
+                  />
+                ) : (
+                  <div className="w-12 h-12 rounded-full bg-gray-200 flex items-center justify-center shrink-0">
+                    <span className="text-gray-500 text-lg font-semibold">
+                      {exitedVisitor.visitorname?.charAt(0)?.toUpperCase()}
+                    </span>
+                  </div>
+                )}
+                <div className="text-left space-y-0.5">
+                  <p className="font-semibold text-gray-800">{exitedVisitor.visitorname}</p>
+                  {exitedVisitor.numberofpeople > 1 && (
+                    <p className="text-xs text-gray-500">+{exitedVisitor.numberofpeople - 1} companion{exitedVisitor.numberofpeople > 2 ? 's' : ''}</p>
+                  )}
+                  <p className="text-xs text-gray-500">
+                    Exit: {new Date(exitedVisitor.endtime + '+05:30').toLocaleString('en-IN', {
+                      timeZone: 'Asia/Kolkata',
+                      dateStyle: 'short',
+                      timeStyle: 'short'
+                    })}
+                  </p>
+                </div>
+              </div>
             </div>
             <Button
               variant="outline"
