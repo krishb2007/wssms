@@ -109,7 +109,7 @@ const ExitPage = () => {
                   <div className="space-y-1">
                     <p className="text-sm text-gray-700 font-semibold">{exitedVisitor.visitorname}</p>
                     <p className="text-xs text-gray-600">People in group: {Number(exitedVisitor.numberofpeople) || 1}</p>
-                    <p className="text-xs text-gray-600">Companions: {Math.max((Number(exitedVisitor.numberofpeople) || 1) - 1, 0)}</p>
+                    
                     <p className="text-xs text-gray-600">
                       Exit: {new Date(exitedVisitor.endtime + '+05:30').toLocaleString('en-IN', {
                         timeZone: 'Asia/Kolkata',

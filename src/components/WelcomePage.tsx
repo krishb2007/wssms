@@ -113,9 +113,6 @@ const WelcomePage: React.FC<WelcomePageProps> = ({ nextStep }) => {
                     People in group: {Number(exitedVisitor.numberofpeople) || 1}
                   </p>
                   <p className="text-xs text-gray-500">
-                    Companions: {Math.max((Number(exitedVisitor.numberofpeople) || 1) - 1, 0)}
-                  </p>
-                  <p className="text-xs text-gray-500">
                     Exit: {new Date(exitedVisitor.endtime + '+05:30').toLocaleString('en-IN', {
                       timeZone: 'Asia/Kolkata',
                       dateStyle: 'short',
