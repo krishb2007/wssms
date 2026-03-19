@@ -114,7 +114,17 @@ serve(async (req) => {
       throw new Error("Missing GOOGLE_SERVICE_ACCOUNT_JSON or GOOGLE_SHEET_ID");
     }
 
-    const serviceAccount = JSON.parse(serviceAccountJson);
+    console.log("Service account JSON first 20 chars:", serviceAccountJson.substring(0, 20));
+    console.log("Service account JSON length:", serviceAccountJson.length);
+
+    // Try to clean the JSON string in case it has extra quotes or escaping
+    let cleanJson = serviceAccountJson.trim();
+    // If the string is wrapped in extra quotes, remove them
+    if (cleanJson.startsWith('"') && cleanJson.endsWith('"')) {
+      cleanJson = JSON.parse(cleanJson);
+    }
+    
+    const serviceAccount = JSON.parse(cleanJson);
     const body = await req.json();
     const record = body.record;
 
