@@ -1,13 +1,11 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
-import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
   "Access-Control-Allow-Headers":
-    "authorization, x-client-info, apikey, content-type",
+    "authorization, x-client-info, apikey, content-type, x-supabase-client-platform, x-supabase-client-platform-version, x-supabase-client-runtime, x-supabase-client-runtime-version",
 };
 
-// Google Sheets API helpers
 async function getAccessToken(serviceAccount: any): Promise<string> {
   const now = Math.floor(Date.now() / 1000);
   const header = btoa(JSON.stringify({ alg: "RS256", typ: "JWT" }));
@@ -18,12 +16,11 @@ async function getAccessToken(serviceAccount: any): Promise<string> {
       aud: "https://oauth2.googleapis.com/token",
       exp: now + 3600,
       iat: now,
-    })
+    }),
   );
 
   const unsignedToken = `${header}.${claim}`;
 
-  // Import the private key for signing
   const pemContent = serviceAccount.private_key
     .replace("-----BEGIN PRIVATE KEY-----", "")
     .replace("-----END PRIVATE KEY-----", "")
@@ -36,25 +33,22 @@ async function getAccessToken(serviceAccount: any): Promise<string> {
     binaryKey,
     { name: "RSASSA-PKCS1-v1_5", hash: "SHA-256" },
     false,
-    ["sign"]
+    ["sign"],
   );
 
   const signature = await crypto.subtle.sign(
     "RSASSA-PKCS1-v1_5",
     key,
-    new TextEncoder().encode(unsignedToken)
+    new TextEncoder().encode(unsignedToken),
   );
 
-  const encodedSignature = btoa(
-    String.fromCharCode(...new Uint8Array(signature))
-  )
+  const encodedSignature = btoa(String.fromCharCode(...new Uint8Array(signature)))
     .replace(/\+/g, "-")
     .replace(/\//g, "_")
     .replace(/=+$/, "");
 
   const jwt = `${unsignedToken.replace(/\+/g, "-").replace(/\//g, "_").replace(/=+$/, "")}.${encodedSignature}`;
 
-  // Exchange JWT for access token
   const tokenResponse = await fetch("https://oauth2.googleapis.com/token", {
     method: "POST",
     headers: { "Content-Type": "application/x-www-form-urlencoded" },
@@ -70,16 +64,33 @@ async function getAccessToken(serviceAccount: any): Promise<string> {
   return tokenData.access_token;
 }
 
-// Base64url encode (no padding)
-function base64url(str: string): string {
-  return btoa(str).replace(/\+/g, "-").replace(/\//g, "_").replace(/=+$/, "");
+function normalizeSpreadsheetId(raw: string): string {
+  const trimmed = raw.trim();
+  const fromUrl = trimmed.match(/\/spreadsheets\/d\/([a-zA-Z0-9-_]+)/)?.[1];
+  return fromUrl || trimmed;
+}
+
+function parseServiceAccount(raw: string): any {
+  const trimmed = raw.trim();
+
+  if (trimmed.startsWith("{") && trimmed.endsWith("}")) {
+    return JSON.parse(trimmed);
+  }
+
+  if (trimmed.startsWith('"') && trimmed.endsWith('"')) {
+    return JSON.parse(JSON.parse(trimmed));
+  }
+
+  throw new Error(
+    "GOOGLE_SERVICE_ACCOUNT_JSON is invalid. Paste the full service account JSON object.",
+  );
 }
 
 async function appendRow(
   accessToken: string,
   spreadsheetId: string,
   sheetName: string,
-  values: string[][]
+  values: string[][],
 ) {
   const range = `${sheetName}!A:Z`;
   const url = `https://sheets.googleapis.com/v4/spreadsheets/${spreadsheetId}/values/${encodeURIComponent(range)}:append?valueInputOption=USER_ENTERED&insertDataOption=INSERT_ROWS`;
@@ -103,28 +114,24 @@ async function appendRow(
 
 serve(async (req) => {
   if (req.method === "OPTIONS") {
-    return new Response(null, { headers: corsHeaders });
+    return new Response("ok", { headers: corsHeaders });
   }
 
   try {
     const serviceAccountJson = Deno.env.get("GOOGLE_SERVICE_ACCOUNT_JSON");
-    const spreadsheetId = Deno.env.get("GOOGLE_SHEET_ID");
+    const spreadsheetIdRaw = Deno.env.get("GOOGLE_SHEET_ID");
+    const sheetName = Deno.env.get("GOOGLE_SHEET_NAME") || "Sheet1";
 
-    if (!serviceAccountJson || !spreadsheetId) {
+    if (!serviceAccountJson || !spreadsheetIdRaw) {
       throw new Error("Missing GOOGLE_SERVICE_ACCOUNT_JSON or GOOGLE_SHEET_ID");
     }
 
-    console.log("Service account JSON first 20 chars:", serviceAccountJson.substring(0, 20));
-    console.log("Service account JSON length:", serviceAccountJson.length);
+    const serviceAccount = parseServiceAccount(serviceAccountJson);
+    const spreadsheetId = normalizeSpreadsheetId(spreadsheetIdRaw);
 
-    // Try to clean the JSON string in case it has extra quotes or escaping
-    let cleanJson = serviceAccountJson.trim();
-    // If the string is wrapped in extra quotes, remove them
-    if (cleanJson.startsWith('"') && cleanJson.endsWith('"')) {
-      cleanJson = JSON.parse(cleanJson);
-    }
-    
-    const serviceAccount = JSON.parse(cleanJson);
+    console.log("Using spreadsheet ID length:", spreadsheetId.length);
+    console.log("Using sheet name:", sheetName);
+
     const body = await req.json();
     const record = body.record;
 
@@ -134,10 +141,8 @@ serve(async (req) => {
 
     console.log("Syncing visitor to Google Sheets:", record.visitorname);
 
-    // Get access token
     const accessToken = await getAccessToken(serviceAccount);
 
-    // Parse people field
     let peopleStr = "";
     try {
       const people = JSON.parse(record.people || "[]");
@@ -146,7 +151,6 @@ serve(async (req) => {
       peopleStr = record.people || "";
     }
 
-    // Format the row data
     const row = [
       record.visitorname || "",
       record.phonenumber || "",
@@ -166,8 +170,7 @@ serve(async (req) => {
       record.created_at || "",
     ];
 
-    // Append to Sheet1 (change sheet name if needed)
-    const result = await appendRow(accessToken, spreadsheetId, "Sheet1", [row]);
+    const result = await appendRow(accessToken, spreadsheetId, sheetName, [row]);
 
     console.log("Successfully synced to Google Sheets:", result);
 
@@ -176,12 +179,9 @@ serve(async (req) => {
     });
   } catch (error) {
     console.error("Google Sheets sync error:", error);
-    return new Response(
-      JSON.stringify({ error: error.message }),
-      {
-        status: 500,
-        headers: { ...corsHeaders, "Content-Type": "application/json" },
-      }
-    );
+    return new Response(JSON.stringify({ error: error.message }), {
+      status: 500,
+      headers: { ...corsHeaders, "Content-Type": "application/json" },
+    });
   }
 });
