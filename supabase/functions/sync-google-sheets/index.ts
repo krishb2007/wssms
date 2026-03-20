@@ -86,6 +86,95 @@ function parseServiceAccount(raw: string): any {
   );
 }
 
+function buildRow(record: any): string[] {
+  let peopleStr = "";
+  try {
+    const people = JSON.parse(record.people || "[]");
+    peopleStr = people.map((p: any) => `${p.name} (${p.role})`).join(", ");
+  } catch {
+    peopleStr = record.people || "";
+  }
+
+  return [
+    record.id || "",
+    record.visitorname || "",
+    record.phonenumber || "",
+    record.email || "",
+    String(record.numberofpeople || 0),
+    peopleStr,
+    record.purpose || "",
+    record.address || "",
+    record.entry_location || "",
+    record.id_type || "",
+    record.id_number || "",
+    record.starttime || "",
+    record.endtime || "",
+    record.meeting_staff_times || "",
+    record.picture_url || "",
+    record.signature_url || "",
+    record.created_at || "",
+  ];
+}
+
+async function findRowByRecordId(
+  accessToken: string,
+  spreadsheetId: string,
+  sheetName: string,
+  recordId: string,
+): Promise<number | null> {
+  // Read column A (where we store record.id) to find the matching row
+  const range = `${sheetName}!A:A`;
+  const url = `https://sheets.googleapis.com/v4/spreadsheets/${spreadsheetId}/values/${encodeURIComponent(range)}`;
+
+  const response = await fetch(url, {
+    headers: { Authorization: `Bearer ${accessToken}` },
+  });
+
+  if (!response.ok) {
+    const err = await response.text();
+    console.error("Failed to read sheet for row lookup:", err);
+    return null;
+  }
+
+  const data = await response.json();
+  const values = data.values || [];
+
+  for (let i = 0; i < values.length; i++) {
+    if (values[i][0] === recordId) {
+      return i + 1; // Sheets rows are 1-indexed
+    }
+  }
+
+  return null;
+}
+
+async function updateRow(
+  accessToken: string,
+  spreadsheetId: string,
+  sheetName: string,
+  rowNumber: number,
+  values: string[][],
+) {
+  const range = `${sheetName}!A${rowNumber}`;
+  const url = `https://sheets.googleapis.com/v4/spreadsheets/${spreadsheetId}/values/${encodeURIComponent(range)}?valueInputOption=USER_ENTERED`;
+
+  const response = await fetch(url, {
+    method: "PUT",
+    headers: {
+      Authorization: `Bearer ${accessToken}`,
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify({ values }),
+  });
+
+  if (!response.ok) {
+    const err = await response.text();
+    throw new Error(`Failed to update row: ${err}`);
+  }
+
+  return response.json();
+}
+
 async function appendRow(
   accessToken: string,
   spreadsheetId: string,
@@ -129,9 +218,6 @@ serve(async (req) => {
     const serviceAccount = parseServiceAccount(serviceAccountJson);
     const spreadsheetId = normalizeSpreadsheetId(spreadsheetIdRaw);
 
-    console.log("Using spreadsheet ID length:", spreadsheetId.length);
-    console.log("Using sheet name:", sheetName);
-
     const body = await req.json();
     const record = body.record;
 
@@ -139,38 +225,22 @@ serve(async (req) => {
       throw new Error("No record provided");
     }
 
-    console.log("Syncing visitor to Google Sheets:", record.visitorname);
+    console.log("Syncing visitor to Google Sheets:", record.visitorname, "ID:", record.id);
 
     const accessToken = await getAccessToken(serviceAccount);
+    const row = buildRow(record);
 
-    let peopleStr = "";
-    try {
-      const people = JSON.parse(record.people || "[]");
-      peopleStr = people.map((p: any) => `${p.name} (${p.role})`).join(", ");
-    } catch {
-      peopleStr = record.people || "";
+    // Check if this record already exists in the sheet
+    const existingRow = await findRowByRecordId(accessToken, spreadsheetId, sheetName, record.id);
+
+    let result;
+    if (existingRow) {
+      console.log(`Found existing row ${existingRow}, updating...`);
+      result = await updateRow(accessToken, spreadsheetId, sheetName, existingRow, [row]);
+    } else {
+      console.log("No existing row found, appending new row...");
+      result = await appendRow(accessToken, spreadsheetId, sheetName, [row]);
     }
-
-    const row = [
-      record.visitorname || "",
-      record.phonenumber || "",
-      record.email || "",
-      String(record.numberofpeople || 0),
-      peopleStr,
-      record.purpose || "",
-      record.address || "",
-      record.entry_location || "",
-      record.id_type || "",
-      record.id_number || "",
-      record.starttime || "",
-      record.endtime || "",
-      record.meeting_staff_times || "",
-      record.picture_url || "",
-      record.signature_url || "",
-      record.created_at || "",
-    ];
-
-    const result = await appendRow(accessToken, spreadsheetId, sheetName, [row]);
 
     console.log("Successfully synced to Google Sheets:", result);
 
