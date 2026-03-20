@@ -128,8 +128,8 @@ async function findRowByRecordId(
   sheetName: string,
   recordId: string,
 ): Promise<number | null> {
-  // Read column A (where we store record.id) to find the matching row
-  const range = `${sheetName}!A:A`;
+  // Read column W (where we store record.id) to find the matching row
+  const range = `${sheetName}!W:W`;
   const url = `https://sheets.googleapis.com/v4/spreadsheets/${spreadsheetId}/values/${encodeURIComponent(range)}`;
 
   const response = await fetch(url, {
