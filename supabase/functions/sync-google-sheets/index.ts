@@ -96,23 +96,29 @@ function buildRow(record: any): string[] {
   }
 
   return [
-    record.id || "",
+    record.entry_location || "",
     record.visitorname || "",
-    record.phonenumber || "",
-    record.email || "",
     String(record.numberofpeople || 0),
     peopleStr,
     record.purpose || "",
+    record.phonenumber || "",
     record.address || "",
-    record.entry_location || "",
-    record.id_type || "",
-    record.id_number || "",
     record.starttime || "",
     record.endtime || "",
+    record.email || "",
+    record.meeting_staff_start_time || "",
+    record.meeting_staff_end_time || "",
     record.meeting_staff_times || "",
+    record.id_type || "",
+    record.id_number || "",
     record.picture_url || "",
     record.signature_url || "",
     record.created_at || "",
+    String(record.visitcount ?? ""),
+    record.schoolname || "",
+    String(record.accepted_policy ?? ""),
+    record.user_id || "",
+    record.id || "",
   ];
 }
 
@@ -122,8 +128,8 @@ async function findRowByRecordId(
   sheetName: string,
   recordId: string,
 ): Promise<number | null> {
-  // Read column A (where we store record.id) to find the matching row
-  const range = `${sheetName}!A:A`;
+  // Read column W (where we store record.id) to find the matching row
+  const range = `${sheetName}!W:W`;
   const url = `https://sheets.googleapis.com/v4/spreadsheets/${spreadsheetId}/values/${encodeURIComponent(range)}`;
 
   const response = await fetch(url, {
