@@ -76,53 +76,30 @@ const handler = async (req: Request): Promise<Response> => {
     const emailHtml = `
       <div style="max-width: 600px; margin: 0 auto; font-family: Arial, sans-serif;">
         <h2 style="color: #333; border-bottom: 2px solid #007bff; padding-bottom: 10px;">New Visitor Registration - Staff Meeting Request</h2>
-        <p>A visitor has registered and requested to meet with you:</p>
         
-        <div style="background: #f8f9fa; padding: 20px; border-radius: 8px; margin: 20px 0; border-left: 4px solid #007bff;">
-          <h3 style="margin-top: 0; color: #007bff;">Visitor Details</h3>
-          <p><strong>Visitor Name:</strong> ${visitorName}</p>
-          <p><strong>Purpose:</strong> ${purpose}</p>
-          <p><strong>Number of People:</strong> ${peopleInfo}</p>
-          <p><strong>Registration Time:</strong> ${currentTime}</p>
-          ${meetingTimeDisplay ? `<p><strong>Meeting Time:</strong> ${meetingTimeDisplay}</p>` : ''}
-          <p><strong>Contact Number:</strong> ${phoneNumber}</p>
-          <p><strong>Address:</strong> ${address}</p>
-        </div>
-        
-        ${pictureUrl ? '<p style="color: #28a745;"><strong>✓ Note:</strong> Visitor photo is attached to this email.</p>' : '<p style="color: #ffc107;"><strong>⚠ Note:</strong> No visitor photo provided.</p>'}
-        
-        <div style="background: #fff3cd; border: 1px solid #ffeaa7; padding: 20px; border-radius: 8px; margin: 30px 0;">
-          <h3 style="margin-top: 0; color: #856404;">Response Required</h3>
-          <p>Please click one of the buttons below to approve or deny this visitor request:</p>
-          
-          <div style="text-align: center; margin: 25px 0;">
-            <a href="${approveUrl}" 
-               style="background-color: #28a745; color: white; padding: 12px 25px; text-decoration: none; border-radius: 5px; margin: 0 5px; font-weight: bold; display: inline-block;">
-              ✓ APPROVE VISIT
-            </a>
-            <a href="${denyUrl}" 
-               style="background-color: #dc3545; color: white; padding: 12px 25px; text-decoration: none; border-radius: 5px; margin: 0 5px; font-weight: bold; display: inline-block;">
-              ✗ DENY VISIT
-            </a>
-            <a href="${meetingEndedUrl}" 
-               style="background-color: #6c757d; color: white; padding: 12px 25px; text-decoration: none; border-radius: 5px; margin: 0 5px; font-weight: bold; display: inline-block; margin-top: 10px;">
-              ⏹ MEETING ENDED
-            </a>
-          </div>
-          
-          <p style="font-size: 12px; color: #856404;">
-            Clicking either button will send a confirmation to the security team.
-          </p>
-        </div>
-        
-        <p>Please coordinate with security for the visitor's entry once you've made your decision.</p>
-        
-        <hr style="border: none; border-top: 1px solid #dee2e6; margin: 30px 0;">
-        <p style="color: #6c757d; font-size: 12px;">
-          Best regards,<br>
-          Woodstock School Security<br>
-          <em>This is an automated notification from the Visitor Management System.</em>
-        </p>
+        <table style="width:100%; border-collapse:collapse; margin: 10px 0;">
+          <tr>
+            <td style="vertical-align:top; padding-right:15px;">
+              <div style="background: #f8f9fa; padding: 12px; border-radius: 8px; border-left: 4px solid #007bff;">
+                <p style="margin:3px 0;"><strong>Visitor:</strong> ${visitorName}</p>
+                <p style="margin:3px 0;"><strong>Purpose:</strong> ${purpose}</p>
+                <p style="margin:3px 0;"><strong>People:</strong> ${peopleInfo}</p>
+                ${meetingTimeDisplay ? `<p style="margin:3px 0;"><strong>Meeting:</strong> ${meetingTimeDisplay}</p>` : ''}
+                <p style="margin:3px 0;"><strong>Phone:</strong> ${phoneNumber}</p>
+                <p style="margin:3px 0;"><strong>Time:</strong> ${currentTime}</p>
+                <p style="margin:3px 0;"><strong>Address:</strong> ${address}</p>
+              </div>
+            </td>
+            <td style="vertical-align:top; width:160px;">
+              <a href="${approveUrl}" style="background-color:#28a745;color:white;padding:10px 18px;text-decoration:none;border-radius:5px;font-weight:bold;display:block;margin-bottom:8px;text-align:center;">✓ APPROVE</a>
+              <a href="${denyUrl}" style="background-color:#dc3545;color:white;padding:10px 18px;text-decoration:none;border-radius:5px;font-weight:bold;display:block;margin-bottom:8px;text-align:center;">✗ DENY</a>
+              <a href="${meetingEndedUrl}" style="background-color:#6c757d;color:white;padding:10px 18px;text-decoration:none;border-radius:5px;font-weight:bold;display:block;text-align:center;">⏹ ENDED</a>
+            </td>
+          </tr>
+        </table>
+        ${pictureUrl ? '<p style="color:#28a745;font-size:12px;margin:8px 0;">✓ Visitor photo attached.</p>' : '<p style="color:#ffc107;font-size:12px;margin:8px 0;">⚠ No photo provided.</p>'}
+        <hr style="border:none;border-top:1px solid #dee2e6;margin:12px 0;">
+        <p style="color:#6c757d;font-size:11px;">Woodstock School Security — Automated Visitor Management System</p>
       </div>
     `;
 

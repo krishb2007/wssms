@@ -3,15 +3,16 @@ import React, { useRef, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Signature } from "lucide-react";
-import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Label } from "@/components/ui/label";
 import { toast } from "@/components/ui/use-toast";
+import jsPDF from "jspdf";
 
 interface SignatureFormProps {
   formData: {
     signature: File | string | null;
     acceptedPolicy?: boolean;
+    visitorName?: string;
   };
   updateFormData: (data: Partial<{ signature: File | string | null; acceptedPolicy?: boolean }>) => void;
   nextStep: () => void;
@@ -130,13 +131,75 @@ const SignatureForm: React.FC<SignatureFormProps> = ({
     const canvas = canvasRef.current;
     if (!canvas) return;
     
-    canvas.toBlob((blob) => {
-      if (blob) {
-        const file = new File([blob], "signature.png", { type: "image/png" });
-        updateFormData({ signature: file });
-        setSignaturePreview(URL.createObjectURL(blob));
+    const signatureDataUrl = canvas.toDataURL("image/png");
+    setSignaturePreview(signatureDataUrl);
+
+    // Generate PDF with full policy + signature
+    const doc = new jsPDF({ orientation: "portrait", unit: "mm", format: "a4" });
+    const pageWidth = doc.internal.pageSize.getWidth();
+    const margin = 15;
+    const usable = pageWidth - margin * 2;
+    let y = 20;
+
+    doc.setFontSize(16);
+    doc.setFont("helvetica", "bold");
+    doc.text("Woodstock School Student Protection Policy", pageWidth / 2, y, { align: "center" });
+    y += 10;
+
+    doc.setFontSize(10);
+    doc.setFont("helvetica", "normal");
+
+    const policyLines = [
+      "I hereby acknowledge and understand the importance of adhering to Woodstock School's Child Protection Policy and the provisions of the POCSO Act 2012. I commit to following the guidelines outlined below:",
+      "",
+      "1. Protection of Children: The POCSO Act is designed to protect children (under 18 years of age) from sexual offences, including sexual harassment, assault, and exploitation.",
+      "",
+      "2. Mandatory Reporting: Any suspicion or knowledge of an offence against a child must be reported to the authorities. Failure to report such an incident is a punishable offence.",
+      "",
+      "3. Child-Friendly Procedures: The Act ensures that all legal proceedings are conducted in a manner that is child-friendly and that the privacy and dignity of the child are respected.",
+      "",
+      "4. Punishable Offences: The Act covers a wide range of offences, including penetrative sexual assault, sexual harassment, and use of a child for pornography, all of which carry severe penalties.",
+      "",
+      "5. No Tolerance Policy: The school maintains a strict no-tolerance policy regarding any form of child abuse or exploitation or behavior that's unacceptable in the presence of children like smoking, using abusive and inappropriate language, consuming alcohol, or visiting the campus in an inebriated condition.",
+      "",
+      "Please be mindful of privacy (taking pictures and uploading them on social media) and physical contact with children.",
+      "",
+      "The school reserves the right to refuse or terminate your visit at any time if these guidelines are not respected.",
+    ];
+
+    for (const line of policyLines) {
+      if (line === "") { y += 3; continue; }
+      const wrapped = doc.splitTextToSize(line, usable);
+      if (y + wrapped.length * 5 > 270) {
+        doc.addPage();
+        y = 20;
       }
-    });
+      doc.text(wrapped, margin, y);
+      y += wrapped.length * 5;
+    }
+
+    y += 10;
+    if (y > 240) { doc.addPage(); y = 20; }
+
+    doc.setFont("helvetica", "bold");
+    doc.text("Signed by:", margin, y);
+    y += 6;
+    doc.setFont("helvetica", "normal");
+    doc.text(formData.visitorName || "Visitor", margin, y);
+    y += 4;
+    doc.setFontSize(8);
+    doc.text("Date: " + new Date().toLocaleString("en-IN", { timeZone: "Asia/Kolkata" }), margin, y);
+    y += 8;
+
+    try {
+      doc.addImage(signatureDataUrl, "PNG", margin, y, 60, 30);
+    } catch (e) {
+      console.error("Error adding signature image to PDF:", e);
+    }
+
+    const pdfBlob = doc.output("blob");
+    const pdfFile = new File([pdfBlob], "signed-policy.pdf", { type: "application/pdf" });
+    updateFormData({ signature: pdfFile });
   };
   
   const initCanvas = () => {
