@@ -69,7 +69,8 @@ export const saveVisitorRegistration = async (formData: VisitorFormData) => {
 
     if (formData.signature && typeof formData.signature !== "string") {
       const timestamp = Date.now();
-      signatureUrl = await uploadFile(formData.signature, "visitor-signatures", `${timestamp}-signature.png`);
+      const ext = formData.signature.type === "application/pdf" ? "pdf" : "png";
+      signatureUrl = await uploadFile(formData.signature, "visitor-signatures", `${timestamp}-signature.${ext}`);
     } else if (typeof formData.signature === "string") {
       signatureUrl = formData.signature;
     }
