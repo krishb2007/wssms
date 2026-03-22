@@ -11,10 +11,11 @@ import jsPDF from "jspdf";
 interface SignatureFormProps {
   formData: {
     signature: File | string | null;
+    signedPolicyPdf?: File | null;
     acceptedPolicy?: boolean;
     visitorName?: string;
   };
-  updateFormData: (data: Partial<{ signature: File | string | null; acceptedPolicy?: boolean }>) => void;
+  updateFormData: (data: Partial<{ signature: File | string | null; signedPolicyPdf?: File | null; acceptedPolicy?: boolean }>) => void;
   nextStep: () => void;
   prevStep: () => void;
 }
