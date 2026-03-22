@@ -262,7 +262,7 @@ const CombinedContactAddressForm: React.FC<CombinedContactAddressFormProps> = ({
               </div>
             </div>
 
-            {selectedCountry === "India" && (
+            {selectedCountry === "India" ? (
               <div className="space-y-2">
                 <Label htmlFor="state">State</Label>
                 <div className="relative" ref={stateDropdownRef}>
@@ -306,6 +306,18 @@ const CombinedContactAddressForm: React.FC<CombinedContactAddressFormProps> = ({
                     </div>
                   )}
                 </div>
+              </div>
+            ) : selectedCountry && (
+              <div className="space-y-2">
+                <Label htmlFor="state">State / Province / Region</Label>
+                <Input
+                  id="state"
+                  type="text"
+                  value={formData.address.state}
+                  onChange={(e) => handleAddressChange("state", e.target.value)}
+                  placeholder="Enter state or province"
+                  required
+                />
               </div>
             )}
 

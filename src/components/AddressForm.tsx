@@ -115,7 +115,7 @@ const AddressForm: React.FC<AddressFormProps> = ({
           </Select>
         </div>
 
-        {selectedCountry === "India" && (
+        {selectedCountry === "India" ? (
           <div className="space-y-2">
             <Label htmlFor="state">State</Label>
             <Combobox
@@ -125,6 +125,17 @@ const AddressForm: React.FC<AddressFormProps> = ({
               placeholder="Select or search state..."
               searchPlaceholder="Search states..."
               emptyText="No state found."
+            />
+          </div>
+        ) : selectedCountry && (
+          <div className="space-y-2">
+            <Label htmlFor="state">State / Province / Region</Label>
+            <Input
+              id="state"
+              value={formData.address.state}
+              onChange={(e) => handleAddressChange("state", e.target.value)}
+              placeholder="Enter state or province"
+              required
             />
           </div>
         )}
