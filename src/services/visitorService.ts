@@ -13,6 +13,7 @@ export interface VisitorFormData {
   };
   picture?: File | string | null;
   signature?: File | string | null;
+  signedPolicyPdf?: File | null;
   starttime?: string;
   endtime?: string | null;
   email?: string | null;
