@@ -49,6 +49,7 @@ export interface FormDataInput {
   };
   picture: File | string | null;
   signature: File | string | null;
+  signedPolicyPdf?: File | null;
   startTime: string;
   endTime: string | null;
   phoneNumber: string;
@@ -92,6 +93,7 @@ export const saveFormData = async (formData: FormDataInput): Promise<FormEntry> 
       address: formData.address,
       picture: formData.picture,
       signature: formData.signature,
+      signedPolicyPdf: formData.signedPolicyPdf || null,
       starttime: formData.startTime,
       endtime: formData.endTime,
       email: emailValue,

@@ -13,6 +13,7 @@ export interface VisitorFormData {
   };
   picture?: File | string | null;
   signature?: File | string | null;
+  signedPolicyPdf?: File | null;
   starttime?: string;
   endtime?: string | null;
   email?: string | null;
@@ -69,10 +70,15 @@ export const saveVisitorRegistration = async (formData: VisitorFormData) => {
 
     if (formData.signature && typeof formData.signature !== "string") {
       const timestamp = Date.now();
-      const ext = formData.signature.type === "application/pdf" ? "pdf" : "png";
-      signatureUrl = await uploadFile(formData.signature, "visitor-signatures", `${timestamp}-signature.${ext}`);
+      signatureUrl = await uploadFile(formData.signature, "visitor-signatures", `${timestamp}-signature.png`);
     } else if (typeof formData.signature === "string") {
       signatureUrl = formData.signature;
+    }
+
+    // Upload signed policy PDF separately (for record-keeping)
+    if (formData.signedPolicyPdf) {
+      const timestamp = Date.now();
+      await uploadFile(formData.signedPolicyPdf, "visitor-signatures", `${timestamp}-signed-policy.pdf`);
     }
 
     const addressString = `${formData.address.city}, ${formData.address.state}, ${formData.address.country}`;
