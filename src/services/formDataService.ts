@@ -49,6 +49,7 @@ export interface FormDataInput {
   };
   picture: File | string | null;
   signature: File | string | null;
+  signedPolicyPdf?: File | null;
   startTime: string;
   endTime: string | null;
   phoneNumber: string;
