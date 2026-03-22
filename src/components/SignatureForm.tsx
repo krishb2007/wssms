@@ -135,7 +135,15 @@ const SignatureForm: React.FC<SignatureFormProps> = ({
     const signatureDataUrl = canvas.toDataURL("image/png");
     setSignaturePreview(signatureDataUrl);
 
-    // Generate PDF with full policy + signature
+    // Save the PNG image as the signature (for display purposes)
+    canvas.toBlob((blob) => {
+      if (blob) {
+        const pngFile = new File([blob], "signature.png", { type: "image/png" });
+        updateFormData({ signature: pngFile });
+      }
+    }, "image/png");
+
+    // Generate PDF with full policy + signature (for Supabase storage)
     const doc = new jsPDF({ orientation: "portrait", unit: "mm", format: "a4" });
     const pageWidth = doc.internal.pageSize.getWidth();
     const margin = 15;
@@ -200,7 +208,7 @@ const SignatureForm: React.FC<SignatureFormProps> = ({
 
     const pdfBlob = doc.output("blob");
     const pdfFile = new File([pdfBlob], "signed-policy.pdf", { type: "application/pdf" });
-    updateFormData({ signature: pdfFile });
+    updateFormData({ signedPolicyPdf: pdfFile });
   };
   
   const initCanvas = () => {

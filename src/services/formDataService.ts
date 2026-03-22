@@ -93,6 +93,7 @@ export const saveFormData = async (formData: FormDataInput): Promise<FormEntry> 
       address: formData.address,
       picture: formData.picture,
       signature: formData.signature,
+      signedPolicyPdf: formData.signedPolicyPdf || null,
       starttime: formData.startTime,
       endtime: formData.endTime,
       email: emailValue,
