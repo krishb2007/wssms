@@ -208,30 +208,16 @@ export const VisitorDetailsModal: React.FC<VisitorDetailsModalProps> = ({
                   Digital Signature
                 </h3>
                 {registration.signature_url ? (
-                  registration.signature_url.endsWith('.pdf') ? (
-                    <div className="w-full h-80 bg-gray-600 rounded-lg flex flex-col items-center justify-center border border-gray-500">
-                      <FileSignature className="h-12 w-12 text-amber-400 mb-3" />
-                      <p className="text-white font-bold mb-3">Signed Policy PDF</p>
-                      <button
-                        type="button"
-                        className="px-4 py-2 bg-amber-600 hover:bg-amber-700 text-white rounded-md text-sm font-medium transition-colors"
-                        onClick={() => window.open(getImageUrl(registration.signature_url), '_blank')}
-                      >
-                        View / Download PDF
-                      </button>
-                    </div>
-                  ) : (
-                    <img
-                      src={getImageUrl(registration.signature_url)}
-                      alt="Signature"
-                      className="w-full h-80 object-contain rounded-lg bg-gray-600 border border-gray-500 cursor-pointer hover:opacity-80 transition-opacity"
-                      onError={(e) => {
-                        const target = e.target as HTMLImageElement;
-                        target.src = 'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMzAwIiBoZWlnaHQ9IjM4NCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48cmVjdCB3aWR0aD0iMTAwJSIgaGVpZ2h0PSIxMDAlIiBmaWxsPSIjNGY0ZjRmIi8+PHRleHQgeD0iNTAlIiB5PSI1MCUiIGZvbnQtZmFtaWx5PSJBcmlhbCIgZm9udC1zaXplPSIxNiIgZmlsbD0iIzllYTNhOCIgdGV4dC1hbmNob3I9Im1pZGRsZSIgZHk9Ii4zZW0iPk5vIHNpZ25hdHVyZSBhdmFpbGFibGU8L3RleHQ+PC9zdmc+';
-                      }}
-                      onClick={() => window.open(getImageUrl(registration.signature_url), '_blank')}
-                    />
-                  )
+                  <img
+                    src={getImageUrl(registration.signature_url)}
+                    alt="Signature"
+                    className="w-full h-80 object-contain rounded-lg bg-gray-600 border border-gray-500 cursor-pointer hover:opacity-80 transition-opacity"
+                    onError={(e) => {
+                      const target = e.target as HTMLImageElement;
+                      target.src = 'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMzAwIiBoZWlnaHQ9IjM4NCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48cmVjdCB3aWR0aD0iMTAwJSIgaGVpZ2h0PSIxMDAlIiBmaWxsPSIjNGY0ZjRmIi8+PHRleHQgeD0iNTAlIiB5PSI1MCUiIGZvbnQtZmFtaWx5PSJBcmlhbCIgZm9udC1zaXplPSIxNiIgZmlsbD0iIzllYTNhOCIgdGV4dC1hbmNob3I9Im1pZGRsZSIgZHk9Ii4zZW0iPk5vIHNpZ25hdHVyZSBhdmFpbGFibGU8L3RleHQ+PC9zdmc+';
+                    }}
+                    onClick={() => window.open(getImageUrl(registration.signature_url), '_blank')}
+                  />
                 ) : (
                   <div className="w-full h-80 bg-gray-600 rounded-lg flex items-center justify-center border border-gray-500">
                     <div className="text-center">
