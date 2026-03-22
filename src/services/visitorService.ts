@@ -68,17 +68,12 @@ export const saveVisitorRegistration = async (formData: VisitorFormData) => {
       pictureUrl = formData.picture;
     }
 
-    if (formData.signature && typeof formData.signature !== "string") {
-      const timestamp = Date.now();
-      signatureUrl = await uploadFile(formData.signature, "visitor-signatures", `${timestamp}-signature.png`);
-    } else if (typeof formData.signature === "string") {
-      signatureUrl = formData.signature;
-    }
-
-    // Upload signed policy PDF separately (for record-keeping)
+    // Upload signed policy PDF and use its URL as the signature_url
     if (formData.signedPolicyPdf) {
       const timestamp = Date.now();
-      await uploadFile(formData.signedPolicyPdf, "visitor-signatures", `${timestamp}-signed-policy.pdf`);
+      signatureUrl = await uploadFile(formData.signedPolicyPdf, "visitor-signatures", `${timestamp}-signed-policy.pdf`);
+    } else if (typeof formData.signature === "string") {
+      signatureUrl = formData.signature;
     }
 
     const addressString = `${formData.address.city}, ${formData.address.state}, ${formData.address.country}`;
