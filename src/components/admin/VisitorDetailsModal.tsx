@@ -209,10 +209,13 @@ export const VisitorDetailsModal: React.FC<VisitorDetailsModalProps> = ({
                 </h3>
                 {registration.signature_url ? (
                   registration.signature_url.endsWith('.pdf') ? (
-                    <div className="w-full h-80 bg-gray-600 rounded-lg flex items-center justify-center border border-gray-500">
-                      <div className="text-center">
-                        <FileSignature className="h-8 w-8 text-white mx-auto mb-2" />
-                        <p className="text-white text-sm font-medium mb-3">Signed Policy PDF</p>
+                    <div className="w-full">
+                      <iframe
+                        src={getImageUrl(registration.signature_url)}
+                        className="w-full h-80 rounded-lg border border-gray-500 bg-white"
+                        title="Signed Policy PDF"
+                      />
+                      <div className="mt-3 text-center">
                         <a
                           href={getImageUrl(registration.signature_url)}
                           target="_blank"

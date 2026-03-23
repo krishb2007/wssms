@@ -122,6 +122,15 @@ const CombinedContactAddressForm: React.FC<CombinedContactAddressFormProps> = ({
         return;
       }
     }
+
+    if (!formData.address.country) {
+      toast({
+        title: "Country required",
+        description: "Please select a country from the dropdown",
+        variant: "destructive"
+      });
+      return;
+    }
     
     nextStep();
   };
@@ -231,7 +240,10 @@ const CombinedContactAddressForm: React.FC<CombinedContactAddressFormProps> = ({
                   onChange={(e) => {
                     setCountrySearch(e.target.value);
                     setShowCountryDropdown(true);
-                    if (!ALL_COUNTRIES.includes(e.target.value)) {
+                    const exactMatch = ALL_COUNTRIES.find(c => c.toLowerCase() === e.target.value.toLowerCase());
+                    if (exactMatch) {
+                      handleCountrySelect(exactMatch);
+                    } else {
                       handleAddressChange("country", "");
                     }
                   }}
