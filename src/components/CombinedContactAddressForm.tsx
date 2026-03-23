@@ -122,6 +122,15 @@ const CombinedContactAddressForm: React.FC<CombinedContactAddressFormProps> = ({
         return;
       }
     }
+
+    if (!formData.address.country) {
+      toast({
+        title: "Country required",
+        description: "Please select a country from the dropdown",
+        variant: "destructive"
+      });
+      return;
+    }
     
     nextStep();
   };
