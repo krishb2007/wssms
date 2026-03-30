@@ -51,14 +51,14 @@ export const FilterBar: React.FC<FilterBarProps> = ({ filters, onFilterChange, e
   };
 
   return (
-    <div className="flex flex-wrap items-center gap-3 mb-4 px-4 py-3 bg-gray-800/50 rounded-lg border border-gray-700">
-      <div className="flex items-center gap-1.5 text-amber-400 mr-1">
-        <Filter className="h-4 w-4" />
-        <span className="text-sm font-bold">Filters:</span>
+    <div className="flex flex-wrap items-center gap-2">
+      <div className="flex items-center gap-1 text-amber-400">
+        <Filter className="h-3.5 w-3.5" />
+        <span className="text-xs font-bold">Filters:</span>
       </div>
 
       <Select value={filters.status} onValueChange={(v) => onFilterChange({ ...filters, status: v })}>
-        <SelectTrigger className="w-[160px] h-8 text-xs bg-gray-700 border-gray-600 text-white font-medium focus:ring-amber-500">
+        <SelectTrigger className="w-[130px] h-7 text-xs bg-gray-700 border-gray-600 text-white font-medium focus:ring-amber-500">
           <SelectValue />
         </SelectTrigger>
         <SelectContent className="bg-gray-700 border-gray-600">
@@ -69,7 +69,7 @@ export const FilterBar: React.FC<FilterBarProps> = ({ filters, onFilterChange, e
       </Select>
 
       <Select value={filters.purpose} onValueChange={(v) => onFilterChange({ ...filters, purpose: v })}>
-        <SelectTrigger className="w-[180px] h-8 text-xs bg-gray-700 border-gray-600 text-white font-medium focus:ring-amber-500">
+        <SelectTrigger className="w-[150px] h-7 text-xs bg-gray-700 border-gray-600 text-white font-medium focus:ring-amber-500">
           <SelectValue />
         </SelectTrigger>
         <SelectContent className="bg-gray-700 border-gray-600">
@@ -80,7 +80,7 @@ export const FilterBar: React.FC<FilterBarProps> = ({ filters, onFilterChange, e
       </Select>
 
       <Select value={filters.dateRange} onValueChange={(v) => onFilterChange({ ...filters, dateRange: v })}>
-        <SelectTrigger className="w-[140px] h-8 text-xs bg-gray-700 border-gray-600 text-white font-medium focus:ring-amber-500">
+        <SelectTrigger className="w-[110px] h-7 text-xs bg-gray-700 border-gray-600 text-white font-medium focus:ring-amber-500">
           <SelectValue />
         </SelectTrigger>
         <SelectContent className="bg-gray-700 border-gray-600">
@@ -92,7 +92,7 @@ export const FilterBar: React.FC<FilterBarProps> = ({ filters, onFilterChange, e
 
       {entryLocations.length > 0 && (
         <Select value={filters.entryLocation} onValueChange={(v) => onFilterChange({ ...filters, entryLocation: v })}>
-          <SelectTrigger className="w-[160px] h-8 text-xs bg-gray-700 border-gray-600 text-white font-medium focus:ring-amber-500">
+          <SelectTrigger className="w-[130px] h-7 text-xs bg-gray-700 border-gray-600 text-white font-medium focus:ring-amber-500">
             <SelectValue />
           </SelectTrigger>
           <SelectContent className="bg-gray-700 border-gray-600">
@@ -109,9 +109,9 @@ export const FilterBar: React.FC<FilterBarProps> = ({ filters, onFilterChange, e
           size="sm"
           variant="ghost"
           onClick={clearFilters}
-          className="h-8 px-2 text-xs text-red-400 hover:text-red-300 hover:bg-red-500/10 font-bold"
+          className="h-7 px-1.5 text-xs text-red-400 hover:text-red-300 hover:bg-red-500/10 font-bold"
         >
-          <X className="h-3 w-3 mr-1" />
+          <X className="h-3 w-3 mr-0.5" />
           Clear
         </Button>
       )}

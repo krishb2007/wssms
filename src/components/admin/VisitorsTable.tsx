@@ -3,7 +3,7 @@ import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Pencil, Save, X, Eye, User, Building, Phone, MapPin, Clock, Mail, CheckCircle } from "lucide-react";
+import { Pencil, Save, X, Eye, User, Building, Phone, MapPin, Clock, Mail, CheckCircle, Search, RefreshCw } from "lucide-react";
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from "@/components/ui/use-toast";
 import { VisitorRegistration, StaffMeetingTime } from './types';
@@ -178,14 +178,32 @@ export const VisitorsTable: React.FC<VisitorsTableProps> = ({
   return (
     <>
       <Card className="border-0 shadow-xl bg-gray-800 border-gray-700">
-        <CardHeader className="border-b border-gray-700 bg-gradient-to-r from-gray-800 to-gray-900 py-4 space-y-3">
-          <SearchAndRefresh
-            searchTerm={searchTerm}
-            onSearchChange={onSearchChange}
-            onRefresh={onRefresh}
-            resultsCount={filteredRegistrations.length}
-          />
-          <FilterBar filters={filters} onFilterChange={onFilterChange} entryLocations={entryLocations} />
+        <CardHeader className="border-b border-gray-700 bg-gradient-to-r from-gray-800 to-gray-900 py-3 px-4">
+          <div className="flex flex-wrap items-center justify-between gap-2">
+            <h2 className="text-lg font-bold text-white whitespace-nowrap">
+              Visitors ({filteredRegistrations.length})
+            </h2>
+            <FilterBar filters={filters} onFilterChange={onFilterChange} entryLocations={entryLocations} />
+            <div className="flex items-center gap-2">
+              <div className="relative">
+                <Search className="absolute left-2.5 top-1/2 transform -translate-y-1/2 text-white h-3.5 w-3.5" />
+                <Input
+                  placeholder="Search..."
+                  value={searchTerm}
+                  onChange={(e) => onSearchChange(e.target.value)}
+                  className="pl-8 w-48 h-8 text-xs bg-gray-700 border-gray-600 text-white placeholder-white font-medium focus:border-amber-500 focus:ring-amber-500"
+                />
+              </div>
+              <Button 
+                onClick={onRefresh} 
+                size="sm"
+                variant="outline"
+                className="h-8 px-2 border-2 border-amber-600 text-amber-400 hover:bg-amber-600 hover:text-white font-bold text-xs"
+              >
+                <RefreshCw className="h-3.5 w-3.5" />
+              </Button>
+            </div>
+          </div>
         </CardHeader>
         <CardContent className="p-0">
           <div className="overflow-x-auto">
