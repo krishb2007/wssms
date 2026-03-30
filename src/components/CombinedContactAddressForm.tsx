@@ -123,13 +123,17 @@ const CombinedContactAddressForm: React.FC<CombinedContactAddressFormProps> = ({
       }
     }
 
-    if (!formData.address.country) {
+    const matchedCountry = ALL_COUNTRIES.find(c => c.toLowerCase() === countrySearch.toLowerCase());
+    if (!matchedCountry) {
       toast({
         title: "Country required",
-        description: "Please select a country from the dropdown",
+        description: "Please select a valid country from the dropdown",
         variant: "destructive"
       });
       return;
+    }
+    if (formData.address.country !== matchedCountry) {
+      handleAddressChange("country", matchedCountry);
     }
     
     nextStep();
@@ -238,18 +242,17 @@ const CombinedContactAddressForm: React.FC<CombinedContactAddressFormProps> = ({
                   type="text"
                   value={countrySearch}
                   onChange={(e) => {
-                    setCountrySearch(e.target.value);
+                    const val = e.target.value;
+                    setCountrySearch(val);
                     setShowCountryDropdown(true);
-                    const exactMatch = ALL_COUNTRIES.find(c => c.toLowerCase() === e.target.value.toLowerCase());
+                    const exactMatch = ALL_COUNTRIES.find(c => c.toLowerCase() === val.toLowerCase());
                     if (exactMatch) {
-                      handleCountrySelect(exactMatch);
-                    } else {
-                      handleAddressChange("country", "");
+                      setSelectedCountry(exactMatch);
+                      handleAddressChange("country", exactMatch);
                     }
                   }}
                   onFocus={() => setShowCountryDropdown(true)}
                   placeholder="Type to search country..."
-                  required
                   autoComplete="off"
                 />
                 {showCountryDropdown && filteredCountries.length > 0 && (
