@@ -9,6 +9,7 @@ import { toast } from "@/components/ui/use-toast";
 import { VisitorRegistration, StaffMeetingTime } from './types';
 import { SearchAndRefresh } from './SearchAndRefresh';
 import { VisitorDetailsModal } from './VisitorDetailsModal';
+import { FilterBar, FilterState } from './FilterBar';
 
 interface VisitorsTableProps {
   registrations: VisitorRegistration[];
@@ -23,6 +24,9 @@ interface VisitorsTableProps {
   onCancelEdit: () => void;
   onSaveEdit: (id: string) => void;
   onEditEndTimeChange: (value: string) => void;
+  filters: FilterState;
+  onFilterChange: (filters: FilterState) => void;
+  entryLocations: string[];
 }
 
 export const VisitorsTable: React.FC<VisitorsTableProps> = ({
@@ -37,7 +41,10 @@ export const VisitorsTable: React.FC<VisitorsTableProps> = ({
   onStartEdit,
   onCancelEdit,
   onSaveEdit,
-  onEditEndTimeChange
+  onEditEndTimeChange,
+  filters,
+  onFilterChange,
+  entryLocations
 }) => {
   const [selectedRegistration, setSelectedRegistration] = useState<VisitorRegistration | null>(null);
   const [endingMeetingId, setEndingMeetingId] = useState<string | null>(null);
@@ -171,13 +178,14 @@ export const VisitorsTable: React.FC<VisitorsTableProps> = ({
   return (
     <>
       <Card className="border-0 shadow-xl bg-gray-800 border-gray-700">
-        <CardHeader className="border-b border-gray-700 bg-gradient-to-r from-gray-800 to-gray-900 py-4">
+        <CardHeader className="border-b border-gray-700 bg-gradient-to-r from-gray-800 to-gray-900 py-4 space-y-3">
           <SearchAndRefresh
             searchTerm={searchTerm}
             onSearchChange={onSearchChange}
             onRefresh={onRefresh}
             resultsCount={filteredRegistrations.length}
           />
+          <FilterBar filters={filters} onFilterChange={onFilterChange} entryLocations={entryLocations} />
         </CardHeader>
         <CardContent className="p-0">
           <div className="overflow-x-auto">
