@@ -19,6 +19,9 @@ export default function AdminDashboard() {
     loading,
     searchTerm,
     setSearchTerm,
+    filters,
+    setFilters,
+    entryLocations,
     fetchRegistrations,
     updateRegistration
   } = useVisitorRegistrations();
@@ -76,6 +79,9 @@ export default function AdminDashboard() {
           onCancelEdit={cancelEdit}
           onSaveEdit={saveEdit}
           onEditEndTimeChange={setEditEndTime}
+          filters={filters}
+          onFilterChange={setFilters}
+          entryLocations={entryLocations}
         />
       </div>
     </div>
