@@ -238,18 +238,17 @@ const CombinedContactAddressForm: React.FC<CombinedContactAddressFormProps> = ({
                   type="text"
                   value={countrySearch}
                   onChange={(e) => {
-                    setCountrySearch(e.target.value);
+                    const val = e.target.value;
+                    setCountrySearch(val);
                     setShowCountryDropdown(true);
-                    const exactMatch = ALL_COUNTRIES.find(c => c.toLowerCase() === e.target.value.toLowerCase());
+                    const exactMatch = ALL_COUNTRIES.find(c => c.toLowerCase() === val.toLowerCase());
                     if (exactMatch) {
-                      handleCountrySelect(exactMatch);
-                    } else {
-                      handleAddressChange("country", "");
+                      setSelectedCountry(exactMatch);
+                      handleAddressChange("country", exactMatch);
                     }
                   }}
                   onFocus={() => setShowCountryDropdown(true)}
                   placeholder="Type to search country..."
-                  required
                   autoComplete="off"
                 />
                 {showCountryDropdown && filteredCountries.length > 0 && (
