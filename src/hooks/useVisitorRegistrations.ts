@@ -1,14 +1,22 @@
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from "@/components/ui/use-toast";
 import { VisitorRegistration } from '@/components/admin/types';
+import { FilterState } from '@/components/admin/FilterBar';
 
 export const useVisitorRegistrations = () => {
   const [registrations, setRegistrations] = useState<VisitorRegistration[]>([]);
   const [filteredRegistrations, setFilteredRegistrations] = useState<VisitorRegistration[]>([]);
   const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState<string>('');
+  const [filters, setFilters] = useState<FilterState>({ status: 'all', purpose: 'all', dateRange: 'all', entryLocation: 'all' });
+
+  const entryLocations = useMemo(() => {
+    const locs = new Set<string>();
+    registrations.forEach(r => { if (r.entry_location) locs.add(r.entry_location); });
+    return Array.from(locs).sort();
+  }, [registrations]);
 
   const sortRegistrations = (data: VisitorRegistration[]) => {
     return data.sort((a, b) => {
@@ -61,22 +69,66 @@ export const useVisitorRegistrations = () => {
   }, []);
 
   useEffect(() => {
-    if (searchTerm.trim() === '') {
-      const sortedRegistrations = sortRegistrations([...registrations]);
-      setFilteredRegistrations(sortedRegistrations);
-    } else {
-      const filtered = registrations.filter(registration =>
-        registration.visitorname.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        registration.phonenumber.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        registration.purpose.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        registration.address?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        registration.schoolname?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        registration.email?.toLowerCase().includes(searchTerm.toLowerCase())
+    let filtered = [...registrations];
+
+    // Search filter
+    if (searchTerm.trim() !== '') {
+      const term = searchTerm.toLowerCase();
+      filtered = filtered.filter(r =>
+        r.visitorname.toLowerCase().includes(term) ||
+        r.phonenumber.toLowerCase().includes(term) ||
+        r.purpose.toLowerCase().includes(term) ||
+        r.address?.toLowerCase().includes(term) ||
+        r.schoolname?.toLowerCase().includes(term) ||
+        r.email?.toLowerCase().includes(term)
       );
-      const sortedFiltered = sortRegistrations(filtered);
-      setFilteredRegistrations(sortedFiltered);
     }
-  }, [searchTerm, registrations]);
+
+    // Status filter
+    if (filters.status !== 'all') {
+      filtered = filtered.filter(r => {
+        if (filters.status === 'active') return !r.endtime && !r.meeting_staff_end_time;
+        if (filters.status === 'meeting_ended') return !r.endtime && !!r.meeting_staff_end_time;
+        if (filters.status === 'exited') return !!r.endtime;
+        return true;
+      });
+    }
+
+    // Purpose filter
+    if (filters.purpose !== 'all') {
+      filtered = filtered.filter(r => r.purpose === filters.purpose);
+    }
+
+    // Date range filter
+    if (filters.dateRange !== 'all') {
+      const now = new Date();
+      const utc = now.getTime() + (now.getTimezoneOffset() * 60000);
+      const ist = new Date(utc + (5.5 * 60 * 60 * 1000));
+      const startOfDay = new Date(ist.getFullYear(), ist.getMonth(), ist.getDate());
+
+      filtered = filtered.filter(r => {
+        const created = new Date(r.created_at);
+        if (filters.dateRange === 'today') return created >= startOfDay;
+        if (filters.dateRange === 'week') {
+          const weekAgo = new Date(startOfDay);
+          weekAgo.setDate(weekAgo.getDate() - weekAgo.getDay());
+          return created >= weekAgo;
+        }
+        if (filters.dateRange === 'month') {
+          const monthStart = new Date(ist.getFullYear(), ist.getMonth(), 1);
+          return created >= monthStart;
+        }
+        return true;
+      });
+    }
+
+    // Entry location filter
+    if (filters.entryLocation !== 'all') {
+      filtered = filtered.filter(r => r.entry_location === filters.entryLocation);
+    }
+
+    setFilteredRegistrations(sortRegistrations(filtered));
+  }, [searchTerm, registrations, filters]);
 
   const fetchRegistrations = async () => {
     setLoading(true);
@@ -129,6 +181,9 @@ export const useVisitorRegistrations = () => {
     loading,
     searchTerm,
     setSearchTerm,
+    filters,
+    setFilters,
+    entryLocations,
     fetchRegistrations,
     updateRegistration
   };
