@@ -151,6 +151,42 @@ const handler = async (req: Request): Promise<Response> => {
       }
     }
 
+    // Attach signature/policy PDF if available
+    if (signatureUrl) {
+      try {
+        console.log("Attempting to fetch signature PDF from:", signatureUrl);
+        const pdfResponse = await fetch(signatureUrl, {
+          method: 'GET',
+          headers: { 'User-Agent': 'Supabase-Edge-Function/1.0' }
+        });
+        console.log("PDF fetch response status:", pdfResponse.status);
+        if (pdfResponse.ok) {
+          const pdfArrayBuffer = await pdfResponse.arrayBuffer();
+          const pdfBytes = new Uint8Array(pdfArrayBuffer);
+          console.log("PDF size:", pdfBytes.length, "bytes");
+          let binary = '';
+          const len = pdfBytes.byteLength;
+          for (let i = 0; i < len; i++) {
+            binary += String.fromCharCode(pdfBytes[i]);
+          }
+          const base64Pdf = btoa(binary);
+          if (!smtp2goPayload.attachments) {
+            smtp2goPayload.attachments = [];
+          }
+          smtp2goPayload.attachments.push({
+            filename: `signed-policy-${visitorName.replace(/\s+/g, '-')}.pdf`,
+            fileblob: base64Pdf,
+            mimetype: 'application/pdf'
+          });
+          console.log("Signature PDF attachment prepared successfully");
+        } else {
+          console.error("Failed to fetch signature PDF. Status:", pdfResponse.status);
+        }
+      } catch (error) {
+        console.error("Error fetching signature PDF for attachment:", error);
+      }
+    }
+
     const emailResponse = await fetch('https://api.smtp2go.com/v3/email/send', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
