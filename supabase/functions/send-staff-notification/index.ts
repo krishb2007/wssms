@@ -136,11 +136,12 @@ const handler = async (req: Request): Promise<Response> => {
           const urlParts = pictureUrl.split('.');
           const fileExtension = urlParts[urlParts.length - 1]?.toLowerCase() || 'jpg';
           const mimeType = fileExtension === 'png' ? 'image/png' : 'image/jpeg';
-          smtp2goPayload.attachments = [{
+          const attachments: any[] = [{
             filename: `visitor-photo.${fileExtension}`,
             fileblob: base64Image,
             mimetype: mimeType
           }];
+          smtp2goPayload.attachments = attachments;
           console.log("Image attachment prepared successfully");
         } else {
           console.error("Failed to fetch image. Status:", imageResponse.status);
