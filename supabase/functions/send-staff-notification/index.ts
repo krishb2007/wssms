@@ -20,6 +20,9 @@ interface StaffNotificationRequest {
   meetingStartTime?: string;
   visitorId?: string;
   staffIndex?: number;
+  idType?: string | null;
+  idNumber?: string | null;
+  signatureUrl?: string | null;
 }
 
 const handler = async (req: Request): Promise<Response> => {
