@@ -35,7 +35,7 @@ const Index = () => {
     address: {
       city: "",
       state: "",
-      country: "India",
+      country: "",
     },
     picture: null as File | string | null,
     signature: null as File | string | null,
@@ -46,13 +46,35 @@ const Index = () => {
     meetingStaffTimes: [],
   });
 
-  // Capture GPS location on mount
+  // Capture GPS location on mount and reverse geocode to place name
   useEffect(() => {
     if ('geolocation' in navigator) {
       navigator.geolocation.getCurrentPosition(
-        (position) => {
-          const loc = `${position.coords.latitude.toFixed(6)}, ${position.coords.longitude.toFixed(6)}`;
-          setEntryLocation(loc);
+        async (position) => {
+          const { latitude, longitude } = position.coords;
+          try {
+            const res = await fetch(
+              `https://nominatim.openstreetmap.org/reverse?lat=${latitude}&lon=${longitude}&format=json&zoom=16&addressdetails=1`,
+              { headers: { 'Accept-Language': 'en' } }
+            );
+            if (res.ok) {
+              const data = await res.json();
+              const addr = data.address || {};
+              // Build a concise location name
+              const parts = [
+                addr.building || addr.amenity || addr.tourism || '',
+                addr.road || addr.neighbourhood || '',
+                addr.suburb || addr.village || addr.town || addr.city || '',
+                addr.state || '',
+              ].filter(Boolean);
+              const locationName = parts.length > 0 ? parts.join(', ') : (data.display_name || "Woodstock School, Mussoorie");
+              setEntryLocation(locationName);
+            } else {
+              setEntryLocation("Woodstock School, Mussoorie");
+            }
+          } catch {
+            setEntryLocation("Woodstock School, Mussoorie");
+          }
         },
         (err) => {
           console.log("Geolocation not available:", err.message);
@@ -124,7 +146,7 @@ const Index = () => {
         address: {
           city: "",
           state: "",
-          country: "India",
+          country: "",
         },
         picture: null,
         signature: null,
