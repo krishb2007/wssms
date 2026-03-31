@@ -55,8 +55,8 @@ const CombinedContactAddressForm: React.FC<CombinedContactAddressFormProps> = ({
   const countryDropdownRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
-    setSelectedCountry(formData.address.country || "India");
-    setCountrySearch(formData.address.country || "India");
+    setSelectedCountry(formData.address.country || "");
+    setCountrySearch(formData.address.country || "");
   }, [formData.address.country]);
 
   useEffect(() => {

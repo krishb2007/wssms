@@ -146,7 +146,7 @@ const Index = () => {
         address: {
           city: "",
           state: "",
-          country: "India",
+          country: "",
         },
         picture: null,
         signature: null,
