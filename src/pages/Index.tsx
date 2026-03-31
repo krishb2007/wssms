@@ -35,7 +35,7 @@ const Index = () => {
     address: {
       city: "",
       state: "",
-      country: "India",
+      country: "",
     },
     picture: null as File | string | null,
     signature: null as File | string | null,
