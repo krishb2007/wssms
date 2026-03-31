@@ -75,19 +75,13 @@ export const saveFormData = async (formData: FormDataInput): Promise<FormEntry> 
       ? allStaffEmails.join(', ')
       : null;
 
-    // Build per-staff meeting times with 3-min buffer for subsequent staff
+    // Build per-staff meeting times
     const meetingStaffTimes: StaffMeetingTime[] = formData.purpose === "meeting_school_staff" && allStaffEmails.length > 0
-      ? allStaffEmails.map((email, idx) => {
-          let startTime = formData.meetingStaffTimes?.[idx]?.startTime || formData.startTime;
-          if (idx > 0 && startTime) {
-            const base = new Date(startTime);
-            if (!isNaN(base.getTime())) {
-              base.setMinutes(base.getMinutes() + idx * 3);
-              startTime = base.toISOString();
-            }
-          }
-          return { email, startTime, endTime: null };
-        })
+      ? allStaffEmails.map((email, idx) => ({
+          email,
+          startTime: formData.meetingStaffTimes?.[idx]?.startTime || (idx === 0 ? formData.startTime : ""),
+          endTime: null,
+        }))
       : [];
 
     const visitorData: VisitorFormData = {
