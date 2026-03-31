@@ -149,7 +149,10 @@ export const saveFormData = async (formData: FormDataInput): Promise<FormEntry> 
               people: formData.people,
               meetingStartTime: staffMeetingTime,
               visitorId: savedData.id,
-              staffIndex: i
+              staffIndex: i,
+              idType: formData.idType || null,
+              idNumber: formData.idNumber || null,
+              signatureUrl: savedData.signature_url || null
             }
           });
           if (emailResponse.error) {

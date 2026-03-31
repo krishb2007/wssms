@@ -20,6 +20,9 @@ interface StaffNotificationRequest {
   meetingStartTime?: string;
   visitorId?: string;
   staffIndex?: number;
+  idType?: string | null;
+  idNumber?: string | null;
+  signatureUrl?: string | null;
 }
 
 const handler = async (req: Request): Promise<Response> => {
@@ -28,7 +31,7 @@ const handler = async (req: Request): Promise<Response> => {
   }
 
   try {
-    const { staffEmail, visitorName, purpose, numberOfPeople, startTime, phoneNumber, address, pictureUrl, people, meetingStartTime, visitorId, staffIndex }: StaffNotificationRequest = await req.json();
+    const { staffEmail, visitorName, purpose, numberOfPeople, startTime, phoneNumber, address, pictureUrl, people, meetingStartTime, visitorId, staffIndex, idType, idNumber, signatureUrl }: StaffNotificationRequest = await req.json();
 
     console.log("Sending email to:", staffEmail);
     console.log("Picture URL received:", pictureUrl);
@@ -85,6 +88,7 @@ const handler = async (req: Request): Promise<Response> => {
                 <p style="margin:3px 0;"><strong>Purpose:</strong> ${purpose}</p>
                 <p style="margin:3px 0;"><strong>People:</strong> ${peopleInfo}</p>
                 ${meetingTimeDisplay ? `<p style="margin:3px 0;"><strong>Meeting:</strong> ${meetingTimeDisplay}</p>` : ''}
+                ${idType && idNumber ? `<p style="margin:3px 0;"><strong>ID (${idType}):</strong> ${idNumber}</p>` : ''}
                 <p style="margin:3px 0;"><strong>Phone:</strong> ${phoneNumber}</p>
                 <p style="margin:3px 0;"><strong>Time:</strong> ${currentTime}</p>
                 <p style="margin:3px 0;"><strong>Address:</strong> ${address}</p>
@@ -132,17 +136,54 @@ const handler = async (req: Request): Promise<Response> => {
           const urlParts = pictureUrl.split('.');
           const fileExtension = urlParts[urlParts.length - 1]?.toLowerCase() || 'jpg';
           const mimeType = fileExtension === 'png' ? 'image/png' : 'image/jpeg';
-          smtp2goPayload.attachments = [{
+          const attachments: any[] = [{
             filename: `visitor-photo.${fileExtension}`,
             fileblob: base64Image,
             mimetype: mimeType
           }];
+          smtp2goPayload.attachments = attachments;
           console.log("Image attachment prepared successfully");
         } else {
           console.error("Failed to fetch image. Status:", imageResponse.status);
         }
       } catch (error) {
         console.error("Error fetching image for attachment:", error);
+      }
+    }
+
+    // Attach signature/policy PDF if available
+    if (signatureUrl) {
+      try {
+        console.log("Attempting to fetch signature PDF from:", signatureUrl);
+        const pdfResponse = await fetch(signatureUrl, {
+          method: 'GET',
+          headers: { 'User-Agent': 'Supabase-Edge-Function/1.0' }
+        });
+        console.log("PDF fetch response status:", pdfResponse.status);
+        if (pdfResponse.ok) {
+          const pdfArrayBuffer = await pdfResponse.arrayBuffer();
+          const pdfBytes = new Uint8Array(pdfArrayBuffer);
+          console.log("PDF size:", pdfBytes.length, "bytes");
+          let binary = '';
+          const len = pdfBytes.byteLength;
+          for (let i = 0; i < len; i++) {
+            binary += String.fromCharCode(pdfBytes[i]);
+          }
+          const base64Pdf = btoa(binary);
+          if (!smtp2goPayload.attachments) {
+            smtp2goPayload.attachments = [];
+          }
+          smtp2goPayload.attachments.push({
+            filename: `signed-policy-${visitorName.replace(/\s+/g, '-')}.pdf`,
+            fileblob: base64Pdf,
+            mimetype: 'application/pdf'
+          });
+          console.log("Signature PDF attachment prepared successfully");
+        } else {
+          console.error("Failed to fetch signature PDF. Status:", pdfResponse.status);
+        }
+      } catch (error) {
+        console.error("Error fetching signature PDF for attachment:", error);
       }
     }
 
