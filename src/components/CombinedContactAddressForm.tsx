@@ -45,11 +45,12 @@ const CombinedContactAddressForm: React.FC<CombinedContactAddressFormProps> = ({
   nextStep,
   prevStep,
 }) => {
-  const [selectedCountry, setSelectedCountry] = useState(formData.address.country || "India");
+  const initialCountry = formData.address.country || "";
+  const [selectedCountry, setSelectedCountry] = useState(initialCountry);
   const [stateSearch, setStateSearch] = useState(formData.address.state || "");
   const [showStateDropdown, setShowStateDropdown] = useState(false);
-  const [countrySearch, setCountrySearch] = useState(formData.address.country || "India");
-  const [showCountryDropdown, setShowCountryDropdown] = useState(false);
+  const [countrySearch, setCountrySearch] = useState(initialCountry);
+  const [showCountryDropdown, setShowCountryDropdown] = useState(!initialCountry);
   const stateDropdownRef = useRef<HTMLDivElement>(null);
   const countryDropdownRef = useRef<HTMLDivElement>(null);
 

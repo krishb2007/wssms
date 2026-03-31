@@ -138,7 +138,10 @@ const WelcomePage: React.FC<WelcomePageProps> = ({ nextStep }) => {
               <Input
                 type="tel"
                 value={phoneNumber}
-                onChange={(e) => setPhoneNumber(e.target.value)}
+                onChange={(e) => {
+                  const val = e.target.value.replace(/\D/g, '').substring(0, 11);
+                  setPhoneNumber(val);
+                }}
                 placeholder="Enter phone number"
                 disabled={isLoading}
                 onKeyPress={(e) => {
