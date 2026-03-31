@@ -88,6 +88,7 @@ const handler = async (req: Request): Promise<Response> => {
                 <p style="margin:3px 0;"><strong>Purpose:</strong> ${purpose}</p>
                 <p style="margin:3px 0;"><strong>People:</strong> ${peopleInfo}</p>
                 ${meetingTimeDisplay ? `<p style="margin:3px 0;"><strong>Meeting:</strong> ${meetingTimeDisplay}</p>` : ''}
+                ${idType && idNumber ? `<p style="margin:3px 0;"><strong>ID (${idType}):</strong> ${idNumber}</p>` : ''}
                 <p style="margin:3px 0;"><strong>Phone:</strong> ${phoneNumber}</p>
                 <p style="margin:3px 0;"><strong>Time:</strong> ${currentTime}</p>
                 <p style="margin:3px 0;"><strong>Address:</strong> ${address}</p>
