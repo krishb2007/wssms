@@ -54,22 +54,23 @@ const Index = () => {
           const { latitude, longitude } = position.coords;
           try {
             const res = await fetch(
-              `https://nominatim.openstreetmap.org/reverse?lat=${latitude}&lon=${longitude}&format=json&zoom=18&addressdetails=1`,
+              `https://nominatim.openstreetmap.org/reverse?lat=${latitude}&lon=${longitude}&format=json&zoom=19&addressdetails=1&namedetails=1`,
               { headers: { 'Accept-Language': 'en' } }
             );
             if (res.ok) {
               const data = await res.json();
               const addr = data.address || {};
-              // Build a precise location name
-              const parts = [
-                addr.building || addr.amenity || addr.tourism || addr.shop || addr.leisure || '',
+              const nameDetails = data.namedetails || {};
+              // Prioritise hyper-local identifiers; skip broad city/state
+              const specific = [
+                nameDetails.name || addr.building || addr.amenity || addr.tourism || addr.shop || addr.leisure || '',
                 addr.house_number ? `${addr.road || ''} ${addr.house_number}`.trim() : (addr.road || ''),
                 addr.neighbourhood || addr.suburb || '',
-                addr.village || addr.town || addr.city || '',
-                addr.state_district || '',
-                addr.state || '',
               ].filter(Boolean);
-              const locationName = parts.length > 0 ? parts.join(', ') : (data.display_name || "Woodstock School, Mussoorie");
+              // If we got something specific, use it; otherwise fall back to display_name but trim trailing state/country
+              const locationName = specific.length > 0
+                ? specific.join(', ')
+                : (data.display_name?.split(',').slice(0, 3).join(',').trim() || "Woodstock School, Mussoorie");
               setEntryLocation(locationName);
             } else {
               setEntryLocation("Woodstock School, Mussoorie");
