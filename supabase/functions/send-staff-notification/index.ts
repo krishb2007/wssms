@@ -23,6 +23,7 @@ interface StaffNotificationRequest {
   idType?: string | null;
   idNumber?: string | null;
   signatureUrl?: string | null;
+  entryLocation?: string | null;
 }
 
 const handler = async (req: Request): Promise<Response> => {
