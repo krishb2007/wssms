@@ -23,6 +23,7 @@ interface StaffNotificationRequest {
   idType?: string | null;
   idNumber?: string | null;
   signatureUrl?: string | null;
+  entryLocation?: string | null;
 }
 
 const handler = async (req: Request): Promise<Response> => {
@@ -31,7 +32,7 @@ const handler = async (req: Request): Promise<Response> => {
   }
 
   try {
-    const { staffEmail, visitorName, purpose, numberOfPeople, startTime, phoneNumber, address, pictureUrl, people, meetingStartTime, visitorId, staffIndex, idType, idNumber, signatureUrl }: StaffNotificationRequest = await req.json();
+    const { staffEmail, visitorName, purpose, numberOfPeople, startTime, phoneNumber, address, pictureUrl, people, meetingStartTime, visitorId, staffIndex, idType, idNumber, signatureUrl, entryLocation }: StaffNotificationRequest = await req.json();
 
     console.log("Sending email to:", staffEmail);
     console.log("Picture URL received:", pictureUrl);
@@ -92,6 +93,7 @@ const handler = async (req: Request): Promise<Response> => {
                 <p style="margin:3px 0;"><strong>Phone:</strong> ${phoneNumber}</p>
                 <p style="margin:3px 0;"><strong>Time:</strong> ${currentTime}</p>
                 <p style="margin:3px 0;"><strong>Address:</strong> ${address}</p>
+                ${entryLocation ? `<p style="margin:3px 0;"><strong>Entry Location:</strong> ${entryLocation}</p>` : ''}
               </div>
             </td>
             <td style="vertical-align:top; width:160px;">
