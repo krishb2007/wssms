@@ -54,17 +54,19 @@ const Index = () => {
           const { latitude, longitude } = position.coords;
           try {
             const res = await fetch(
-              `https://nominatim.openstreetmap.org/reverse?lat=${latitude}&lon=${longitude}&format=json&zoom=16&addressdetails=1`,
+              `https://nominatim.openstreetmap.org/reverse?lat=${latitude}&lon=${longitude}&format=json&zoom=18&addressdetails=1`,
               { headers: { 'Accept-Language': 'en' } }
             );
             if (res.ok) {
               const data = await res.json();
               const addr = data.address || {};
-              // Build a concise location name
+              // Build a precise location name
               const parts = [
-                addr.building || addr.amenity || addr.tourism || '',
-                addr.road || addr.neighbourhood || '',
-                addr.suburb || addr.village || addr.town || addr.city || '',
+                addr.building || addr.amenity || addr.tourism || addr.shop || addr.leisure || '',
+                addr.house_number ? `${addr.road || ''} ${addr.house_number}`.trim() : (addr.road || ''),
+                addr.neighbourhood || addr.suburb || '',
+                addr.village || addr.town || addr.city || '',
+                addr.state_district || '',
                 addr.state || '',
               ].filter(Boolean);
               const locationName = parts.length > 0 ? parts.join(', ') : (data.display_name || "Woodstock School, Mussoorie");
@@ -80,7 +82,7 @@ const Index = () => {
           console.log("Geolocation not available:", err.message);
           setEntryLocation("Woodstock School, Mussoorie");
         },
-        { timeout: 10000 }
+        { enableHighAccuracy: true, timeout: 15000, maximumAge: 0 }
       );
     } else {
       setEntryLocation("Woodstock School, Mussoorie");
