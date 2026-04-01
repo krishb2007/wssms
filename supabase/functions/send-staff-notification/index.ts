@@ -93,6 +93,7 @@ const handler = async (req: Request): Promise<Response> => {
                 <p style="margin:3px 0;"><strong>Phone:</strong> ${phoneNumber}</p>
                 <p style="margin:3px 0;"><strong>Time:</strong> ${currentTime}</p>
                 <p style="margin:3px 0;"><strong>Address:</strong> ${address}</p>
+                ${entryLocation ? `<p style="margin:3px 0;"><strong>Entry Location:</strong> ${entryLocation}</p>` : ''}
               </div>
             </td>
             <td style="vertical-align:top; width:160px;">
